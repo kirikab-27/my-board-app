@@ -39,3 +39,20 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Editor settings (念のため両方記載)
+.cursor/
+.vscode/
+.idea/
+
+# test results
+/test-results/
+/playwright-report/
+/playwright/.cache/
+
+# logs
+/logs/
+
+# OS files
+Thumbs.db
+*.swp

@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(mkdir:*)",
+      "Bash(ls:*)",
+      "Bash(npm run dev:*)",
+      "Bash(curl:*)",
+      "Bash(npm run test:*)",
+      "Bash(npx playwright install:*)",
+      "Bash(npm test)",
+      "Bash(pkill:*)",
+      "Bash(mongod:*)"
+    ],
+    "deny": []
+  }
+}
