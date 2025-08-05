@@ -16,6 +16,7 @@ import {
   Button,
 } from '@mui/material';
 import { MoreVert, Edit, Delete, ThumbUp, ThumbUpOutlined } from '@mui/icons-material';
+import { highlightText } from '@/utils/highlightText';
 
 interface Post {
   _id: string;
@@ -30,9 +31,10 @@ interface PostListProps {
   posts: Post[];
   onRefresh: () => void;
   onEditPost: (post: Post) => void;
+  searchQuery?: string; // 検索クエリ（ハイライト用）
 }
 
-export default function PostList({ posts, onRefresh, onEditPost }: PostListProps) {
+export default function PostList({ posts, onRefresh, onEditPost, searchQuery }: PostListProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [postToDelete, setPostToDelete] = useState<Post | null>(null);
@@ -215,7 +217,7 @@ export default function PostList({ posts, onRefresh, onEditPost }: PostListProps
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <Box sx={{ flex: 1 }}>
               <Typography variant="body1" sx={{ mb: 1, whiteSpace: 'pre-wrap' }}>
-                {post.content}
+                {searchQuery ? highlightText(post.content, searchQuery) : post.content}
               </Typography>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
                 <Typography variant="caption" color="text.secondary">

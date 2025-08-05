@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Container,
   Typography,
@@ -12,6 +12,7 @@ import {
 } from '@mui/material';
 import PostForm from '@/components/PostForm';
 import PostList from '@/components/PostList';
+import SearchBar from '@/components/SearchBar';
 
 interface Post {
   _id: string;
@@ -27,6 +28,10 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchResults, setSearchResults] = useState<Post[]>([]);
+  const [isSearchMode, setIsSearchMode] = useState(false);
 
   const fetchPosts = async () => {
     try {
@@ -50,17 +55,47 @@ export default function Home() {
     fetchPosts();
   }, []);
 
-  const handlePostCreated = () => {
+  const handlePostCreated = useCallback(() => {
     fetchPosts();
-  };
+  }, []);
 
-  const handleEditPost = (post: Post) => {
+  const handleEditPost = useCallback((post: Post) => {
     setEditingPost(post);
-  };
+  }, []);
 
-  const handleEditCancel = () => {
+  const handleEditCancel = useCallback(() => {
     setEditingPost(null);
-  };
+  }, []);
+
+  const handleSearch = useCallback(async (query: string) => {
+    setSearchQuery(query);
+    setSearchLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch(`/api/posts/search?q=${encodeURIComponent(query)}`);
+      
+      if (!response.ok) {
+        throw new Error('検索に失敗しました');
+      }
+      
+      const data = await response.json();
+      setSearchResults(data.posts);
+      setIsSearchMode(true);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : '検索に失敗しました');
+      setSearchResults([]);
+    } finally {
+      setSearchLoading(false);
+    }
+  }, []);
+
+  const handleClearSearch = useCallback(() => {
+    setSearchQuery('');
+    setSearchResults([]);
+    setIsSearchMode(false);
+    setError('');
+  }, []);
 
   return (
     <>
@@ -79,8 +114,15 @@ export default function Home() {
           onEditCancel={handleEditCancel}
         />
 
+        <SearchBar
+          onSearch={handleSearch}
+          onClear={handleClearSearch}
+          loading={searchLoading}
+          resultCount={isSearchMode ? searchResults.length : undefined}
+        />
+
         <Typography variant="h5" gutterBottom>
-          投稿一覧
+          {isSearchMode ? '検索結果' : '投稿一覧'}
         </Typography>
 
         {loading ? (
@@ -93,9 +135,10 @@ export default function Home() {
           </Alert>
         ) : (
           <PostList 
-            posts={posts}
+            posts={isSearchMode ? searchResults : posts}
             onRefresh={fetchPosts}
             onEditPost={handleEditPost}
+            searchQuery={isSearchMode ? searchQuery : undefined}
           />
         )}
       </Container>
