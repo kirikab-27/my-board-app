@@ -13,6 +13,7 @@ import {
 import PostForm from '@/components/PostForm';
 import PostList from '@/components/PostList';
 import SearchBar from '@/components/SearchBar';
+import SortSelector, { SortOption } from '@/components/SortSelector';
 
 interface Post {
   _id: string;
@@ -32,6 +33,7 @@ export default function Home() {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<Post[]>([]);
   const [isSearchMode, setIsSearchMode] = useState(false);
+  const [sortOption, setSortOption] = useState<SortOption>('createdAt_desc');
 
   const fetchPosts = async () => {
     try {
@@ -97,6 +99,31 @@ export default function Home() {
     setError('');
   }, []);
 
+  const sortPosts = useCallback((postsToSort: Post[], sortBy: SortOption): Post[] => {
+    const sorted = [...postsToSort];
+    
+    switch (sortBy) {
+      case 'createdAt_desc':
+        return sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      case 'createdAt_asc':
+        return sorted.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      case 'likes_desc':
+        return sorted.sort((a, b) => b.likes - a.likes);
+      case 'likes_asc':
+        return sorted.sort((a, b) => a.likes - b.likes);
+      case 'updatedAt_desc':
+        return sorted.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+      case 'updatedAt_asc':
+        return sorted.sort((a, b) => new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime());
+      default:
+        return sorted;
+    }
+  }, []);
+
+  const handleSortChange = useCallback((newSortOption: SortOption) => {
+    setSortOption(newSortOption);
+  }, []);
+
   return (
     <>
       <AppBar position="static">
@@ -121,9 +148,15 @@ export default function Home() {
           resultCount={isSearchMode ? searchResults.length : undefined}
         />
 
-        <Typography variant="h5" gutterBottom>
-          {isSearchMode ? '検索結果' : '投稿一覧'}
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="h5">
+            {isSearchMode ? '検索結果' : '投稿一覧'}
+          </Typography>
+          <SortSelector 
+            value={sortOption}
+            onChange={handleSortChange}
+          />
+        </Box>
 
         {loading ? (
           <Box display="flex" justifyContent="center" my={4}>
@@ -135,7 +168,7 @@ export default function Home() {
           </Alert>
         ) : (
           <PostList 
-            posts={isSearchMode ? searchResults : posts}
+            posts={sortPosts(isSearchMode ? searchResults : posts, sortOption)}
             onRefresh={fetchPosts}
             onEditPost={handleEditPost}
             searchQuery={isSearchMode ? searchQuery : undefined}
