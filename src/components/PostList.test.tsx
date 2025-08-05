@@ -27,12 +27,16 @@ describe('PostList', () => {
     {
       _id: '1',
       content: 'テスト投稿1\n改行を含む内容です',
+      likes: 5,
+      likedBy: ['192.168.1.1', '192.168.1.2'],
       createdAt: '2025-01-20T10:30:00.000Z',
       updatedAt: '2025-01-20T10:30:00.000Z'
     },
     {
       _id: '2',
       content: 'テスト投稿2',
+      likes: 0,
+      likedBy: [],
       createdAt: '2025-01-20T09:15:00.000Z',
       updatedAt: '2025-01-20T11:45:00.000Z'
     }

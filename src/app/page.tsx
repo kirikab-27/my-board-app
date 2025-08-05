@@ -16,6 +16,8 @@ import PostList from '@/components/PostList';
 interface Post {
   _id: string;
   content: string;
+  likes: number;
+  likedBy: string[];
   createdAt: string;
   updatedAt: string;
 }
