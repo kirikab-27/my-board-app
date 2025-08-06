@@ -33,7 +33,7 @@ export default function SortSelector({ value, onChange }: SortSelectorProps) {
   };
 
   return (
-    <Box sx={{ minWidth: 200, mb: 2 }}>
+    <Box sx={{ minWidth: 200 }}>
       <FormControl fullWidth size="small">
         <InputLabel id="sort-select-label">並び替え</InputLabel>
         <Select

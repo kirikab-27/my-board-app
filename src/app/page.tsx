@@ -14,6 +14,8 @@ import PostForm from '@/components/PostForm';
 import PostList from '@/components/PostList';
 import SearchBar from '@/components/SearchBar';
 import SortSelector, { SortOption } from '@/components/SortSelector';
+import Pagination from '@/components/Pagination';
+import { convertSortOption } from '@/utils/sortUtils';
 
 interface Post {
   _id: string;
@@ -22,6 +24,15 @@ interface Post {
   likedBy: string[];
   createdAt: string;
   updatedAt: string;
+}
+
+interface PaginationInfo {
+  currentPage: number;
+  totalPages: number;
+  totalCount: number;
+  limit: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
 }
 
 export default function Home() {
@@ -34,32 +45,64 @@ export default function Home() {
   const [searchResults, setSearchResults] = useState<Post[]>([]);
   const [isSearchMode, setIsSearchMode] = useState(false);
   const [sortOption, setSortOption] = useState<SortOption>('createdAt_desc');
+  const [pagination, setPagination] = useState<PaginationInfo>({
+    currentPage: 1,
+    totalPages: 1,
+    totalCount: 0,
+    limit: 10,
+    hasNextPage: false,
+    hasPrevPage: false
+  });
+  const [searchPagination, setSearchPagination] = useState<PaginationInfo>({
+    currentPage: 1,
+    totalPages: 1,
+    totalCount: 0,
+    limit: 10,
+    hasNextPage: false,
+    hasPrevPage: false
+  });
 
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async (page: number = 1, limit: number = 10) => {
     try {
       setError('');
-      const response = await fetch('/api/posts');
+      const { sortBy, sortOrder } = convertSortOption(sortOption);
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString(),
+        sortBy,
+        sortOrder
+      });
+      
+      const response = await fetch(`/api/posts?${params}`);
       
       if (!response.ok) {
         throw new Error('投稿の取得に失敗しました');
       }
       
       const data = await response.json();
-      setPosts(data);
+      setPosts(data.posts);
+      setPagination(data.pagination);
     } catch (error) {
       setError(error instanceof Error ? error.message : '投稿の取得に失敗しました');
     } finally {
       setLoading(false);
     }
-  };
+  }, [sortOption]);
 
   useEffect(() => {
-    fetchPosts();
-  }, []);
+    fetchPosts(1, pagination.limit);
+  }, [fetchPosts, pagination.limit]);
+
+  // sortOptionが変更されたときの処理は、handleSortChangeで処理するため削除
 
   const handlePostCreated = useCallback(() => {
-    fetchPosts();
-  }, []);
+    // 新しい投稿が作成されたら、最初のページに戻る
+    if (isSearchMode) {
+      setIsSearchMode(false);
+      setSearchQuery('');
+    }
+    fetchPosts(1, pagination.limit);
+  }, [isSearchMode, pagination.limit, fetchPosts]);
 
   const handleEditPost = useCallback((post: Post) => {
     setEditingPost(post);
@@ -69,13 +112,22 @@ export default function Home() {
     setEditingPost(null);
   }, []);
 
-  const handleSearch = useCallback(async (query: string) => {
+  const handleSearch = useCallback(async (query: string, page: number = 1, limit: number = 10) => {
     setSearchQuery(query);
     setSearchLoading(true);
     setError('');
 
     try {
-      const response = await fetch(`/api/posts/search?q=${encodeURIComponent(query)}`);
+      const { sortBy, sortOrder } = convertSortOption(sortOption);
+      const params = new URLSearchParams({
+        q: query,
+        page: page.toString(),
+        limit: limit.toString(),
+        sortBy,
+        sortOrder
+      });
+      
+      const response = await fetch(`/api/posts/search?${params}`);
       
       if (!response.ok) {
         throw new Error('検索に失敗しました');
@@ -83,6 +135,7 @@ export default function Home() {
       
       const data = await response.json();
       setSearchResults(data.posts);
+      setSearchPagination(data.pagination);
       setIsSearchMode(true);
     } catch (error) {
       setError(error instanceof Error ? error.message : '検索に失敗しました');
@@ -90,7 +143,7 @@ export default function Home() {
     } finally {
       setSearchLoading(false);
     }
-  }, []);
+  }, [sortOption]);
 
   const handleClearSearch = useCallback(() => {
     setSearchQuery('');
@@ -99,30 +152,40 @@ export default function Home() {
     setError('');
   }, []);
 
-  const sortPosts = useCallback((postsToSort: Post[], sortBy: SortOption): Post[] => {
-    const sorted = [...postsToSort];
-    
-    switch (sortBy) {
-      case 'createdAt_desc':
-        return sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-      case 'createdAt_asc':
-        return sorted.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-      case 'likes_desc':
-        return sorted.sort((a, b) => b.likes - a.likes);
-      case 'likes_asc':
-        return sorted.sort((a, b) => a.likes - b.likes);
-      case 'updatedAt_desc':
-        return sorted.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-      case 'updatedAt_asc':
-        return sorted.sort((a, b) => new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime());
-      default:
-        return sorted;
-    }
-  }, []);
 
   const handleSortChange = useCallback((newSortOption: SortOption) => {
     setSortOption(newSortOption);
-  }, []);
+    // ソート方法が変更されたら、現在のページを1に戻して再取得
+    if (isSearchMode && searchQuery) {
+      handleSearch(searchQuery, 1, searchPagination.limit);
+    } else {
+      fetchPosts(1, pagination.limit);
+    }
+  }, [isSearchMode, searchQuery, searchPagination.limit, pagination.limit, handleSearch, fetchPosts]);
+
+  const handlePageChange = useCallback((page: number) => {
+    if (isSearchMode && searchQuery) {
+      handleSearch(searchQuery, page, searchPagination.limit);
+    } else {
+      fetchPosts(page, pagination.limit);
+    }
+  }, [isSearchMode, searchQuery, searchPagination.limit, pagination.limit, handleSearch, fetchPosts]);
+
+  const handleLimitChange = useCallback((limit: number) => {
+    if (isSearchMode && searchQuery) {
+      setSearchPagination(prev => ({ ...prev, limit }));
+      handleSearch(searchQuery, 1, limit);
+    } else {
+      setPagination(prev => ({ ...prev, limit }));
+      fetchPosts(1, limit);
+    }
+  }, [isSearchMode, searchQuery, handleSearch, fetchPosts]);
+
+
+  // SearchBarコンポーネント用のラッパー関数
+  const handleSearchQuery = useCallback((query: string) => {
+    handleSearch(query, 1, searchPagination.limit);
+  }, [handleSearch, searchPagination.limit]);
 
   return (
     <>
@@ -142,20 +205,49 @@ export default function Home() {
         />
 
         <SearchBar
-          onSearch={handleSearch}
+          onSearch={handleSearchQuery}
           onClear={handleClearSearch}
           loading={searchLoading}
-          resultCount={isSearchMode ? searchResults.length : undefined}
+          resultCount={isSearchMode ? searchPagination.totalCount : undefined}
         />
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h5">
+        {/* ヘッダーセクション：タイトル・並び替え・ページネーション */}
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: { xs: 2, sm: 0 },
+          mb: 2 
+        }}>
+          {/* 左側：タイトル */}
+          <Typography variant="h5" sx={{ 
+            order: { xs: 1, sm: 1 },
+            alignSelf: { xs: 'flex-start', sm: 'center' }
+          }}>
             {isSearchMode ? '検索結果' : '投稿一覧'}
           </Typography>
-          <SortSelector 
-            value={sortOption}
-            onChange={handleSortChange}
-          />
+
+          {/* 右側：並び替えとページネーション */}
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 2,
+            order: { xs: 2, sm: 2 },
+            flexDirection: { xs: 'column', sm: 'row' },
+            width: { xs: '100%', sm: 'auto' },
+            justifyContent: { xs: 'flex-start', sm: 'flex-end' }
+          }}>
+            <SortSelector 
+              value={sortOption}
+              onChange={handleSortChange}
+            />
+            <Pagination
+              pagination={isSearchMode ? searchPagination : pagination}
+              onPageChange={handlePageChange}
+              onLimitChange={handleLimitChange}
+            />
+          </Box>
         </Box>
 
         {loading ? (
@@ -168,8 +260,8 @@ export default function Home() {
           </Alert>
         ) : (
           <PostList 
-            posts={sortPosts(isSearchMode ? searchResults : posts, sortOption)}
-            onRefresh={fetchPosts}
+            posts={isSearchMode ? searchResults : posts}
+            onRefresh={handlePostCreated}
             onEditPost={handleEditPost}
             searchQuery={isSearchMode ? searchQuery : undefined}
           />

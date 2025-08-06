@@ -10,7 +10,8 @@
       "Bash(npx playwright install:*)",
       "Bash(npm test)",
       "Bash(pkill:*)",
-      "Bash(mongod:*)"
+      "Bash(mongod:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": []
   }
