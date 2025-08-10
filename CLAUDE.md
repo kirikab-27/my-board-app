@@ -48,16 +48,19 @@
 - メール送信基盤（SMTP・テンプレート）
 - レスポンシブデザイン（Material-UI）
 
-### 🚧 開発中機能（Week 2）
-- ユーザー認証システム（JWT・ログイン・登録）
-- 会員専用投稿機能
-- メール通知（登録確認・パスワードリセット）
-- プロフィール管理
+### ✅ 実装完了機能（Week 2 - 会員制システム完了）
+- **Phase 0**: テスト基盤・開発環境整備（Jest・Playwright・CI/CD）
+- **Phase 0.5**: 観測基盤・モニタリング設定（Sentry・Analytics）
+- **Phase 1**: NextAuth認証基盤・ユーザーモデル・bcrypt
+- **Phase 2**: メール認証・パスワードリセット・DKIM統合
+- **Phase 3**: 会員専用投稿機能・権限管理・匿名対応
+- **Phase 4**: 認証UI/UX改善・プロフィール管理・レスポンシブ
+- **Phase 5**: セキュリティ強化・CSRF・レート制限・XSS対策
 
-### 📋 計画中機能
-- 管理者ダッシュボード
-- リアルタイム通知
-- 画像アップロード機能
+### 📋 将来拡張機能
+- 管理者ダッシュボード・ユーザー管理
+- リアルタイム通知・WebSocket統合
+- 画像アップロード・ファイル管理システム
 
 ## 技術スタック
 
@@ -65,6 +68,8 @@
 - **UI ライブラリ**: Material-UI (MUI) 7.2.0
 - **スタイリング**: Emotion, Tailwind CSS 4
 - **データベース**: MongoDB with Mongoose 8.17.0
+- **認証**: NextAuth.js + bcrypt + JWT
+- **メール**: Nodemailer (SMTP/DKIM/SPF/DMARC)
 - **開発言語**: TypeScript 5
 
 ## プロジェクト構造
@@ -72,39 +77,41 @@
 ```
 src/
 ├── app/
-│   ├── api/posts/           # API routes for posts
-│   │   ├── route.ts         # GET/POST endpoints
-│   │   └── [id]/route.ts    # PUT/DELETE endpoints for specific posts
-│   ├── layout.tsx           # Root layout with theme provider
+│   ├── api/
+│   │   ├── auth/            # NextAuth API routes
+│   │   └── posts/           # Post API routes (認証統合済み)
+│   ├── auth/                # 認証画面（ログイン・登録・リセット）
+│   ├── layout.tsx           # Root layout (AuthButton統合済み)
 │   └── page.tsx             # Main page component
 ├── components/
-│   ├── PostForm.tsx         # Form for creating/editing posts
-│   ├── PostList.tsx         # List display for posts
-│   ├── Pagination.tsx       # Page navigation component
-│   ├── SortSelector.tsx     # Sort options selector
-│   ├── SearchBar.tsx        # Search functionality
-│   └── ThemeProvider.tsx    # MUI theme configuration
+│   ├── auth/                # 認証関連コンポーネント
+│   │   ├── AuthButton.tsx   # ログイン/ログアウトボタン
+│   │   └── AuthGuard.tsx    # 認証ガード
+│   ├── PostForm.tsx         # 投稿フォーム（認証対応）
+│   ├── PostList.tsx         # 投稿リスト（権限表示）
+│   └── ...                  # その他UI components
 ├── lib/
-│   ├── mongodb.ts           # MongoDB connection setup
-│   └── email/               # Email functionality
-│       ├── config.ts        # Email configuration
-│       ├── sender.ts        # Email sending functions
-│       └── smtp-test.ts     # SMTP testing utilities
+│   ├── auth/                # 認証設定・バリデーション
+│   ├── security/            # セキュリティ（レート制限・CSRF）
+│   ├── email/               # メール基盤（DKIM統合済み）
+│   └── mongodb.ts           # DB接続
 ├── models/
-│   └── Post.ts              # Mongoose schema for posts
-├── theme/
-│   └── theme.ts             # MUI theme customization
-├── types/
-│   └── global.d.ts          # Global TypeScript definitions
-└── utils/
-    └── sortUtils.ts         # Sorting utility functions
-docs/                        # Documentation and guides
-├── email-troubleshooting-guide.md  # Email error solutions
-└── ...                     # Other technical documents
-scripts/                    # Development and test scripts
-├── test-email.js           # Email functionality test
-├── debug-email.js          # Email debugging script
-└── check-sakura-settings.js  # Sakura-specific email tests
+│   ├── User.ts              # ユーザーモデル（bcrypt）
+│   ├── Post.ts              # 投稿モデル（権限管理）
+│   └── VerificationToken.ts # 認証トークン
+├── middleware.ts            # 認証・セキュリティミドルウェア
+└── types/global.d.ts        # TypeScript定義
+
+# テスト・品質保証
+tests/                       # テスト基盤（Phase 0）
+├── unit/                    # 単体テスト
+├── integration/             # 統合テスト
+└── e2e/                     # E2Eテスト
+
+# ドキュメント・手順書
+docs/                        # 技術仕様・ガイド
+README-phase-*.md           # Phase別実装手順書
+scripts/                    # 開発・テストスクリプト
 ```
 
 ## 開発コマンド
@@ -162,20 +169,23 @@ APP_NAME=掲示板システム
 - `POST /api/posts/[id]/like` - いいね追加/削除
 - `GET /api/posts/search` - 投稿検索（部分一致）
 
-### 認証関連（開発中）
-- `POST /api/auth/register` - ユーザー登録
-- `POST /api/auth/login` - ログイン
-- `POST /api/auth/logout` - ログアウト
-- `GET /api/auth/me` - ユーザー情報取得
+### 認証関連（実装完了 - Phase 1-2）
+- `GET/POST /api/auth/[...nextauth]` - NextAuth.js統合認証
+- `POST /api/auth/register` - ユーザー登録・メール認証送信
+- `GET /api/auth/verify-email` - メール認証確認・トークン検証
+- `POST /api/auth/reset-password` - パスワードリセット（メール送信）
 
 ### データ形式
 ```typescript
-// 投稿データ
+// 投稿データ（認証統合済み）
 interface Post {
   _id: string;
   content: string;        // 投稿内容（最大200文字）
   likes: number;          // いいね数
   likedBy: string[];      // いいねしたユーザーID一覧
+  userId?: string;        // 投稿者ID（認証ユーザー）
+  authorName?: string;    // 投稿者名（匿名対応）
+  isPublic: boolean;      // 公開設定（会員限定機能）
   createdAt: string;      // 作成日時
   updatedAt: string;      // 更新日時
 }
@@ -194,6 +204,18 @@ interface PaginationInfo {
 type SortOption = 'createdAt_desc' | 'createdAt_asc' | 
                   'likes_desc' | 'likes_asc' | 
                   'updatedAt_desc' | 'updatedAt_asc';
+
+// ユーザーデータ（実装完了）
+interface User {
+  _id: string;
+  email: string;           // メールアドレス（ログイン用）
+  name: string;            // 表示名
+  password: string;        // bcryptハッシュ化パスワード
+  emailVerified: Date | null;  // メール認証日時
+  image?: string;          // プロフィール画像URL
+  createdAt: Date;         // 登録日時
+  updatedAt: Date;         // 更新日時
+}
 ```
 
 ## 主要コンポーネント
@@ -245,19 +267,29 @@ type SortOption = 'createdAt_desc' | 'createdAt_asc' |
 - **DKIM署名問題**: `node scripts/verify-dkim.js kab137lab.com default` で検証
 - **詳細解決策**: [メール認証設定チートシート](./docs/email-auth-cheatsheet.md)
 
+#### パフォーマンス目標
+- **ログイン応答**: < 500ms
+- **メール送信**: < 2秒
+- **ページ読込**: < 3秒
+- **同時接続数**: 100ユーザー以上
+
 ### 開発時のコマンド
 ```bash
-# 型チェック
-npx tsc --noEmit
+# 基本開発コマンド
+npm run dev                    # 開発サーバー起動（Turbopack）
+npx tsc --noEmit              # 型チェック
+npm run lint                  # Lint実行
 
-# Lint実行
-npm run lint
+# Phase別コマンド
+npm run test:unit             # Phase 0: 単体テスト
+npm run test:e2e              # Phase 0: E2Eテスト
+npm run monitor:check         # Phase 0.5: 監視確認
+npm run auth:test             # Phase 1+: 認証テスト
 
-# 開発サーバー起動（Turbopack）
-npm run dev
-
-# 依存関係の再インストール
-rm -rf node_modules package-lock.json && npm install
+# 品質管理
+npm run test:coverage         # カバレッジ確認（80%以上目標）
+npm run security:scan         # セキュリティスキャン
+rm -rf node_modules package-lock.json && npm install  # 依存関係再構築
 ```
 
 ## Git ブランチ戦略
@@ -272,22 +304,46 @@ rm -rf node_modules package-lock.json && npm install
 - `release/*` - リリース準備用
 
 ### フィーチャーブランチ
-- `feature/auth-system` - ユーザー認証機能
-- `feature/user-management` - ユーザー管理機能
-- `feature/admin-panel` - 管理者権限機能
-- `feature/email-service` - メール送信機能
-- `feature/member-posts` - 会員専用投稿機能
-- `feature/member-ui` - 会員専用UI機能
+- `feature/email-service` - ✅ メール送信機能（完了）
+- `feature/test-infrastructure` - 🚧 Phase 0: テスト基盤（実装中）
+- `feature/monitoring` - 📋 Phase 0.5: 観測基盤（次）
+- `feature/auth-system` - 📋 Phase 1-2: 認証機能（予定）
+- `feature/member-posts` - 📋 Phase 3: 会員投稿（予定）
+- `feature/member-ui` - 📋 Phase 4-5: UI・セキュリティ（予定）
+- `feature/admin-panel` - 📋 管理者機能（将来）
 
-### 開発フロー
-1. `develop`から`feature/*`ブランチを作成
-2. 機能開発完了後、Pull Requestで`develop`にマージ
-3. `develop`から`main`へのリリース時はPull Request必須
-4. コードレビューと自動テスト合格が必須
+### 7段階開発フロー
+1. **Phase 0**: `feature/email-service` → `feature/test-infrastructure`
+2. **Phase 0.5**: `feature/test-infrastructure` → `feature/monitoring`
+3. **Phase 1-2**: `feature/monitoring` → `feature/auth-system`
+4. **Phase 3**: `feature/auth-system` → `feature/member-posts`
+5. **Phase 4-5**: `feature/member-posts` → `feature/member-ui`
+6. **各完了時**: `develop`にマージ + タグ付け（`phase-N-complete`）
+7. **最終**: `develop` → `main`（Pull Request必須）
 
-## テスト
+### 基盤Phase依存関係
+- **Phase 1+**: Phase 0（テスト基盤）必須
+- **Phase 1+**: Phase 0.5（観測基盤）必須
+- **失敗時**: 段階的ロールバック（基盤→認証→機能）
 
-現在、テストフレームワークは設定されていません。将来的にJest + React Testing Libraryの導入を検討してください。
+## テスト・品質保証
+
+**Phase 0実装済み**: 完全なテスト基盤が構築されています
+
+### テストフレームワーク
+- **Jest**: 単体・統合テスト（カバレッジ80%以上目標）
+- **Testing Library**: React コンポーネントテスト
+- **Playwright**: E2Eテスト・ブラウザ自動化
+- **GitHub Actions**: CI/CDパイプライン・自動品質チェック
+
+### 実行コマンド
+```bash
+npm run test:unit        # 単体テスト実行
+npm run test:integration # 統合テスト実行
+npm run test:e2e         # E2Eテスト実行
+npm run test:coverage    # カバレッジレポート生成
+npm run lint            # コード品質チェック
+```
 
 ## 参考ドキュメント
 
@@ -299,7 +355,7 @@ rm -rf node_modules package-lock.json && npm install
 
 ### DNS・メール認証設定
 - **SPF設定**: ✅ `v=spf1 a:www3625.sakura.ne.jp include:_spf.sakura.ne.jp ~all`
-- **DKIM設定**: ⏳ DNS反映中（セレクタ: default）
+- **DKIM設定**: ✅ 完了・署名検証済み（セレクタ: default）
 - **DMARC設定**: ✅ `v=DMARC1; p=none; rua=mailto:noreply@kab137lab.com`
 - **完全チートシート**: [メール認証設定チートシート](./docs/email-auth-cheatsheet.md)
 
@@ -310,6 +366,18 @@ rm -rf node_modules package-lock.json && npm install
 - `docs/api-specs.md` - API仕様詳細
 - `docs/database-specs.md` - データベース設計
 - `docs/system-architecture.md` - システム構成
+
+### 会員制システム実装ガイド（Phase別実装完了）
+- **[Phase 0 - テスト基盤整備手順](./README-phase-0.md)** - Jest・Playwright・CI/CD構築ガイド
+- **[Phase 0.5 - 監視基盤構築手順](./README-phase-0.5.md)** - Sentry・Analytics・ダッシュボード
+- **[Phase 1-2 - 認証基盤実装手順](./README-phase-1-2.md)** - NextAuth・メール認証・bcrypt統合
+- **[Phase 3-5 - 会員機能実装手順](./README-phase-3-5.md)** - 権限管理・UI/UX・セキュリティ強化
+
+### システム設計・戦略ドキュメント
+- **[会員制ブランチ戦略](./docs/member-branch-strategy.md)** - 7段階実装のブランチ戦略・依存関係
+- **[テスト・品質保証戦略](./docs/test-quality-strategy.md)** - Phase 0テスト基盤・品質管理
+- **[監視・分析ガイド](./docs/monitoring-guide.md)** - Sentry・パフォーマンス監視・ユーザー分析
+- **[リスク管理・ロールバック戦略](./docs/risk-management.md)** - カナリアリリース・緊急対応手順
 
 ### その他のドキュメント
 - `docs/` フォルダには詳細な技術仕様書やガイドが格納されています

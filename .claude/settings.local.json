@@ -24,7 +24,8 @@
       "WebFetch(domain:www.sakura.ad.jp)",
       "WebFetch(domain:bone.jp)",
       "WebFetch(domain:hiro-ebis-freehold.com)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }
