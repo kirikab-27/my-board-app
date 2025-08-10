@@ -25,7 +25,12 @@
       "WebFetch(domain:bone.jp)",
       "WebFetch(domain:hiro-ebis-freehold.com)",
       "Bash(git add:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(git tag:*)",
+      "Bash(npx husky:*)",
+      "Bash(npm run type-check:*)",
+      "Bash(npm run lint)",
+      "Bash(npm run build:*)"
     ],
     "deny": []
   }
