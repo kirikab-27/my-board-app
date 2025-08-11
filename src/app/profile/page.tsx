@@ -1,16 +1,7 @@
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth/nextauth';
 import { redirect } from 'next/navigation';
-import {
-  Container,
-  Paper,
-  Typography,
-  Box,
-  Button,
-  Divider,
-  Chip,
-  Stack,
-} from '@mui/material';
+import { Container, Paper, Typography, Box, Button, Divider, Chip, Stack } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import LockIcon from '@mui/icons-material/Lock';
 import EmailIcon from '@mui/icons-material/Email';
@@ -20,16 +11,15 @@ import Link from 'next/link';
 import User from '@/models/User';
 import dbConnect from '@/lib/mongodb';
 import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
+import { ProfileHeader } from '@/components/profile/ProfileHeader';
 
 async function getProfile(userId: string) {
   await dbConnect();
-  
-  const user = await User.findById(userId)
-    .select('-password')
-    .lean();
-    
+
+  const user = await User.findById(userId).select('-password').lean();
+
   if (!user) return null;
-  
+
   return {
     id: user._id.toString(),
     name: user.name,
@@ -44,13 +34,13 @@ async function getProfile(userId: string) {
 
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions);
-  
+
   if (!session?.user?.id) {
     redirect('/login');
   }
-  
+
   const profile = await getProfile(session.user.id);
-  
+
   if (!profile) {
     redirect('/');
   }
@@ -86,129 +76,131 @@ export default async function ProfilePage() {
   };
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
-      <Paper sx={{ p: 4 }}>
-        {/* ヘッダー部分 */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-            <ProfileAvatar name={profile.name} size="xlarge" />
-            <Box>
-              <Typography variant="h4" gutterBottom>
-                {profile.name}
-              </Typography>
-              <Chip
-                label={getRoleLabel(profile.role)}
-                color={getRoleBadgeColor(profile.role)}
-                size="small"
-              />
-            </Box>
-          </Box>
-          
-          <Stack spacing={1}>
-            <Button
-              component={Link}
-              href="/profile/edit"
-              variant="contained"
-              startIcon={<EditIcon />}
-            >
-              プロフィール編集
-            </Button>
-            <Button
-              component={Link}
-              href="/profile/password"
-              variant="outlined"
-              startIcon={<LockIcon />}
-            >
-              パスワード変更
-            </Button>
-          </Stack>
-        </Box>
+    <>
+      <ProfileHeader title="プロフィール" />
 
-        <Divider sx={{ mb: 3 }} />
-
-        {/* プロフィール情報 */}
-        <Stack spacing={3}>
-          {/* メールアドレス */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <EmailIcon color="action" />
-            <Box>
-              <Typography variant="body2" color="text.secondary">
-                メールアドレス
-              </Typography>
-              <Typography variant="body1">
-                {profile.email}
-                {profile.emailVerified && (
-                  <Chip
-                    label="認証済み"
-                    size="small"
-                    color="success"
-                    sx={{ ml: 1, height: 20 }}
-                  />
-                )}
-              </Typography>
+      <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
+        <Paper sx={{ p: 4 }}>
+          {/* ヘッダー部分 */}
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+              mb: 4,
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+              <ProfileAvatar name={profile.name} size="xlarge" />
+              <Box>
+                <Typography variant="h4" gutterBottom>
+                  {profile.name}
+                </Typography>
+                <Chip
+                  label={getRoleLabel(profile.role)}
+                  color={getRoleBadgeColor(profile.role)}
+                  size="small"
+                />
+              </Box>
             </Box>
+
+            <Stack spacing={1}>
+              <Button
+                component={Link}
+                href="/profile/edit"
+                variant="contained"
+                startIcon={<EditIcon />}
+              >
+                プロフィール編集
+              </Button>
+              <Button
+                component={Link}
+                href="/profile/password"
+                variant="outlined"
+                startIcon={<LockIcon />}
+              >
+                パスワード変更
+              </Button>
+            </Stack>
           </Box>
 
-          {/* 自己紹介 */}
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-            <InfoIcon color="action" sx={{ mt: 0.5 }} />
-            <Box sx={{ flex: 1 }}>
-              <Typography variant="body2" color="text.secondary">
-                自己紹介
-              </Typography>
-              <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
-                {profile.bio || '自己紹介が設定されていません'}
-              </Typography>
-            </Box>
-          </Box>
+          <Divider sx={{ mb: 3 }} />
 
-          {/* 登録日 */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <CalendarTodayIcon color="action" />
-            <Box>
-              <Typography variant="body2" color="text.secondary">
-                登録日
-              </Typography>
-              <Typography variant="body1">
-                {formatDate(profile.createdAt)}
-              </Typography>
+          {/* プロフィール情報 */}
+          <Stack spacing={3}>
+            {/* メールアドレス */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <EmailIcon color="action" />
+              <Box>
+                <Typography variant="body2" color="text.secondary">
+                  メールアドレス
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography variant="body1">{profile.email}</Typography>
+                  {profile.emailVerified && (
+                    <Chip label="認証済み" size="small" color="success" sx={{ height: 20 }} />
+                  )}
+                </Box>
+              </Box>
             </Box>
-          </Box>
 
-          {/* 最終更新日 */}
-          {profile.updatedAt && (
+            {/* 自己紹介 */}
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+              <InfoIcon color="action" sx={{ mt: 0.5 }} />
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="body2" color="text.secondary">
+                  自己紹介
+                </Typography>
+                <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
+                  {profile.bio || '自己紹介が設定されていません'}
+                </Typography>
+              </Box>
+            </Box>
+
+            {/* 登録日 */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <CalendarTodayIcon color="action" />
               <Box>
                 <Typography variant="body2" color="text.secondary">
-                  最終更新日
+                  登録日
                 </Typography>
-                <Typography variant="body1">
-                  {formatDate(profile.updatedAt)}
-                </Typography>
+                <Typography variant="body1">{formatDate(profile.createdAt)}</Typography>
               </Box>
             </Box>
-          )}
-        </Stack>
 
-        <Divider sx={{ my: 3 }} />
+            {/* 最終更新日 */}
+            {profile.updatedAt && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <CalendarTodayIcon color="action" />
+                <Box>
+                  <Typography variant="body2" color="text.secondary">
+                    最終更新日
+                  </Typography>
+                  <Typography variant="body1">{formatDate(profile.updatedAt)}</Typography>
+                </Box>
+              </Box>
+            )}
+          </Stack>
 
-        {/* 注意事項 */}
-        <Box sx={{ bgcolor: 'background.default', p: 2, borderRadius: 1 }}>
-          <Typography variant="body2" color="text.secondary">
-            <strong>ご注意:</strong>
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            • メールアドレスは変更できません
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            • パスワードは定期的に変更することをお勧めします
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            • プロフィール情報は他のユーザーには公開されません
-          </Typography>
-        </Box>
-      </Paper>
-    </Container>
+          <Divider sx={{ my: 3 }} />
+
+          {/* 注意事項 */}
+          <Box sx={{ bgcolor: 'background.default', p: 2, borderRadius: 1 }}>
+            <Typography variant="body2" color="text.secondary">
+              <strong>ご注意:</strong>
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              • メールアドレスは変更できません
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              • パスワードは定期的に変更することをお勧めします
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              • プロフィール情報は他のユーザーには公開されません
+            </Typography>
+          </Box>
+        </Paper>
+      </Container>
+    </>
   );
 }

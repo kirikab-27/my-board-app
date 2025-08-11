@@ -92,6 +92,7 @@ src/
 │   ├── api/
 │   │   ├── auth/            # NextAuth.js v4 API routes（実装完了）
 │   │   ├── monitoring/      # 監視・メトリクス API
+│   │   ├── profile/         # プロフィール管理API（Phase 4・GET/PUT profile・パスワード変更）
 │   │   ├── security/        # ブルートフォース対策API（Phase 2.5）
 │   │   └── posts/           # Post API routes (認証統合済み)
 │   ├── register/            # カスタム新規登録ページ（ソーシャルログイン統合済み）
@@ -120,7 +121,8 @@ src/
 │   ├── examples/            # 使用例・デモコンポーネント
 │   │   └── AuthHookExamples.tsx # useRequireAuth使用例集（Material-UI統合）
 │   ├── profile/             # プロフィール関連コンポーネント（Phase 4）
-│   │   └── ProfileAvatar.tsx # 頭文字アバター（6色・4サイズ・日英対応）
+│   │   ├── ProfileAvatar.tsx # 頭文字アバター（6色・4サイズ・日英対応）
+│   │   └── ProfileHeader.tsx # プロフィールヘッダー（Server/Client分離・AuthButton統合）
 │   ├── SessionProvider.tsx  # NextAuth.jsセッションプロバイダー（自動更新設定済み）
 │   ├── PostForm.tsx         # 投稿フォーム（認証対応）
 │   ├── PostList.tsx         # 投稿リスト（権限表示）
@@ -280,15 +282,15 @@ SECURITY_API_TOKEN=your_security_admin_token_here
 - `GET /register` - 新規登録ページ（メール・Google・GitHub・パスワード強度インジケーター対応）
 - `GET /login` - ログインページ（メール・Google・GitHub・パスワード忘れ・callbackURL・**試行回数表示**対応）
 - `GET /dashboard` - 認証後ダッシュボード（クイックアクション・掲示板・セキュリティ管理リンク）✨ **機能拡張**
+- `GET /profile` - プロフィール表示（アバター・名前・メール・自己紹介・ロール・登録日）✨ **Phase 4新規実装**
+- `GET /profile/edit` - プロフィール編集（名前・自己紹介・リアルタイム文字カウント）✨ **Phase 4新規実装**
+- `GET /profile/password` - パスワード変更（強度チェック・現在パスワード確認）✨ **Phase 4新規実装**
 - `GET /members-only` - callbackURL機能確認（AuthGuardImproved使用・自動リダイレクト）
 - `GET /admin/security` - セキュリティ管理ダッシュボード（攻撃統計・ブロック解除・制限状況確認）
 - `GET /auth/verified` - メール認証完了画面・ログイン画面へ誘導
 - `GET /auth/error` - 認証エラー画面・詳細なエラーメッセージ対応
 - `GET /auth/forgot-password` - パスワードリセット要求画面
 - `GET /auth/reset-password` - パスワードリセット画面・トークン検証対応
-- `GET /profile` - プロフィール表示（頭文字アバター・ユーザー情報・ロール表示）✨ **新規実装**
-- `GET /profile/edit` - プロフィール編集（名前・自己紹介・文字数制限）✨ **新規実装**
-- `GET /profile/password` - パスワード変更（強度インジケーター・現在確認）✨ **新規実装**
 
 ### 監視・分析関連（Phase 0.5実装完了）
 
@@ -383,6 +385,7 @@ interface User {
 - **セキュリティ**: bcryptパスワードハッシュ化（例: $2b$12$CEgMMYFCx1Y28M2LroTDeevLJJWY.hNSi2JXa44repzcj4WpvCVyG）
 
 **テスト済みユーザーデータ例**
+
 ```json
 {
   "_id": "689868464fe2b2c660f3be0f",
@@ -411,6 +414,7 @@ interface User {
    - Google・GitHubボタンクリックで認証開始
 
 **認証ページUI/UX特徴**
+
 - メール認証フォーム優先表示（上部）
 - 「または」区切り線でソーシャルオプション提示（下部）
 - Material-UIアイコン・ブランドカラー統一
@@ -532,7 +536,7 @@ interface User {
 
 #### NextAuth.js認証エラー（Phase 1実装完了・動作確認済み）
 
-- **✅ ユーザー登録時の名前バリデーションエラー**: 
+- **✅ ユーザー登録時の名前バリデーションエラー**:
   - **解決完了**: 日本語文字（ひらがな・カタカナ・漢字）対応の正則表現に修正済み
   - **対応文字**: 英数字・ひらがな・カタカナ・漢字・スペース・ハイフン・アンダースコア
   - **確認済み**: "テストユーザー"での登録が正常に完了
@@ -544,11 +548,13 @@ interface User {
 
 **症状**: ログイン済みなのに `/` アクセス時に `/unauthorized` にリダイレクト  
 **原因**: ユーザーrole情報がJWTトークン・セッションに含まれていない複合的エラー
+
 - Userモデルにroleフィールド不足
-- NextAuth.js Callbackでroleがトークンに設定されない  
+- NextAuth.js Callbackでroleがトークンに設定されない
 - 既存JWTトークンに古い情報が残存
 
 **解決方法**:
+
 1. `node scripts/update-user-roles.js` で既存ユーザーにrole追加
 2. NextAuth.js JWT/Session callbackでrole情報設定
 3. `NEXTAUTH_SECRET`変更で既存トークン無効化・サーバー再起動
@@ -560,6 +566,32 @@ interface User {
 - **SPF認証失敗**: `node scripts/verify-spf.js kab137lab.com` で設定確認
 - **DKIM署名問題**: `node scripts/verify-dkim.js kab137lab.com default` で検証
 - **詳細解決策**: [メール認証設定チートシート](./docs/email-auth-cheatsheet.md)
+
+#### プロフィール機能エラー（Phase 4実装完了）
+
+**React Hydration Error** `<div>` cannot be a descendant of `<p>`
+
+- **症状**: コンソールでHTML構造エラー・サーバー/クライアント不一致
+- **原因**: Typography(p)内にChip(div)をネスト
+- **解決方法**: flexコンテナーでTypographyとChipを並列配置
+
+**プロフィール画像がイニシャル表示されない**
+
+- **症状**: アバターが空白で表示される
+- **原因**: 名前から正しくイニシャルが抽出されない（日本語・英語混在）
+- **解決方法**: ProfileAvatar.tsxの文字抽出ロジック確認
+
+**文字数制限バリデーションエラー**
+
+- **症状**: 文字数以内でもエラー表示・保存できない
+- **原因**: 全角文字カウント・trim処理・リアルタイム更新のずれ
+- **解決方法**: onChange時の文字数計算とバックエンドバリデーション統一
+
+**プロフィールページにヘッダーが表示されない**
+
+- **症状**: `/profile`ページでAppBarが表示されない・AuthButtonが動作しない
+- **原因**: Server ComponentでClient Component（AuthButton）を直接使用
+- **解決方法**: ProfileHeaderクライアントコンポーネント作成・Server/Client分離
 
 #### パフォーマンス目標
 
@@ -582,6 +614,11 @@ npm run test:e2e              # Phase 0: E2Eテスト
 npm run monitor:check         # Phase 0.5: 監視確認
 npm run auth:test             # Phase 1+: 認証テスト
 node scripts/test-brute-force.js # Phase 2.5: ブルートフォース攻撃テスト
+
+# Phase 4: プロフィール機能
+powershell "Stop-Process -Id 15304 -Force" # ポート3010使用プロセス強制終了
+npm run dev                   # サーバー再起動でキャッシュクリア
+# ブラウザ: Ctrl+Shift+R でハードリロード
 
 # 品質管理
 npm run test:coverage         # カバレッジ確認（80%以上目標）
