@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Post from '@/models/Post';
+import { requireApiAuth, createUnauthorizedResponse, createServerErrorResponse } from '@/lib/auth/server';
 
 export async function GET(request: NextRequest) {
   try {
@@ -88,9 +89,13 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // 認証確認
+    const { user } = await requireApiAuth(request);
+    console.log('✅ 認証ユーザー投稿作成:', user.email, user.name);
+    
     await dbConnect();
     const body = await request.json();
-    const { content } = body;
+    const { content, isPublic = true } = body;
 
     if (!content || content.trim().length === 0) {
       return NextResponse.json(
@@ -108,9 +113,10 @@ export async function POST(request: NextRequest) {
 
     const trimmedContent = content.trim();
 
-    // 過去5分以内の同じ内容の投稿をチェック
+    // 認証ユーザーの重複投稿チェック（ユーザー別・5分以内）
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
     const duplicatePost = await Post.findOne({
+      userId: user.id,
       content: trimmedContent,
       createdAt: { $gte: fiveMinutesAgo }
     });
@@ -122,15 +128,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const post = new Post({ content: trimmedContent });
+    // 認証ユーザー情報付きで投稿作成
+    const post = new Post({ 
+      content: trimmedContent,
+      userId: user.id,
+      authorName: user.name || '匿名ユーザー',
+      isPublic: Boolean(isPublic)
+    });
     await post.save();
+
+    console.log('✅ 投稿作成成功:', { 
+      postId: post._id, 
+      userId: user.id, 
+      authorName: user.name,
+      isPublic: isPublic 
+    });
 
     return NextResponse.json(post, { status: 201 });
   } catch (error) {
-    console.error('Error creating post:', error);
-    return NextResponse.json(
-      { error: '投稿の作成に失敗しました' },
-      { status: 500 }
-    );
+    console.error('❌ 投稿作成エラー:', error);
+    
+    // 認証エラーの場合
+    if (error instanceof Error && error.message === 'UNAUTHORIZED') {
+      return createUnauthorizedResponse('投稿を作成するにはログインが必要です');
+    }
+    
+    return createServerErrorResponse('投稿の作成に失敗しました');
   }
 }

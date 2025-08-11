@@ -1,7 +1,17 @@
+import { withSentryConfig } from '@sentry/nextjs';
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  experimental: {
+    serverComponentsExternalPackages: ['@sentry/nextjs'],
+  },
 };
 
-export default nextConfig;
+const sentryWebpackPluginOptions = {
+  silent: true,
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+};
+
+
+export default withSentryConfig(nextConfig, sentryWebpackPluginOptions);

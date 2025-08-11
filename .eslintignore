@@ -1,0 +1,11 @@
+node_modules
+.next
+.cache
+dist
+build
+coverage
+*.min.js
+*.min.css
+jest.config.js
+next.config.ts
+playwright.config.ts
