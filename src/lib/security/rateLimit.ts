@@ -20,15 +20,21 @@ const userAttemptCache = new LRUCache<string, RateLimitAttempt>({
   ttl: 1000 * 60 * 60 * 24, // 24時間でエントリを削除
 })
 
-// セキュリティ設定
+// セキュリティ設定（要件準拠: 1分5回制限）
 const SECURITY_CONFIG = {
-  // IP制限設定
+  // API制限設定（要件準拠）
+  API_LIMIT: {
+    maxAttempts: 5, // 1分間に5回まで（要件準拠）
+    windowMs: 60 * 1000, // 1分間
+    lockoutMs: 5 * 60 * 1000, // 5分ロック
+  },
+  // IP制限設定（保持・少し緩和）
   IP_LIMIT: {
     maxAttempts: 10, // IP単位での最大試行回数
     windowMs: 15 * 60 * 1000, // 15分間
     lockoutMs: 60 * 60 * 1000, // 1時間ロック
   },
-  // ユーザー制限設定
+  // ユーザー制限設定（保持）
   USER_LIMIT: {
     maxAttempts: 5, // ユーザー単位での最大試行回数
     windowMs: 15 * 60 * 1000, // 15分間
@@ -40,6 +46,84 @@ const SECURITY_CONFIG = {
     2: 5 * 60 * 1000,    // 2回目: 5分
     3: 15 * 60 * 1000,   // 3回目: 15分
     4: 60 * 60 * 1000,   // 4回目以降: 1時間
+  }
+}
+
+/**
+ * API制限チェック（要件準拠: 1分5回制限）
+ */
+export function checkAPIRateLimit(ip: string): {
+  success: boolean
+  remainingAttempts: number
+  lockUntil?: number
+  error?: string
+} {
+  const now = Date.now()
+  const key = `api:${ip}`
+  
+  let record = ipAttemptCache.get(key)
+  
+  // 初回アクセス
+  if (!record) {
+    record = {
+      attempts: 1,
+      firstAttempt: now
+    }
+    ipAttemptCache.set(key, record)
+    
+    return {
+      success: true,
+      remainingAttempts: SECURITY_CONFIG.API_LIMIT.maxAttempts - 1
+    }
+  }
+  
+  // ロック期間中かチェック
+  if (record.lockUntil && now < record.lockUntil) {
+    return {
+      success: false,
+      remainingAttempts: 0,
+      lockUntil: record.lockUntil,
+      error: `API制限: IP ${ip} は一時的にブロックされています。`
+    }
+  }
+  
+  // 時間窓のリセット
+  if (now - record.firstAttempt > SECURITY_CONFIG.API_LIMIT.windowMs) {
+    record = {
+      attempts: 1,
+      firstAttempt: now
+    }
+    ipAttemptCache.set(key, record)
+    
+    return {
+      success: true,
+      remainingAttempts: SECURITY_CONFIG.API_LIMIT.maxAttempts - 1
+    }
+  }
+  
+  // 制限チェック
+  const remainingAttempts = SECURITY_CONFIG.API_LIMIT.maxAttempts - record.attempts
+  
+  if (remainingAttempts <= 0) {
+    // ロック設定
+    record.lockUntil = now + SECURITY_CONFIG.API_LIMIT.lockoutMs
+    ipAttemptCache.set(key, record)
+    
+    return {
+      success: false,
+      remainingAttempts: 0,
+      lockUntil: record.lockUntil,
+      error: `API制限超過: IP ${ip} は${Math.ceil(SECURITY_CONFIG.API_LIMIT.lockoutMs / 60000)}分間ブロックされました。`
+    }
+  }
+  
+  // アクセス記録
+  record.attempts++
+  ipAttemptCache.set(key, record)
+  
+  return {
+    success: true,
+    remainingAttempts: remainingAttempts - 1
   }
 }
 

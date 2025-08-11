@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useSession } from 'next-auth/react';
 import {
   Box,
   Paper,
@@ -17,12 +18,16 @@ import {
 } from '@mui/material';
 import { MoreVert, Edit, Delete, ThumbUp, ThumbUpOutlined } from '@mui/icons-material';
 import { highlightText } from '@/utils/highlightText';
+import { SafePostContent } from '@/components/SafeContent';
 
 interface Post {
   _id: string;
+  title?: string;
   content: string;
   likes: number;
   likedBy: string[];
+  userId?: string;
+  authorName?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -31,10 +36,12 @@ interface PostListProps {
   posts: Post[];
   onRefresh: () => void;
   onEditPost: (post: Post) => void;
+  onPostClick?: (post: Post) => void; // 投稿クリック時のハンドラー
   searchQuery?: string; // 検索クエリ（ハイライト用）
 }
 
-export default function PostList({ posts, onRefresh, onEditPost, searchQuery }: PostListProps) {
+export default function PostList({ posts, onRefresh, onEditPost, onPostClick, searchQuery }: PostListProps) {
+  const { data: session } = useSession();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [postToDelete, setPostToDelete] = useState<Post | null>(null);
@@ -213,12 +220,78 @@ export default function PostList({ posts, onRefresh, onEditPost, searchQuery }: 
       )}
       
       {posts.map((post) => (
-        <Paper key={post._id} elevation={1} sx={{ p: 2, mb: 2 }}>
+        <Paper 
+          key={post._id} 
+          elevation={1} 
+          sx={{ 
+            p: 2, 
+            mb: 2,
+            cursor: onPostClick ? 'pointer' : 'default',
+            overflow: 'hidden',
+            '&:hover': onPostClick ? { 
+              elevation: 3,
+              backgroundColor: 'action.hover'
+            } : {}
+          }}
+          onClick={() => onPostClick && onPostClick(post)}
+        >
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <Box sx={{ flex: 1 }}>
-              <Typography variant="body1" sx={{ mb: 1, whiteSpace: 'pre-wrap' }}>
-                {searchQuery ? highlightText(post.content, searchQuery) : post.content}
-              </Typography>
+            <Box sx={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+              {/* タイトル表示 */}
+              {post.title && (
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    mb: 1, 
+                    fontWeight: 'bold',
+                    color: onPostClick ? 'primary.main' : 'inherit',
+                    wordWrap: 'break-word',
+                    overflowWrap: 'break-word',
+                    hyphens: 'auto'
+                  }}
+                >
+                  {searchQuery ? highlightText(post.title, searchQuery) : post.title}
+                </Typography>
+              )}
+              
+              {/* 投稿内容（プレビュー）- XSS対策済み */}
+              <Box
+                sx={{ 
+                  mb: 1,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  display: '-webkit-box',
+                  WebkitLineClamp: post.title ? 3 : 5, // タイトルありなら3行、なしなら5行
+                  WebkitBoxOrient: 'vertical',
+                  wordWrap: 'break-word',
+                  overflowWrap: 'break-word',
+                  hyphens: 'auto'
+                }}
+              >
+                {searchQuery ? (
+                  // ハイライト機能を使用する場合（検索時）
+                  <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
+                    {highlightText(post.content, searchQuery)}
+                  </Typography>
+                ) : (
+                  // 通常表示（XSS対策あり）
+                  <SafePostContent 
+                    content={post.content}
+                    sx={{ 
+                      '& *': { fontSize: 'inherit !important' },
+                      fontSize: 'body1.fontSize',
+                      whiteSpace: 'pre-wrap'
+                    }}
+                  />
+                )}
+              </Box>
+              
+              {/* 投稿者情報 */}
+              {post.authorName && (
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                  投稿者: {post.authorName}
+                </Typography>
+              )}
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
                 <Typography variant="caption" color="text.secondary">
                   投稿日時: {formatDate(post.createdAt)}
@@ -243,12 +316,18 @@ export default function PostList({ posts, onRefresh, onEditPost, searchQuery }: 
               </Box>
             </Box>
             
-            <IconButton
-              size="small"
-              onClick={(e) => handleMenuClick(e, post)}
-            >
-              <MoreVert />
-            </IconButton>
+            {/* 本人の投稿の場合のみメニューボタンを表示 */}
+            {session?.user?.id === post.userId && (
+              <IconButton
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation(); // 投稿クリックイベントを防ぐ
+                  handleMenuClick(e, post);
+                }}
+              >
+                <MoreVert />
+              </IconButton>
+            )}
           </Box>
         </Paper>
       ))}

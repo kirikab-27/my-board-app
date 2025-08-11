@@ -9,7 +9,12 @@ import {
   Alert,
   AppBar,
   Toolbar,
+  Button,
+  Fab,
 } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import PostForm from '@/components/PostForm';
 import PostList from '@/components/PostList';
 import SearchBar from '@/components/SearchBar';
@@ -21,9 +26,12 @@ import { convertSortOption } from '@/utils/sortUtils';
 
 interface Post {
   _id: string;
+  title?: string;
   content: string;
   likes: number;
   likedBy: string[];
+  userId?: string;
+  authorName?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -38,6 +46,7 @@ interface PaginationInfo {
 }
 
 export default function BoardPage() {
+  const router = useRouter();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -185,6 +194,11 @@ export default function BoardPage() {
     handleSearch(query, 1, searchPagination.limit);
   }, [handleSearch, searchPagination.limit]);
 
+  // 投稿クリック時のナビゲーション処理
+  const handlePostClick = useCallback((post: Post) => {
+    router.push(`/board/${post._id}`);
+  }, [router]);
+
   return (
     <AuthGuard>
       <AppBar position="static">
@@ -197,12 +211,6 @@ export default function BoardPage() {
       </AppBar>
 
       <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
-        <PostForm 
-          onPostCreated={handlePostCreated}
-          editingPost={editingPost}
-          onEditCancel={handleEditCancel}
-        />
-
         <SearchBar
           onSearch={handleSearchQuery}
           onClear={handleClearSearch}
@@ -210,7 +218,7 @@ export default function BoardPage() {
           resultCount={isSearchMode ? searchPagination.totalCount : undefined}
         />
 
-        {/* ヘッダーセクション：タイトル・並び替え・ページネーション */}
+        {/* ヘッダーセクション：タイトル・新規投稿ボタン・並び替え・ページネーション */}
         <Box sx={{ 
           display: 'flex', 
           alignItems: 'center',
@@ -219,13 +227,28 @@ export default function BoardPage() {
           gap: { xs: 2, sm: 0 },
           mb: 2 
         }}>
-          {/* 左側：タイトル */}
-          <Typography variant="h5" sx={{ 
+          {/* 左側：タイトルと新規投稿ボタン */}
+          <Box sx={{ 
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2,
             order: { xs: 1, sm: 1 },
-            alignSelf: { xs: 'flex-start', sm: 'center' }
+            width: { xs: '100%', sm: 'auto' },
+            justifyContent: { xs: 'space-between', sm: 'flex-start' }
           }}>
-            {isSearchMode ? '検索結果' : '投稿一覧'}
-          </Typography>
+            <Typography variant="h5">
+              {isSearchMode ? '検索結果' : '投稿一覧'}
+            </Typography>
+            <Button
+              component={Link}
+              href="/board/create"
+              variant="contained"
+              startIcon={<AddIcon />}
+              sx={{ whiteSpace: 'nowrap' }}
+            >
+              新規投稿
+            </Button>
+          </Box>
 
           {/* 右側：並び替えとページネーション */}
           <Box sx={{ 
@@ -262,9 +285,25 @@ export default function BoardPage() {
             posts={isSearchMode ? searchResults : posts}
             onRefresh={handlePostCreated}
             onEditPost={handleEditPost}
+            onPostClick={handlePostClick}
             searchQuery={isSearchMode ? searchQuery : undefined}
           />
         )}
+
+        {/* フローティング新規投稿ボタン（モバイル用） */}
+        <Fab
+          component={Link}
+          href="/board/create"
+          color="primary"
+          sx={{
+            position: 'fixed',
+            bottom: 16,
+            right: 16,
+            display: { xs: 'flex', sm: 'none' } // モバイルのみ表示
+          }}
+        >
+          <AddIcon />
+        </Fab>
       </Container>
     </AuthGuard>
   );
