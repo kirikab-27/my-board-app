@@ -142,7 +142,7 @@ export class AlertManager {
     }
   }
 
-  private async sendSlackAlert(rule: AlertRule, metrics: MetricsData, _config: Record<string, unknown>) {
+  private async sendSlackAlert(rule: AlertRule, metrics: MetricsData) {
     if (!process.env.SLACK_WEBHOOK_URL) return;
 
     const payload = {

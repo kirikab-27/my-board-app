@@ -61,3 +61,6 @@ async function dbConnect() {
 }
 
 export default dbConnect;
+
+// connectDB という名前でもエクスポート（互換性のため）
+export { dbConnect as connectDB };

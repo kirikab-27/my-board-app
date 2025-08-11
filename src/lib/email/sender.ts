@@ -4,7 +4,7 @@ import { emailConfig } from './config';
 
 // トランスポーター作成
 const createTransporter = () => {
-  return nodemailer.createTransporter(emailConfig.smtp);
+  return nodemailer.createTransport(emailConfig.smtp);
 };
 
 // 基本のメール送信関数
