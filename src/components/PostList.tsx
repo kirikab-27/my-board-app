@@ -40,7 +40,13 @@ interface PostListProps {
   searchQuery?: string; // 検索クエリ（ハイライト用）
 }
 
-export default function PostList({ posts, onRefresh, onEditPost, onPostClick, searchQuery }: PostListProps) {
+export default function PostList({
+  posts,
+  onRefresh,
+  onEditPost,
+  onPostClick,
+  searchQuery,
+}: PostListProps) {
   const { data: session } = useSession();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
@@ -57,7 +63,7 @@ export default function PostList({ posts, onRefresh, onEditPost, onPostClick, se
   React.useEffect(() => {
     const fetchLikeStates = async () => {
       const likedSet = new Set<string>();
-      
+
       for (const post of posts) {
         try {
           const response = await fetch(`/api/posts/${post._id}/like`);
@@ -71,7 +77,7 @@ export default function PostList({ posts, onRefresh, onEditPost, onPostClick, se
           console.error(`Failed to fetch like state for post ${post._id}:`, error);
         }
       }
-      
+
       setLikedPosts(likedSet);
     };
 
@@ -133,7 +139,7 @@ export default function PostList({ posts, onRefresh, onEditPost, onPostClick, se
 
       const result = await response.json();
       console.log('削除成功:', result);
-      
+
       onRefresh();
       console.log('投稿一覧を更新中...');
     } catch (error) {
@@ -153,10 +159,12 @@ export default function PostList({ posts, onRefresh, onEditPost, onPostClick, se
     setPostToDelete(null);
   };
 
-  const handleLike = async (postId: string) => {
+  const handleLike = async (event: React.MouseEvent, postId: string) => {
+    event.stopPropagation(); // 投稿詳細ページへの遷移を防ぐ
+
     if (likingPosts.has(postId)) return; // 既にいいね処理中の場合は何もしない
 
-    setLikingPosts(prev => new Set(prev).add(postId));
+    setLikingPosts((prev) => new Set(prev).add(postId));
     setError('');
 
     const isLiked = likedPosts.has(postId);
@@ -169,13 +177,15 @@ export default function PostList({ posts, onRefresh, onEditPost, onPostClick, se
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || (isLiked ? 'いいね取り消しに失敗しました' : 'いいねに失敗しました'));
+        throw new Error(
+          errorData.error || (isLiked ? 'いいね取り消しに失敗しました' : 'いいねに失敗しました')
+        );
       }
 
       const data = await response.json();
-      
+
       // ローカル状態を更新
-      setLikedPosts(prev => {
+      setLikedPosts((prev) => {
         const newSet = new Set(prev);
         if (data.liked) {
           newSet.add(postId);
@@ -190,7 +200,7 @@ export default function PostList({ posts, onRefresh, onEditPost, onPostClick, se
       console.error('いいねエラー:', error);
       setError(error instanceof Error ? error.message : 'いいね操作に失敗しました');
     } finally {
-      setLikingPosts(prev => {
+      setLikingPosts((prev) => {
         const newSet = new Set(prev);
         newSet.delete(postId);
         return newSet;
@@ -218,20 +228,22 @@ export default function PostList({ posts, onRefresh, onEditPost, onPostClick, se
           {error}
         </Alert>
       )}
-      
+
       {posts.map((post) => (
-        <Paper 
-          key={post._id} 
-          elevation={1} 
-          sx={{ 
-            p: 2, 
+        <Paper
+          key={post._id}
+          elevation={1}
+          sx={{
+            p: 2,
             mb: 2,
             cursor: onPostClick ? 'pointer' : 'default',
             overflow: 'hidden',
-            '&:hover': onPostClick ? { 
-              elevation: 3,
-              backgroundColor: 'action.hover'
-            } : {}
+            '&:hover': onPostClick
+              ? {
+                  elevation: 3,
+                  backgroundColor: 'action.hover',
+                }
+              : {},
           }}
           onClick={() => onPostClick && onPostClick(post)}
         >
@@ -239,24 +251,24 @@ export default function PostList({ posts, onRefresh, onEditPost, onPostClick, se
             <Box sx={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
               {/* タイトル表示 */}
               {post.title && (
-                <Typography 
-                  variant="h6" 
-                  sx={{ 
-                    mb: 1, 
+                <Typography
+                  variant="h6"
+                  sx={{
+                    mb: 1,
                     fontWeight: 'bold',
                     color: onPostClick ? 'primary.main' : 'inherit',
                     wordWrap: 'break-word',
                     overflowWrap: 'break-word',
-                    hyphens: 'auto'
+                    hyphens: 'auto',
                   }}
                 >
                   {searchQuery ? highlightText(post.title, searchQuery) : post.title}
                 </Typography>
               )}
-              
+
               {/* 投稿内容（プレビュー）- XSS対策済み */}
               <Box
-                sx={{ 
+                sx={{
                   mb: 1,
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
@@ -265,7 +277,7 @@ export default function PostList({ posts, onRefresh, onEditPost, onPostClick, se
                   WebkitBoxOrient: 'vertical',
                   wordWrap: 'break-word',
                   overflowWrap: 'break-word',
-                  hyphens: 'auto'
+                  hyphens: 'auto',
                 }}
               >
                 {searchQuery ? (
@@ -275,39 +287,52 @@ export default function PostList({ posts, onRefresh, onEditPost, onPostClick, se
                   </Typography>
                 ) : (
                   // 通常表示（XSS対策あり）
-                  <SafePostContent 
+                  <SafePostContent
                     content={post.content}
-                    sx={{ 
+                    sx={{
                       '& *': { fontSize: 'inherit !important' },
                       fontSize: 'body1.fontSize',
-                      whiteSpace: 'pre-wrap'
+                      whiteSpace: 'pre-wrap',
                     }}
                   />
                 )}
               </Box>
-              
+
               {/* 投稿者情報 */}
               {post.authorName && (
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ display: 'block', mb: 1 }}
+                >
                   投稿者: {post.authorName}
                 </Typography>
               )}
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  mt: 1,
+                }}
+              >
                 <Typography variant="caption" color="text.secondary">
                   投稿日時: {formatDate(post.createdAt)}
-                  {post.updatedAt !== post.createdAt && (
-                    <> (更新: {formatDate(post.updatedAt)})</>
-                  )}
+                  {post.updatedAt !== post.createdAt && <> (更新: {formatDate(post.updatedAt)})</>}
                 </Typography>
-                
+
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   <IconButton
                     size="small"
-                    onClick={() => handleLike(post._id)}
+                    onClick={(event) => handleLike(event, post._id)}
                     disabled={likingPosts.has(post._id)}
                     color={likedPosts.has(post._id) ? 'primary' : 'default'}
                   >
-                    {likedPosts.has(post._id) ? <ThumbUp fontSize="small" /> : <ThumbUpOutlined fontSize="small" />}
+                    {likedPosts.has(post._id) ? (
+                      <ThumbUp fontSize="small" />
+                    ) : (
+                      <ThumbUpOutlined fontSize="small" />
+                    )}
                   </IconButton>
                   <Typography variant="caption" color="text.secondary">
                     {post.likes}
@@ -315,7 +340,7 @@ export default function PostList({ posts, onRefresh, onEditPost, onPostClick, se
                 </Box>
               </Box>
             </Box>
-            
+
             {/* 本人の投稿の場合のみメニューボタンを表示 */}
             {session?.user?.id === post.userId && (
               <IconButton
@@ -332,11 +357,7 @@ export default function PostList({ posts, onRefresh, onEditPost, onPostClick, se
         </Paper>
       ))}
 
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-      >
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
         <MenuItem onClick={handleEdit}>
           <Edit sx={{ mr: 1 }} />
           編集
@@ -350,11 +371,13 @@ export default function PostList({ posts, onRefresh, onEditPost, onPostClick, se
       <Dialog open={deleteDialogOpen} onClose={handleDeleteCancel}>
         <DialogTitle>投稿を削除</DialogTitle>
         <DialogContent>
-          <Typography>
-            この投稿を削除してもよろしいですか？
-          </Typography>
+          <Typography>この投稿を削除してもよろしいですか？</Typography>
           {postToDelete && (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1, p: 1, bgcolor: 'grey.100', borderRadius: 1, whiteSpace: 'pre-wrap' }}>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ mt: 1, p: 1, bgcolor: 'grey.100', borderRadius: 1, whiteSpace: 'pre-wrap' }}
+            >
               &ldquo;{postToDelete.content}&rdquo;
             </Typography>
           )}
@@ -363,11 +386,7 @@ export default function PostList({ posts, onRefresh, onEditPost, onPostClick, se
           <Button onClick={handleDeleteCancel} disabled={isDeleting}>
             キャンセル
           </Button>
-          <Button 
-            onClick={handleDeleteConfirm} 
-            color="error" 
-            disabled={isDeleting}
-          >
+          <Button onClick={handleDeleteConfirm} color="error" disabled={isDeleting}>
             {isDeleting ? '削除中...' : '削除'}
           </Button>
         </DialogActions>
