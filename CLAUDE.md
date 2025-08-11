@@ -84,6 +84,7 @@
 - **投稿管理機能**: 作成者のみ編集・削除可能・権限チェック ✅ **実装完了・セッション認証済み**
 - **PostListコンポーネント**: タイトル表示・権限ベースメニュー表示 ✅ **実装完了・UI確認済み**
 - **テキスト折り返し対応**: 長いタイトル・投稿内容の適切な折り返し表示 ✅ **実装完了・レスポンシブ対応済み**
+- **UI/UX改善**: SafeContent・TextField長文折り返し・日本語ハイフネーション対応 ✅ **実装完了・Material-UI最適化済み**
 
 ### 📋 将来拡張機能
 
@@ -581,6 +582,18 @@ interface User {
 1. `npx tsc --noEmit` でTypeScript型チェック
 2. `npm run lint` でESLintエラー確認
 3. 依存関係のバージョン競合確認
+
+#### 長文テキストの折り返し問題 ✅ **解決済み**
+
+**症状**: 投稿詳細・作成・編集画面で長文が入力枠を突き抜けて表示される
+**原因**: CSS文字折り返し設定が不十分・Material-UI TextFieldの表示問題
+
+**✅ 解決方法（実装完了）**:
+
+- SafeContentコンポーネント：`wordWrap: 'break-word'`・`overflowWrap: 'break-word'`・`whiteSpace: 'pre-wrap'`追加
+- TextFieldコンポーネント：`MuiInputBase-input`セレクタに折り返し設定追加
+- 日本語ハイフネーション：`hyphens: 'auto'`で適切な単語分割対応
+- 子要素制限：`maxWidth: '100%'`で確実な幅制限実施
 
 #### NextAuth.js認証エラー（Phase 1実装完了・動作確認済み）
 
