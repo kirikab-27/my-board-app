@@ -15,7 +15,6 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import PostForm from '@/components/PostForm';
 import PostList from '@/components/PostList';
 import SearchBar from '@/components/SearchBar';
 import SortSelector, { SortOption } from '@/components/SortSelector';
@@ -50,7 +49,6 @@ export default function BoardPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<Post[]>([]);
@@ -113,13 +111,6 @@ export default function BoardPage() {
     fetchPosts(1, pagination.limit);
   }, [isSearchMode, pagination.limit, fetchPosts]);
 
-  const handleEditPost = useCallback((post: Post) => {
-    setEditingPost(post);
-  }, []);
-
-  const handleEditCancel = useCallback(() => {
-    setEditingPost(null);
-  }, []);
 
   const handleSearch = useCallback(async (query: string, page: number = 1, limit: number = 10) => {
     setSearchQuery(query);

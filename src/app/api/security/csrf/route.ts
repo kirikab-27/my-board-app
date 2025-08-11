@@ -16,7 +16,7 @@ import { authOptions } from '@/lib/auth/nextauth';
 /**
  * CSRF トークンの生成
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // セッション情報の取得
     const session = await getServerSession(authOptions);

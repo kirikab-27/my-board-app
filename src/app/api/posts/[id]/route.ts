@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Post from '@/models/Post';
-import mongoose from 'mongoose';
 import { 
   requireApiAuth, 
   checkUserPermission,
@@ -11,7 +10,7 @@ import {
 } from '@/lib/auth/server';
 import { sanitizePlainText, detectXSSAttempt } from '@/utils/security/sanitizer';
 import { logXSSAttempt } from '@/lib/security/audit-logger';
-import { validateObjectId, sanitizeUpdateObject } from '@/lib/security/input-validation';
+import { validateObjectId } from '@/lib/security/input-validation';
 
 // 投稿詳細取得（GET /api/posts/[id]）
 export async function GET(
