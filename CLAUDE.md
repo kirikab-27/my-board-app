@@ -62,7 +62,17 @@
 - **Phase 2.5**: 会員制システム基盤・ページ構成最適化・ブルートフォース対策・ローディングUI統合 ✅ **実装完了** ✨ **新規追加**
 - **Phase 3**: 会員専用投稿機能・権限管理・匿名対応 ✅ **実装完了** ✨ **認証保護API実装完了**
 - **Phase 4**: プロフィール管理・認証UI/UX改善・レスポンシブ ✅ **実装完了** ✨ **プロフィール機能・パスワード変更・頭文字アバター**
+- **Phase 4.5**: 会員制掲示板CRUD機能拡張 🚧 **実装準備中** ✨ **タイトル付き投稿・編集削除権限・会員限定投稿**
 - **Phase 5**: セキュリティ強化・CSRF・レート制限・XSS対策 🚧 計画済み
+
+### 🚧 Phase 4.5実装予定機能（会員制掲示板CRUD拡張）
+
+- **タイトル付き投稿機能**: タイトル（100文字）+ コンテンツ（1000文字）
+- **会員限定投稿**: 認証ユーザーのみ投稿・編集・削除可能
+- **投稿詳細ページ**: `/board/[id]` - 個別投稿表示・いいね・コメント
+- **投稿編集ページ**: `/board/[id]/edit` - 本人のみ編集権限
+- **投稿作成ページ**: `/board/create` - 認証必須・リアルタイム文字カウント
+- **投稿管理機能**: 作成者のみ編集・削除可能・権限チェック
 
 ### 📋 将来拡張機能
 
@@ -97,7 +107,10 @@ src/
 │   │   └── posts/           # Post API routes (認証統合済み)
 │   ├── register/            # カスタム新規登録ページ（ソーシャルログイン統合済み）
 │   ├── login/               # カスタムログインページ（ソーシャルログイン統合済み）
-│   ├── board/               # 会員限定掲示板（Phase 2.5・AuthGuard保護・旧ルート機能移行）
+│   ├── board/               # 会員限定掲示板（Phase 2.5・AuthGuard保護・Phase 4.5 CRUD拡張予定）
+│   │   ├── create/          # 投稿作成ページ（Phase 4.5実装予定・認証必須・タイトル+コンテンツ）
+│   │   ├── [id]/            # 投稿詳細ページ（Phase 4.5実装予定・いいね・編集削除リンク）
+│   │   └── [id]/edit/       # 投稿編集ページ（Phase 4.5実装予定・本人のみアクセス可）
 │   ├── dashboard/           # 認証後ダッシュボード（クイックアクション追加・ナビゲーション統合）
 │   ├── members-only/        # callbackURL機能確認（認証フロー検証用）
 │   ├── admin/security/      # セキュリティ管理ダッシュボード（ブロック解除・攻撃統計）
@@ -197,6 +210,10 @@ node scripts/update-user-roles.js
 
 # セッション完全クリア（認証リセット時）
 node scripts/clear-sessions.js
+
+# Phase 4.5: 会員制掲示板CRUD機能テスト（実装予定）
+node scripts/test-board-crud.js      # 投稿CRUD機能テスト
+node scripts/migrate-posts-title.js  # 既存投稿にタイトルフィールド追加
 ```
 
 ## 環境設定
@@ -251,10 +268,11 @@ SECURITY_API_TOKEN=your_security_admin_token_here
 
 ## API エンドポイント
 
-### 投稿関連（Phase 3 認証保護API実装完了）
+### 投稿関連（Phase 3 認証保護API実装完了・Phase 4.5 CRUD拡張予定）
 
 - `GET /api/posts` - 全投稿の取得（ページネーション・ソート・検索対応）
 - `POST /api/posts` - 新しい投稿の作成 ✅ **認証必須・ユーザー情報保存**
+- `GET /api/posts/[id]` - 投稿詳細取得 🚧 **Phase 4.5実装予定**
 - `PUT /api/posts/[id]` - 投稿の更新 ✅ **認証必須・本人確認**
 - `DELETE /api/posts/[id]` - 投稿の削除 ✅ **認証必須・本人確認**
 - `POST/GET/DELETE /api/posts/[id]/like` - いいね機能 ✅ **認証/匿名対応・ユーザーID管理**
@@ -279,6 +297,9 @@ SECURITY_API_TOKEN=your_security_admin_token_here
 
 - `GET /` - ランディングページ（会員登録促進・機能紹介・認証済み→掲示板自動リダイレクト）✨ **新規実装**
 - `GET /board` - 会員限定掲示板（AuthGuard保護・投稿CRUD・検索・いいね・ページネーション）✨ **新規実装**
+- `GET /board/create` - 投稿作成ページ 🚧 **Phase 4.5実装予定**
+- `GET /board/[id]` - 投稿詳細ページ（いいね・編集削除リンク）🚧 **Phase 4.5実装予定**
+- `GET /board/[id]/edit` - 投稿編集ページ（本人のみアクセス可）🚧 **Phase 4.5実装予定**
 - `GET /register` - 新規登録ページ（メール・Google・GitHub・パスワード強度インジケーター対応）
 - `GET /login` - ログインページ（メール・Google・GitHub・パスワード忘れ・callbackURL・**試行回数表示**対応）
 - `GET /dashboard` - 認証後ダッシュボード（クイックアクション・掲示板・セキュリティ管理リンク）✨ **機能拡張**
@@ -306,10 +327,11 @@ SECURITY_API_TOKEN=your_security_admin_token_here
 ### データ形式
 
 ```typescript
-// 投稿データ（認証統合済み）
+// 投稿データ（認証統合済み・Phase 4.5 CRUD拡張予定）
 interface Post {
   _id: string;
-  content: string; // 投稿内容（最大200文字）
+  title?: string; // 投稿タイトル（最大100文字）🚧 **Phase 4.5追加予定**
+  content: string; // 投稿内容（Phase 4.5で1000文字に拡張予定・現在200文字）
   likes: number; // いいね数
   likedBy: string[]; // いいねしたユーザーID一覧（認証ユーザー）・IPアドレス一覧（匿名ユーザー）
   userId?: string; // 投稿者ID（認証ユーザー）
@@ -620,6 +642,11 @@ powershell "Stop-Process -Id 15304 -Force" # ポート3010使用プロセス強�
 npm run dev                   # サーバー再起動でキャッシュクリア
 # ブラウザ: Ctrl+Shift+R でハードリロード
 
+# Phase 4.5: 会員制掲示板CRUD機能（実装準備中）
+npm run dev                   # 開発サーバー起動
+# 実装対象: /board/create, /board/[id], /board/[id]/edit
+# タイトル100文字・コンテンツ1000文字・権限管理
+
 # 品質管理
 npm run test:coverage         # カバレッジ確認（80%以上目標）
 npm run security:scan         # セキュリティスキャン
@@ -643,20 +670,34 @@ rm -rf node_modules package-lock.json && npm install  # 依存関係再構築
 - `feature/email-service` - ✅ メール送信機能（完了）
 - `feature/test-infrastructure` - ✅ Phase 0: テスト基盤（完了）
 - `feature/monitoring` - ✅ Phase 0.5: 観測基盤（完了）
-- `feature/auth-system` - ✅ Phase 1: NextAuth.js認証基盤（完了・動作確認済み）
-- `feature/member-posts` - 📋 Phase 3: 会員投稿（予定）
-- `feature/member-ui` - 📋 Phase 4-5: UI・セキュリティ（予定）
+- `feature/auth-system` - ✅ Phase 1-2: NextAuth.js認証基盤（完了・動作確認済み）
+- `feature/profile-management` - ✅ Phase 4: プロフィール管理（完了・マージ準備中）
+- `feature/member-board` - 🚧 Phase 4.5: 会員制掲示板CRUD拡張（実装準備中・アクティブブランチ）
+- `feature/security-enhancement` - 📋 Phase 5: セキュリティ強化（予定）
 - `feature/admin-panel` - 📋 管理者機能（将来）
 
-### 7段階開発フロー
+### 8段階開発フロー（Phase 4.5追加）
 
-1. **Phase 0**: `feature/email-service` → `feature/test-infrastructure`
-2. **Phase 0.5**: `feature/test-infrastructure` → `feature/monitoring`
-3. **Phase 1-2**: `feature/monitoring` → `feature/auth-system`
-4. **Phase 3**: `feature/auth-system` → `feature/member-posts`
-5. **Phase 4-5**: `feature/member-posts` → `feature/member-ui`
-6. **各完了時**: `develop`にマージ + タグ付け（`phase-N-complete`）
-7. **最終**: `develop` → `main`（Pull Request必須）
+1. **Phase 0**: `feature/email-service` → `feature/test-infrastructure` ✅
+2. **Phase 0.5**: `feature/test-infrastructure` → `feature/monitoring` ✅
+3. **Phase 1-2**: `feature/monitoring` → `feature/auth-system` ✅
+4. **Phase 3**: `feature/auth-system` → 投稿認証API統合 ✅
+5. **Phase 4**: `feature/profile-management` → プロフィール管理完了 ✅
+6. **Phase 4.5**: `feature/member-board` → 会員制掲示板CRUD拡張 🚧 **現在フェーズ**
+7. **Phase 5**: `feature/security-enhancement` → セキュリティ強化 📋
+8. **各完了時**: `develop`にマージ + タグ付け（`phase-N-complete`）
+9. **最終**: `develop` → `main`（Pull Request必須）
+
+### Phase 4.5実装戦略（feature/member-board）
+
+**ブランチマージ戦略**:
+
+1. `feature/profile-management` → `feature/member-board` (Phase 4機能統合)
+2. Postモデル拡張（titleフィールド追加・content文字数拡張）
+3. 投稿CRUD API拡張（詳細取得・作成・編集・削除権限）
+4. フロントエンドページ実装（/board/create, /board/[id], /board/[id]/edit）
+5. UI/UX改善（タイトル表示・文字数制限・権限表示）
+6. 完了後: `develop`にマージ + `phase-4.5-complete`タグ
 
 ### 基盤Phase依存関係
 
@@ -722,6 +763,7 @@ tests/
 プロジェクト開発時に発生する問題の解決方法については、以下の専用ドキュメントを参照してください：
 
 - **[プロフィール機能ガイド](./README-profile.md)** - プロフィール表示・編集・パスワード変更・頭文字アバター・完全実装手順 ✨ **新規追加**
+- **[会員制掲示板CRUD機能](./README-board-crud.md)** - タイトル付き投稿・詳細ページ・編集権限・実装手順 🚧 **Phase 4.5実装予定**
 - **[NextAuth.js認証トラブルシューティング](./README-auth-troubleshooting.md)** - 認証・セッション・role権限問題の詳細解決方法
 - **[メール送信機能 トラブルシューティングガイド](./docs/email-troubleshooting-guide.md)** - メール送信実装時のエラーと解決策
 - **[基本的なメールテスト手順](./README-email-test.md)** - さくらメール設定と動作確認方法
@@ -756,6 +798,7 @@ tests/
 - **[Phase 0.5 - 監視基盤構築手順](./README-phase-0.5.md)** - Sentry・Analytics・ダッシュボード
 - **[Phase 1-2 - 認証基盤実装手順](./README-phase-1-2.md)** - NextAuth・React Email・メール認証統合
 - **[Phase 3-5 - 会員機能実装手順](./README-phase-3-5.md)** - 権限管理・UI/UX・セキュリティ強化
+- **[Phase 4.5 - 会員制掲示板CRUD拡張手順](./README-board-crud.md)** - タイトル付き投稿・詳細ページ・編集権限・完全実装ガイド 🚧 **実装準備中**
 
 ### システム設計・戦略ドキュメント
 
