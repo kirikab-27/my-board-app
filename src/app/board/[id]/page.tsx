@@ -9,7 +9,6 @@ import {
   Typography,
   Box,
   Button,
-  Stack,
   CircularProgress,
   AppBar,
   Toolbar,
@@ -23,7 +22,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import PersonIcon from '@mui/icons-material/Person';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import { AuthButton } from '@/components/auth/AuthButton';
 import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
@@ -59,6 +57,8 @@ export default function PostDetailPage() {
     if (postId) {
       fetchPost();
     }
+    // fetchPost is recreated on every render, so we don't include it in deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [postId]);
 
   const fetchPost = async () => {
@@ -197,13 +197,7 @@ export default function PostDetailPage() {
     <>
       <AppBar position="static">
         <Toolbar>
-          <IconButton
-            component={Link}
-            href="/board"
-            edge="start"
-            color="inherit"
-            sx={{ mr: 2 }}
-          >
+          <IconButton component={Link} href="/board" edge="start" color="inherit" sx={{ mr: 2 }}>
             <ArrowBackIcon />
           </IconButton>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
@@ -218,13 +212,13 @@ export default function PostDetailPage() {
           {/* タイトル */}
           {post.title && (
             <>
-              <Typography 
-                variant="h4" 
+              <Typography
+                variant="h4"
                 gutterBottom
                 sx={{
                   wordWrap: 'break-word',
                   overflowWrap: 'break-word',
-                  hyphens: 'auto'
+                  hyphens: 'auto',
                 }}
               >
                 {post.title}
@@ -267,15 +261,21 @@ export default function PostDetailPage() {
 
           {/* 投稿内容 - XSS対策済み */}
           <Box sx={{ mb: 4 }}>
-            <SafePostContent 
+            <SafePostContent
               content={post.content}
-              sx={{ 
-                fontSize: '1.1rem', 
+              sx={{
+                fontSize: '1.1rem',
                 lineHeight: 1.8,
+                wordWrap: 'break-word',
+                overflowWrap: 'break-word',
+                hyphens: 'auto',
+                whiteSpace: 'pre-wrap',
                 '& *': {
                   fontSize: 'inherit',
-                  lineHeight: 'inherit'
-                }
+                  lineHeight: 'inherit',
+                  wordWrap: 'break-word',
+                  overflowWrap: 'break-word',
+                },
               }}
             />
           </Box>
@@ -292,13 +292,10 @@ export default function PostDetailPage() {
           <Divider sx={{ mb: 3 }} />
 
           {/* アクションボタン */}
-          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'space-between', alignItems: 'center' }}>
-            <Button
-              component={Link}
-              href="/board"
-              variant="outlined"
-              startIcon={<ArrowBackIcon />}
-            >
+          <Box
+            sx={{ display: 'flex', gap: 2, justifyContent: 'space-between', alignItems: 'center' }}
+          >
+            <Button component={Link} href="/board" variant="outlined" startIcon={<ArrowBackIcon />}>
               一覧に戻る
             </Button>
 
@@ -316,7 +313,9 @@ export default function PostDetailPage() {
                 <Button
                   onClick={handleDelete}
                   variant="outlined"
-                  startIcon={deleting ? <CircularProgress size={20} color="inherit" /> : <DeleteIcon />}
+                  startIcon={
+                    deleting ? <CircularProgress size={20} color="inherit" /> : <DeleteIcon />
+                  }
                   color="error"
                   disabled={deleting}
                 >

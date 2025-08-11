@@ -64,6 +64,8 @@ export default function EditPostPage() {
     if (postId && session?.user?.id) {
       fetchPost();
     }
+    // fetchPost is recreated on every render, so we don't include it in deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [postId, session]);
 
   const fetchPost = async () => {
@@ -279,6 +281,12 @@ export default function EditPostPage() {
                 helperText={`${charCount.title}/100文字`}
                 error={charCount.title > 100}
                 placeholder="投稿のタイトルを入力してください"
+                sx={{
+                  '& .MuiInputBase-input': {
+                    wordWrap: 'break-word',
+                    overflowWrap: 'break-word',
+                  },
+                }}
               />
 
               {/* 投稿内容 */}
@@ -294,6 +302,13 @@ export default function EditPostPage() {
                 helperText={`${charCount.content}/1000文字`}
                 error={charCount.content > 1000}
                 placeholder="投稿内容を入力してください"
+                sx={{
+                  '& .MuiInputBase-input': {
+                    wordWrap: 'break-word',
+                    overflowWrap: 'break-word',
+                    whiteSpace: 'pre-wrap',
+                  },
+                }}
               />
 
               {/* 注意事項 */}

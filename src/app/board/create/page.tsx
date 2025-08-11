@@ -187,6 +187,12 @@ export default function CreatePostPage() {
                 helperText={`${charCount.title}/100文字`}
                 error={charCount.title > 100}
                 placeholder="投稿のタイトルを入力してください"
+                sx={{
+                  '& .MuiInputBase-input': {
+                    wordWrap: 'break-word',
+                    overflowWrap: 'break-word',
+                  },
+                }}
               />
 
               {/* 投稿内容 */}
@@ -202,6 +208,13 @@ export default function CreatePostPage() {
                 helperText={`${charCount.content}/1000文字`}
                 error={charCount.content > 1000}
                 placeholder="投稿内容を入力してください"
+                sx={{
+                  '& .MuiInputBase-input': {
+                    wordWrap: 'break-word',
+                    overflowWrap: 'break-word',
+                    whiteSpace: 'pre-wrap',
+                  },
+                }}
               />
 
               {/* 注意事項 */}

@@ -2,12 +2,12 @@
 
 import React from 'react';
 import { Box, Alert } from '@mui/material';
-import { 
-  sanitizeHtml, 
-  sanitizeMarkdown, 
+import {
+  sanitizeHtml,
+  sanitizeMarkdown,
   sanitizePostContent,
   detectXSSAttempt,
-  wasContentSanitized 
+  wasContentSanitized,
 } from '@/utils/security/sanitizer';
 
 interface SafeContentProps {
@@ -15,22 +15,22 @@ interface SafeContentProps {
   type?: 'html' | 'markdown' | 'post' | 'plain';
   showWarning?: boolean;
   className?: string;
-  sx?: any;
+  sx?: Record<string, unknown>;
 }
 
 /**
  * XSS攻撃から保護された安全なコンテンツ表示コンポーネント
  */
-export function SafeContent({ 
-  content, 
+export function SafeContent({
+  content,
   type = 'post',
   showWarning = false,
   className,
-  sx
+  sx,
 }: SafeContentProps) {
   // XSS攻撃の検出
   const isXSSAttempt = detectXSSAttempt(content);
-  
+
   // コンテンツタイプに応じたサニタイゼーション
   let sanitizedContent = '';
   switch (type) {
@@ -52,7 +52,16 @@ export function SafeContent({
               潜在的に危険なコンテンツが検出され、安全に処理されました。
             </Alert>
           )}
-          <Box component="pre" sx={{ whiteSpace: 'pre-wrap', margin: 0 }}>
+          <Box
+            component="pre"
+            sx={{
+              whiteSpace: 'pre-wrap',
+              margin: 0,
+              wordWrap: 'break-word',
+              overflowWrap: 'break-word',
+              hyphens: 'auto',
+            }}
+          >
             {content}
           </Box>
         </Box>
@@ -60,19 +69,19 @@ export function SafeContent({
     default:
       sanitizedContent = sanitizePostContent(content);
   }
-  
+
   // サニタイゼーションによる変更があったかチェック
   const wasModified = wasContentSanitized(content, sanitizedContent);
-  
+
   // セキュリティログ（開発環境のみ）
   if (process.env.NODE_ENV === 'development' && wasModified) {
     console.warn('[SafeContent] Content was sanitized:', {
       original: content.substring(0, 100),
       sanitized: sanitizedContent.substring(0, 100),
-      xssDetected: isXSSAttempt
+      xssDetected: isXSSAttempt,
     });
   }
-  
+
   return (
     <Box className={className} sx={sx}>
       {showWarning && isXSSAttempt && (
@@ -80,35 +89,47 @@ export function SafeContent({
           潜在的に危険なコンテンツが検出され、安全に処理されました。
         </Alert>
       )}
-      <Box 
+      <Box
         dangerouslySetInnerHTML={{ __html: sanitizedContent }}
         sx={{
+          // 基本的な文字折り返し設定
+          wordWrap: 'break-word',
+          overflowWrap: 'break-word',
+          hyphens: 'auto',
+          whiteSpace: 'pre-wrap',
+          // 子要素の折り返し設定
+          '& *': {
+            wordWrap: 'break-word',
+            overflowWrap: 'break-word',
+            maxWidth: '100%',
+          },
           '& a': {
             color: 'primary.main',
             textDecoration: 'underline',
             '&:hover': {
-              textDecoration: 'none'
-            }
+              textDecoration: 'none',
+            },
           },
           '& code': {
             backgroundColor: 'grey.100',
             padding: '2px 4px',
             borderRadius: 1,
-            fontFamily: 'monospace'
+            fontFamily: 'monospace',
           },
           '& pre': {
             backgroundColor: 'grey.100',
             padding: 2,
             borderRadius: 1,
-            overflow: 'auto'
+            overflow: 'auto',
+            whiteSpace: 'pre-wrap',
           },
           '& blockquote': {
             borderLeft: '4px solid',
             borderColor: 'primary.main',
             paddingLeft: 2,
             marginLeft: 0,
-            fontStyle: 'italic'
-          }
+            fontStyle: 'italic',
+          },
         }}
       />
     </Box>
