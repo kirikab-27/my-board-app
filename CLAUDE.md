@@ -63,15 +63,16 @@
 - **Phase 3**: 会員専用投稿機能・権限管理・匿名対応 ✅ **実装完了** ✨ **認証保護API実装完了**
 - **Phase 4**: プロフィール管理・認証UI/UX改善・レスポンシブ ✅ **実装完了** ✨ **プロフィール機能・パスワード変更・頭文字アバター**
 - **Phase 4.5**: 会員制掲示板CRUD機能拡張 ✅ **実装完了** ✨ **タイトル付き投稿・編集削除権限・会員限定投稿・権限チェック**
-- **Phase 5**: セキュリティ強化・CSRF・レート制限・XSS対策 🚧 **実装計画策定済み**
+- **Phase 5**: セキュリティ強化・CSRF・レート制限・XSS対策 ✅ **実装完了** ✨ **エンタープライズ級セキュリティ基盤完成**
 
-### 🚧 Phase 5 セキュリティ強化計画（2週間実装予定）
+### ✅ Phase 5実装完了機能（セキュリティ強化）
 
-- **XSS完全対策**: DOMPurify導入・入力サニタイゼーション・CSP設定
-- **CSRF強化**: トークンベース検証・SameSite Cookie設定
-- **レート制限調整**: 1分5回制限への変更（現在: 5分10回）
-- **監査ログシステム**: セキュリティイベント記録・アラート機能
-- **NoSQLインジェクション対策**: 入力検証強化・エスケープ処理
+- **XSS完全対策**: DOMPurify導入・入力サニタイゼーション・CSP設定 ✅ **実装完了・SafeContentコンポーネント**
+- **CSRF強化**: トークンベース検証・Origin/Refererヘッダー検証 ✅ **実装完了・自動トークン管理**
+- **レート制限調整**: 1分5回制限（要件準拠）・API別制限設定 ✅ **実装完了・違反自動ログ**
+- **監査ログシステム**: MongoDB永続化・12種類イベント・4段階重要度・自動アラート ✅ **実装完了・管理者API**
+- **NoSQLインジェクション対策**: MongoDB演算子検出・ObjectID検証・入力サニタイゼーション ✅ **実装完了・プロトタイプ汚染防止**
+- **セキュリティテスト**: XSS/CSRF/NoSQL/レート制限・Jest単体テスト・侵入テストスクリプト ✅ **実装完了・自動化**
 
 ### ✅ Phase 4.5実装完了機能（会員制掲示板CRUD拡張）
 
@@ -103,6 +104,7 @@
 - **品質管理**: ESLint, Prettier, Husky
 - **CI/CD**: GitHub Actions
 - **監視・分析**: Sentry, Web Vitals, カスタムメトリクス
+- **セキュリティ**: DOMPurify, CSP, CSRF対策, レート制限, 監査ログ, NoSQLインジェクション対策（Phase 5完了）
 
 ## プロジェクト構造
 
@@ -113,14 +115,14 @@ src/
 │   │   ├── auth/            # NextAuth.js v4 API routes（実装完了）
 │   │   ├── monitoring/      # 監視・メトリクス API
 │   │   ├── profile/         # プロフィール管理API（Phase 4・GET/PUT profile・パスワード変更）
-│   │   ├── security/        # ブルートフォース対策API（Phase 2.5）
+│   │   ├── security/        # セキュリティAPI（Phase 5・監査ログ・CSRF・CSPレポート）
 │   │   └── posts/           # Post API routes (認証統合済み)
 │   ├── register/            # カスタム新規登録ページ（ソーシャルログイン統合済み）
 │   ├── login/               # カスタムログインページ（ソーシャルログイン統合済み）
-│   ├── board/               # 会員限定掲示板（Phase 2.5・AuthGuard保護・Phase 4.5 CRUD拡張予定）
-│   │   ├── create/          # 投稿作成ページ（Phase 4.5実装予定・認証必須・タイトル+コンテンツ）
-│   │   ├── [id]/            # 投稿詳細ページ（Phase 4.5実装予定・いいね・編集削除リンク）
-│   │   └── [id]/edit/       # 投稿編集ページ（Phase 4.5実装予定・本人のみアクセス可）
+│   ├── board/               # 会員限定掲示板（Phase 4.5 CRUD拡張完了・Phase 5セキュリティ強化済み）
+│   │   ├── create/          # 投稿作成ページ（Phase 4.5実装完了・認証必須・XSS対策済み）
+│   │   ├── [id]/            # 投稿詳細ページ（Phase 4.5実装完了・SafeContent統合）
+│   │   └── [id]/edit/       # 投稿編集ページ（Phase 4.5実装完了・権限チェック・XSS対策）
 │   ├── dashboard/           # 認証後ダッシュボード（クイックアクション追加・ナビゲーション統合）
 │   ├── members-only/        # callbackURL機能確認（認証フロー検証用）
 │   ├── admin/security/      # セキュリティ管理ダッシュボード（ブロック解除・攻撃統計）
@@ -146,15 +148,16 @@ src/
 │   ├── profile/             # プロフィール関連コンポーネント（Phase 4）
 │   │   ├── ProfileAvatar.tsx # 頭文字アバター（6色・4サイズ・日英対応）
 │   │   └── ProfileHeader.tsx # プロフィールヘッダー（Server/Client分離・AuthButton統合）
+│   ├── SafeContent.tsx      # セキュリティコンテンツ表示（Phase 5・XSS対策・DOMPurify統合）
 │   ├── SessionProvider.tsx  # NextAuth.jsセッションプロバイダー（自動更新設定済み）
-│   ├── PostForm.tsx         # 投稿フォーム（認証対応）
-│   ├── PostList.tsx         # 投稿リスト（権限表示）
+│   ├── PostForm.tsx         # 投稿フォーム（認証対応・XSS対策統合）
+│   ├── PostList.tsx         # 投稿リスト（権限表示・SafeContent統合）
 │   └── ...                  # その他UI components
 ├── lib/
 │   ├── auth/                # NextAuth.js v4設定・MongoDB Adapter（実装完了・認証フロー動作確認済み）
 │   ├── validations/         # Zod認証バリデーション（実装完了・日本語文字対応済み）
 │   ├── monitoring/          # 監視・分析基盤（Phase 0.5）
-│   ├── security/            # ブルートフォース対策・レート制限（Phase 2.5実装完了）
+│   ├── security/            # セキュリティ基盤（Phase 5完了・XSS・CSRF・監査ログ・NoSQL対策）
 │   ├── middleware/          # ミドルウェア設定・セキュリティ機能
 │   │   ├── auth-config.ts   # ルート保護設定・権限管理・リダイレクト設定
 │   │   ├── security.ts      # レート制限・CSRF保護・ボット検出・IP制限
@@ -171,11 +174,14 @@ src/
 │   └── loading.ts           # ローディング型定義（BaseLoadingProps・LoadingStateHook・LoadingMetrics）
 ├── models/
 │   ├── User.ts              # ユーザーモデル（bcrypt・自動ハッシュ化動作確認済み）
-│   ├── Post.ts              # 投稿モデル（権限管理）
+│   ├── Post.ts              # 投稿モデル（権限管理・XSS対策統合）
+│   ├── AuditLog.ts          # セキュリティ監査ログモデル（Phase 5・12種類イベント・4段階重要度）
 │   └── VerificationToken.ts # 認証トークン
-├── utils/loading/           # ローディングユーティリティ（Phase 2.5）
-│   ├── animations.ts        # アニメーションキーフレーム（8種類・テーマ対応・パフォーマンス最適化）
-│   └── responsive.ts        # レスポンシブローディング（ブレークポイント・アクセシビリティ・デバイス対応）
+├── utils/
+│   ├── loading/             # ローディングユーティリティ（Phase 2.5）
+│   │   ├── animations.ts    # アニメーションキーフレーム（8種類・テーマ対応・パフォーマンス最適化）
+│   │   └── responsive.ts    # レスポンシブローディング（ブレークポイント・アクセシビリティ・デバイス対応）
+│   └── security/            # セキュリティユーティリティ（Phase 5・XSS対策・入力サニタイゼーション）
 ├── middleware.ts            # Next.js 15強化ミドルウェア（/board保護・ロール制御・セキュリティ統合・完全動作確認済み）
 └── types/global.d.ts        # TypeScript定義
 
@@ -183,7 +189,8 @@ src/
 tests/                       # テスト基盤（Phase 0）
 ├── unit/                    # 単体テスト
 ├── integration/             # 統合テスト
-└── e2e/                     # E2Eテスト
+├── e2e/                     # E2Eテスト
+└── security/                # セキュリティテスト（Phase 5・XSS・CSRF・NoSQL侵入テスト）
 
 # ドキュメント・手順書
 docs/                        # 技術仕様・ガイド
@@ -224,6 +231,9 @@ node scripts/clear-sessions.js
 # Phase 4.5: 会員制掲示板CRUD機能（実装完了）
 node scripts/test-board-crud.js          # 投稿CRUD機能テスト
 node scripts/migrate-posts-add-title.js  # 既存投稿にタイトルフィールド追加 ✅ **実行完了**
+
+# Phase 5: セキュリティテスト（実装完了）
+node scripts/test-security-phase5.js     # XSS・CSRF・NoSQL・レート制限・監査ログテスト ✅ **新規実装**
 ```
 
 ## 環境設定
@@ -278,15 +288,15 @@ SECURITY_API_TOKEN=your_security_admin_token_here
 
 ## API エンドポイント
 
-### 投稿関連（Phase 3 認証保護API実装完了・Phase 4.5 CRUD拡張実装完了）
+### 投稿関連（Phase 5 セキュリティ統合完了・XSS/NoSQL対策済み）
 
-- `GET /api/posts` - 全投稿の取得（ページネーション・ソート・検索対応）
-- `POST /api/posts` - 新しい投稿の作成 ✅ **認証必須・ユーザー情報保存**
-- `GET /api/posts/[id]` - 投稿詳細取得 ✅ **Phase 4.5実装完了**
-- `PUT /api/posts/[id]` - 投稿の更新 ✅ **認証必須・本人確認・title対応**
-- `DELETE /api/posts/[id]` - 投稿の削除 ✅ **認証必須・本人確認**
+- `GET /api/posts` - 全投稿の取得（NoSQL対策・入力検証・検索サニタイゼーション）✅ **Phase 5強化完了**
+- `POST /api/posts` - 新しい投稿の作成（XSS検出・監査ログ記録）✅ **Phase 5強化完了**
+- `GET /api/posts/[id]` - 投稿詳細取得（ObjectID検証強化）✅ **Phase 5強化完了**
+- `PUT /api/posts/[id]` - 投稿の更新（XSS検出・監査ログ・権限チェック）✅ **Phase 5強化完了**
+- `DELETE /api/posts/[id]` - 投稿の削除（権限チェック・監査ログ）✅ **Phase 5強化完了**
 - `POST/GET/DELETE /api/posts/[id]/like` - いいね機能 ✅ **認証/匿名対応・ユーザーID管理**
-- `GET /api/posts/search` - 投稿検索（部分一致）
+- `GET /api/posts/search` - 投稿検索（入力サニタイゼーション・NoSQL対策）✅ **Phase 5強化完了**
 
 ### 認証関連（Phase 2実装完了・メール認証・パスワードリセット対応済み）
 
@@ -329,19 +339,24 @@ SECURITY_API_TOKEN=your_security_admin_token_here
 - `POST /api/monitoring/send-alert-email` - アラートメール送信
 - `POST /api/analytics/events` - ユーザー行動イベント収集
 
-### セキュリティ関連（Phase 2.5実装完了）
+### セキュリティ関連（Phase 5実装完了・監査ログ・CSRF・CSP統合）
 
 - `GET /api/security/stats` - 攻撃統計・ブロック状況取得
 - `POST /api/security/unblock` - IP/ユーザーブロック解除
+- `GET /api/security/audit` - 監査ログ取得・統計・脅威評価 ✅ **Phase 5新規実装**
+- `POST /api/security/audit` - セキュリティイベント手動記録 ✅ **Phase 5新規実装**
+- `PATCH /api/security/audit` - イベント解決マーク ✅ **Phase 5新規実装**
+- `GET /api/security/csrf` - CSRFトークン生成 ✅ **Phase 5新規実装**
+- `POST /api/security/csp-report` - CSP違反レポート受信 ✅ **Phase 5新規実装**
 
 ### データ形式
 
 ```typescript
-// 投稿データ（認証統合済み・Phase 4.5 CRUD拡張予定）
+// 投稿データ（Phase 5 セキュリティ統合完了・XSS対策・監査ログ統合）
 interface Post {
   _id: string;
-  title?: string; // 投稿タイトル（最大100文字）✅ **Phase 4.5実装完了**
-  content: string; // 投稿内容（1000文字制限）✅ **Phase 4.5拡張完了**
+  title?: string; // 投稿タイトル（最大100文字・XSS対策済み）✅ **Phase 5強化完了**
+  content: string; // 投稿内容（1000文字・XSS対策・SafeContent対応）✅ **Phase 5強化完了**
   likes: number; // いいね数
   likedBy: string[]; // いいねしたユーザーID一覧（認証ユーザー）・IPアドレス一覧（匿名ユーザー）
   userId?: string; // 投稿者ID（認証ユーザー）
@@ -776,6 +791,7 @@ tests/
 プロジェクト開発時に発生する問題の解決方法については、以下の専用ドキュメントを参照してください：
 
 - **[プロフィール機能ガイド](./README-profile.md)** - プロフィール表示・編集・パスワード変更・頭文字アバター・完全実装手順 ✨ **新規追加**
+- **[Phase 5: セキュリティ強化実装ガイド](./README-phase-5-security.md)** - XSS・CSRF・NoSQL・監査ログ・レート制限完全ガイド ✅ **Phase 5実装完了** ✨ **新規追加**
 - **[会員制掲示板CRUD機能完全ガイド](./README-board-crud.md)** - タイトル付き投稿・詳細ページ・編集権限・テキスト折り返し対応 ✅ **Phase 4.5実装完了**
 - **[NextAuth.js認証トラブルシューティング](./README-auth-troubleshooting.md)** - 認証・セッション・role権限問題の詳細解決方法
 - **[メール送信機能 トラブルシューティングガイド](./docs/email-troubleshooting-guide.md)** - メール送信実装時のエラーと解決策
