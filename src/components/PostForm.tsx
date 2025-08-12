@@ -1,14 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  TextField,
-  Button,
-  Typography,
-  Paper,
-  Alert,
-} from '@mui/material';
+import { Box, TextField, Button, Typography, Paper, Alert } from '@mui/material';
 
 interface PostFormProps {
   onPostCreated: () => void;
@@ -38,7 +31,7 @@ export default function PostForm({ onPostCreated, editingPost, onEditCancel }: P
   useEffect(() => {
     if (cooldownRemaining > 0) {
       const timer = setTimeout(() => {
-        setCooldownRemaining(prev => Math.max(0, prev - 1));
+        setCooldownRemaining((prev) => Math.max(0, prev - 1));
       }, 1000);
       return () => clearTimeout(timer);
     }
@@ -46,7 +39,7 @@ export default function PostForm({ onPostCreated, editingPost, onEditCancel }: P
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!content.trim()) {
       setError('投稿内容を入力してください');
       return;
@@ -75,10 +68,8 @@ export default function PostForm({ onPostCreated, editingPost, onEditCancel }: P
     setError('');
 
     try {
-      const url = editingPost 
-        ? `/api/posts/${editingPost._id}`
-        : '/api/posts';
-      
+      const url = editingPost ? `/api/posts/${editingPost._id}` : '/api/posts';
+
       const method = editingPost ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
@@ -123,7 +114,7 @@ export default function PostForm({ onPostCreated, editingPost, onEditCancel }: P
       <Typography variant="h6" gutterBottom>
         {editingPost ? '投稿を編集' : '新しい投稿'}
       </Typography>
-      
+
       <Box component="form" onSubmit={handleSubmit}>
         <TextField
           fullWidth
@@ -135,31 +126,39 @@ export default function PostForm({ onPostCreated, editingPost, onEditCancel }: P
           onChange={(e) => setContent(e.target.value)}
           error={content.length > 200}
           helperText={`${content.length}/200文字`}
-          sx={{ mb: 2 }}
+          sx={{
+            mb: 2,
+            '& .MuiInputBase-input': {
+              wordWrap: 'break-word',
+              overflowWrap: 'break-word',
+              whiteSpace: 'pre-wrap',
+            },
+          }}
         />
-        
+
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
             {error}
           </Alert>
         )}
-        
+
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Button
             type="submit"
             variant="contained"
             disabled={isSubmitting || content.length > 200 || cooldownRemaining > 0}
           >
-            {isSubmitting ? '投稿中...' : cooldownRemaining > 0 ? `待機中 (${cooldownRemaining}s)` : editingPost ? '更新' : '投稿'}
+            {isSubmitting
+              ? '投稿中...'
+              : cooldownRemaining > 0
+                ? `待機中 (${cooldownRemaining}s)`
+                : editingPost
+                  ? '更新'
+                  : '投稿'}
           </Button>
-          
+
           {editingPost && (
-            <Button
-              type="button"
-              variant="outlined"
-              onClick={handleCancel}
-              disabled={isSubmitting}
-            >
+            <Button type="button" variant="outlined" onClick={handleCancel} disabled={isSubmitting}>
               キャンセル
             </Button>
           )}

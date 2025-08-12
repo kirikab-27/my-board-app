@@ -40,7 +40,7 @@ class SimpleRateLimit {
       return {
         allowed: false,
         reason: 'Rate limit exceeded',
-        retryAfter: Math.ceil((record.resetTime - now) / 1000)
+        retryAfter: Math.ceil((record.resetTime - now) / 1000),
       };
     }
 
@@ -61,9 +61,10 @@ class SimpleRateLimit {
   }
 }
 
-// グローバルレート制限インスタンス
-const globalRateLimit = new SimpleRateLimit(200, 15 * 60 * 1000); // 15分間に200リクエスト
-const authRateLimit = new SimpleRateLimit(10, 5 * 60 * 1000);     // 5分間に10回（認証関連）
+// グローバルレート制限インスタンス（要件に合わせて調整）
+const globalRateLimit = new SimpleRateLimit(5, 60 * 1000); // 1分間に5回（要件準拠）
+const authRateLimit = new SimpleRateLimit(5, 60 * 1000); // 1分間に5回（認証関連も同様）
+const apiRateLimit = new SimpleRateLimit(10, 60 * 1000); // API用: 1分間に10回（少し緩め）
 
 /**
  * クライアントIPアドレスを取得
@@ -90,21 +91,59 @@ export const getClientIP = (req: NextRequest): string => {
 };
 
 /**
- * レート制限チェック
+ * レート制限チェック（要件準拠: 1分5回制限）
  */
 export const checkRateLimit = (req: NextRequest): SecurityCheckResult => {
   const ip = getClientIP(req);
   const pathname = req.nextUrl.pathname;
 
-  // 認証関連のパスは厳しいレート制限
-  if (pathname.startsWith('/login') || 
-      pathname.startsWith('/register') ||
-      pathname.startsWith('/api/auth/')) {
-    return authRateLimit.check(ip);
+  // API関連のパスは少し緩いレート制限
+  if (
+    pathname.startsWith('/api/posts') ||
+    pathname.startsWith('/api/profile') ||
+    pathname.startsWith('/api/security')
+  ) {
+    const result = apiRateLimit.check(ip);
+    if (!result.allowed) {
+      // レート制限違反をコンソールに記録（Edge Runtime対応）
+      console.warn('🚨 API レート制限違反:', {
+        ip,
+        pathname,
+        userAgent: req.headers.get('user-agent')?.substring(0, 100),
+      });
+    }
+    return result;
   }
 
-  // 一般的なレート制限
-  return globalRateLimit.check(ip);
+  // 認証関連のパスは厳格なレート制限
+  if (
+    pathname.startsWith('/login') ||
+    pathname.startsWith('/register') ||
+    pathname.startsWith('/api/auth/')
+  ) {
+    const result = authRateLimit.check(ip);
+    if (!result.allowed) {
+      // レート制限違反をコンソールに記録（Edge Runtime対応）
+      console.warn('🚨 認証 レート制限違反:', {
+        ip,
+        pathname,
+        userAgent: req.headers.get('user-agent')?.substring(0, 100),
+      });
+    }
+    return result;
+  }
+
+  // 一般的なレート制限（要件: 1分5回）
+  const result = globalRateLimit.check(ip);
+  if (!result.allowed) {
+    // レート制限違反をコンソールに記録（Edge Runtime対応）
+    console.warn('🚨 グローバル レート制限違反:', {
+      ip,
+      pathname,
+      userAgent: req.headers.get('user-agent')?.substring(0, 100),
+    });
+  }
+  return result;
 };
 
 /**
@@ -118,28 +157,31 @@ export const detectSuspiciousRequest = (req: NextRequest): SecurityCheckResult =
   if (!userAgent.trim()) {
     return {
       allowed: false,
-      reason: 'Missing User-Agent header'
+      reason: 'Missing User-Agent header',
     };
   }
 
   // 一般的なボットパターンを検出
-  const botPatterns = [
-    /crawler/i,
-    /bot/i,
-    /spider/i,
-    /scraper/i
-  ];
+  const botPatterns = [/crawler/i, /bot/i, /spider/i, /scraper/i];
 
-  const isSuspiciousBot = botPatterns.some(pattern => pattern.test(userAgent));
-  
+  const isSuspiciousBot = botPatterns.some((pattern) => pattern.test(userAgent));
+
   // 保護ルートへのボットアクセスを制限
   const protectedPaths = ['/dashboard', '/profile', '/admin', '/board'];
-  const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path));
+  const isProtectedPath = protectedPaths.some((path) => pathname.startsWith(path));
 
   if (isSuspiciousBot && isProtectedPath) {
+    // 疑わしい活動をコンソールに記録（Edge Runtime対応）
+    console.warn('🚨 疑わしいボット活動:', {
+      ip: getClientIP(req),
+      pathname,
+      userAgent: userAgent.substring(0, 100),
+      reason: 'Bot access to protected route',
+    });
+
     return {
       allowed: false,
-      reason: 'Bot access to protected route denied'
+      reason: 'Bot access to protected route denied',
     };
   }
 
@@ -147,11 +189,12 @@ export const detectSuspiciousRequest = (req: NextRequest): SecurityCheckResult =
 };
 
 /**
- * CSRF保護（簡易版）
+ * CSRF保護（強化版）
  */
 export const checkCSRF = (req: NextRequest): SecurityCheckResult => {
-  // POSTリクエストのみチェック
-  if (req.method !== 'POST') {
+  // GET, HEAD, OPTIONS リクエストは除外
+  const safeMethod = ['GET', 'HEAD', 'OPTIONS'].includes(req.method);
+  if (safeMethod) {
     return { allowed: true };
   }
 
@@ -159,25 +202,82 @@ export const checkCSRF = (req: NextRequest): SecurityCheckResult => {
   const referer = req.headers.get('referer');
   const host = req.headers.get('host');
 
-  // SameSite基本チェック
+  if (!host) {
+    return {
+      allowed: false,
+      reason: 'Missing Host header',
+    };
+  }
+
+  // Origin ヘッダーのチェック
   if (origin) {
-    const originHost = new URL(origin).host;
-    if (originHost !== host) {
+    try {
+      const originHost = new URL(origin).host;
+      if (originHost !== host) {
+        // CSRF違反をログに記録（Edge Runtime対応）
+        console.warn('🚨 CSRF Origin違反:', {
+          reason: 'Origin header mismatch',
+          origin,
+          host,
+          method: req.method,
+          ip: getClientIP(req),
+        });
+
+        return {
+          allowed: false,
+          reason: 'Origin header mismatch',
+        };
+      }
+    } catch {
+      // CSRF違反をログに記録（Edge Runtime対応）
+      console.warn('🚨 CSRF Origin無効:', {
+        reason: 'Invalid Origin header',
+        origin,
+        host,
+        method: req.method,
+        ip: getClientIP(req),
+      });
+
       return {
         allowed: false,
-        reason: 'Origin header mismatch'
+        reason: 'Invalid Origin header',
       };
     }
   }
 
-  if (referer) {
-    const refererHost = new URL(referer).host;
-    if (refererHost !== host) {
+  // Referer ヘッダーのチェック（Origin がない場合）
+  if (!origin && referer) {
+    try {
+      const refererHost = new URL(referer).host;
+      if (refererHost !== host) {
+        // CSRF違反をログに記録（Edge Runtime対応）
+        console.warn('🚨 CSRF Referer違反:', {
+          reason: 'Referer header mismatch',
+          referer,
+          host,
+          method: req.method,
+          ip: getClientIP(req),
+        });
+
+        return {
+          allowed: false,
+          reason: 'Referer header mismatch',
+        };
+      }
+    } catch {
       return {
         allowed: false,
-        reason: 'Referer header mismatch'
+        reason: 'Invalid Referer header',
       };
     }
+  }
+
+  // どちらのヘッダーもない場合は拒否
+  if (!origin && !referer) {
+    return {
+      allowed: false,
+      reason: 'Missing Origin and Referer headers',
+    };
   }
 
   return { allowed: true };
@@ -212,7 +312,11 @@ export const performSecurityChecks = (req: NextRequest): SecurityCheckResult => 
  * 定期クリーンアップ（メモリリーク対策）
  * 本格運用時はcronジョブやRedisのTTL機能を使用
  */
-setInterval(() => {
-  globalRateLimit.cleanup();
-  authRateLimit.cleanup();
-}, 10 * 60 * 1000); // 10分毎にクリーンアップ
+setInterval(
+  () => {
+    globalRateLimit.cleanup();
+    authRateLimit.cleanup();
+    apiRateLimit.cleanup();
+  },
+  5 * 60 * 1000
+); // 5分毎にクリーンアップ（頻度増加）

@@ -198,13 +198,6 @@ export const getRouteConfig = (pathname: string) => {
 
 /**
  * セキュリティヘッダー設定
+ * CSP対応版のヘッダーを使用
  */
-export const securityHeaders = {
-  'X-DNS-Prefetch-Control': 'on',
-  'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
-  'X-XSS-Protection': '1; mode=block',
-  'X-Frame-Options': 'DENY',
-  'X-Content-Type-Options': 'nosniff',
-  'Referrer-Policy': 'origin-when-cross-origin',
-  'Permissions-Policy': 'camera=(), microphone=(), geolocation=()'
-};
+export { securityHeaders } from '@/lib/security/csp-headers';

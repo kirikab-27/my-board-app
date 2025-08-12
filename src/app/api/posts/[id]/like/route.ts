@@ -5,71 +5,59 @@ import mongoose from 'mongoose';
 import { getClientIP } from '@/utils/getClientIP';
 import { getApiAuth, createServerErrorResponse } from '@/lib/auth/server';
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await dbConnect();
     const { id } = await params;
-    
+
     // 認証情報取得（任意 - 匿名ユーザーも対応）
     const session = await getApiAuth(request);
     const identifier = session?.user?.id || getClientIP(request);
-    // const isAuthenticated = !!session?.user;
-    
-    console.log('👍 いいね追加:', { 
-      postId: id, 
-      userId: session?.user?.id, 
+    const isAuthenticated = !!session?.user;
+
+    console.log('👍 いいね追加:', {
+      postId: id,
+      userId: session?.user?.id,
       email: session?.user?.email,
       identifier,
-      isAuthenticated 
+      isAuthenticated,
     });
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json(
-        { error: '無効な投稿IDです' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: '無効な投稿IDです' }, { status: 400 });
     }
 
     // 既にいいね済みかチェック
     const existingPost = await Post.findById(id);
     if (!existingPost) {
-      return NextResponse.json(
-        { error: '投稿が見つかりません' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: '投稿が見つかりません' }, { status: 404 });
     }
 
     if (existingPost.likedBy.includes(identifier)) {
-      return NextResponse.json(
-        { error: '既にいいね済みです' },
-        { status: 409 }
-      );
+      return NextResponse.json({ error: '既にいいね済みです' }, { status: 409 });
     }
 
     // いいねを追加（認証ユーザー: UserID、匿名ユーザー: IPアドレス）
     const post = await Post.findByIdAndUpdate(
       id,
-      { 
+      {
         $inc: { likes: 1 },
-        $push: { likedBy: identifier }
+        $push: { likedBy: identifier },
       },
       { new: true, runValidators: true }
     );
 
-    console.log('✅ いいね追加成功:', { 
-      postId: post._id, 
+    console.log('✅ いいね追加成功:', {
+      postId: post._id,
       totalLikes: post.likes,
       likedByCount: post.likedBy.length,
-      isAuthenticated 
+      isAuthenticated,
     });
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       message: 'いいねしました',
       likes: post!.likes,
-      liked: true
+      liked: true,
     });
   } catch (error) {
     console.error('❌ いいね追加エラー:', error);
@@ -77,40 +65,30 @@ export async function POST(
   }
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await dbConnect();
     const { id } = await params;
-    
+
     // 認証情報取得（任意）
     const session = await getApiAuth(request);
     const identifier = session?.user?.id || getClientIP(request);
-    // const isAuthenticated = !!session?.user;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json(
-        { error: '無効な投稿IDです' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: '無効な投稿IDです' }, { status: 400 });
     }
 
     const post = await Post.findById(id);
 
     if (!post) {
-      return NextResponse.json(
-        { error: '投稿が見つかりません' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: '投稿が見つかりません' }, { status: 404 });
     }
 
     const liked = post.likedBy.includes(identifier);
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       likes: post.likes,
-      liked: liked
+      liked: liked,
     });
   } catch (error) {
     console.error('❌ いいね状態取得エラー:', error);
@@ -125,71 +103,59 @@ export async function DELETE(
   try {
     await dbConnect();
     const { id } = await params;
-    
+
     // 認証情報取得（任意）
     const session = await getApiAuth(request);
     const identifier = session?.user?.id || getClientIP(request);
-    // const isAuthenticated = !!session?.user;
-    
-    console.log('👎 いいね削除:', { 
-      postId: id, 
-      userId: session?.user?.id, 
+    const isAuthenticated = !!session?.user;
+
+    console.log('👎 いいね削除:', {
+      postId: id,
+      userId: session?.user?.id,
       email: session?.user?.email,
       identifier,
-      isAuthenticated 
+      isAuthenticated,
     });
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json(
-        { error: '無効な投稿IDです' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: '無効な投稿IDです' }, { status: 400 });
     }
 
     const post = await Post.findById(id);
 
     if (!post) {
-      return NextResponse.json(
-        { error: '投稿が見つかりません' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: '投稿が見つかりません' }, { status: 404 });
     }
 
     if (!post.likedBy.includes(identifier)) {
-      return NextResponse.json(
-        { error: 'まだいいねしていません' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'まだいいねしていません' }, { status: 400 });
     }
 
     if (post.likes <= 0) {
-      return NextResponse.json(
-        { error: 'いいねを取り消すことはできません' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'いいねを取り消すことはできません' }, { status: 400 });
     }
 
     // いいねを取り消し（認証ユーザー: UserID、匿名ユーザー: IPアドレス）
     const updatedPost = await Post.findByIdAndUpdate(
       id,
-      { 
+      {
         $inc: { likes: -1 },
-        $pull: { likedBy: identifier }
+        $pull: { likedBy: identifier },
       },
       { new: true, runValidators: true }
     );
 
-    console.log('✅ いいね削除成功:', { 
-      postId: updatedPost._id, 
+    console.log('✅ いいね削除成功:', {
+      postId: updatedPost._id,
       totalLikes: updatedPost.likes,
       likedByCount: updatedPost.likedBy.length,
-      isAuthenticated 
+      isAuthenticated,
     });
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       message: 'いいねを取り消しました',
       likes: updatedPost!.likes,
-      liked: false
+      liked: false,
     });
   } catch (error) {
     console.error('❌ いいね削除エラー:', error);

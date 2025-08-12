@@ -37,7 +37,7 @@ export default function RegisterPage() {
     if (!password) return { score: 0, level: '入力してください', color: '#ccc', feedback: '' };
     
     let score = 0;
-    let feedback: string[] = [];
+    const feedback: string[] = [];
 
     // 長さチェック
     if (password.length >= 8) {
