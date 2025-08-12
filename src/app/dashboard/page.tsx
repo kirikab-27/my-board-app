@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { Container, Typography, Box, Paper, AppBar, Toolbar, Button, Grid, Card, CardContent, CircularProgress } from '@mui/material';
-import { Forum as ForumIcon, Security as SecurityIcon, Dashboard as DashboardIcon } from '@mui/icons-material';
+import { Forum as ForumIcon, Security as SecurityIcon, Person as PersonIcon } from '@mui/icons-material';
 import { AuthButton } from '@/components/auth/AuthButton';
 import { useRouter } from 'next/navigation';
 
@@ -50,7 +50,7 @@ export default function DashboardPage() {
               クイックアクション
             </Typography>
             <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={12} sm={6} md={4}>
                 <Card>
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -80,7 +80,7 @@ export default function DashboardPage() {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={12} sm={6} md={4}>
                 <Card>
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -105,6 +105,36 @@ export default function DashboardPage() {
                         <CircularProgress size={24} color="inherit" />
                       ) : (
                         '管理画面へ'
+                      )}
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <Card>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <PersonIcon sx={{ mr: 1, color: 'success.main' }} />
+                      <Typography variant="h6">プロフィール</Typography>
+                    </Box>
+                    <Typography color="text.secondary" sx={{ mb: 2 }}>
+                      プロフィール情報の確認・編集
+                    </Typography>
+                    <Button 
+                      variant="outlined" 
+                      onClick={async () => {
+                        setLoadingButton('profile');
+                        router.push('/profile');
+                        // ナビゲーション完了後にローディング解除（タイムアウト）
+                        setTimeout(() => setLoadingButton(null), 2000);
+                      }}
+                      fullWidth
+                      disabled={loadingButton === 'profile'}
+                    >
+                      {loadingButton === 'profile' ? (
+                        <CircularProgress size={24} color="inherit" />
+                      ) : (
+                        'プロフィールへ'
                       )}
                     </Button>
                   </CardContent>

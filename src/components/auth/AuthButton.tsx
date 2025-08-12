@@ -1,10 +1,11 @@
 'use client';
 
 import React from 'react';
-import { Button, Menu, MenuItem, Avatar, Box, Typography, IconButton } from '@mui/material';
-import { Login as LoginIcon, Logout as LogoutIcon, PersonAdd as PersonAddIcon, Forum as ForumIcon, Home as HomeIcon } from '@mui/icons-material';
+import { Button, Menu, MenuItem, Box, Typography, IconButton } from '@mui/material';
+import { Login as LoginIcon, Logout as LogoutIcon, PersonAdd as PersonAddIcon, Forum as ForumIcon, Home as HomeIcon, Person as PersonIcon } from '@mui/icons-material';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
 
 export const AuthButton: React.FC = () => {
   const { data: session, status } = useSession();
@@ -35,7 +36,7 @@ export const AuthButton: React.FC = () => {
 
   const handleProfile = () => {
     handleMenuClose();
-    router.push('/dashboard');
+    router.push('/profile');
   };
 
   const handleBoard = () => {
@@ -82,9 +83,7 @@ export const AuthButton: React.FC = () => {
         aria-haspopup="true"
         aria-expanded={open ? 'true' : undefined}
       >
-        <Avatar sx={{ width: 32, height: 32 }}>
-          {session.user?.name?.charAt(0).toUpperCase()}
-        </Avatar>
+        <ProfileAvatar name={session.user?.name} size="small" />
       </IconButton>
       <Menu
         anchorEl={anchorEl}
@@ -134,7 +133,7 @@ export const AuthButton: React.FC = () => {
           掲示板
         </MenuItem>
         <MenuItem onClick={handleProfile}>
-          <Avatar />
+          <PersonIcon sx={{ mr: 1 }} />
           プロフィール
         </MenuItem>
         <MenuItem onClick={handleHome}>

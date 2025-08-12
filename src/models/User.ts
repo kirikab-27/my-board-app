@@ -8,6 +8,7 @@ export interface IUser extends mongoose.Document {
   password: string;
   emailVerified: Date | null;
   image?: string;
+  bio?: string; // 自己紹介（最大200文字）
   role: 'user' | 'moderator' | 'admin';
   createdAt: Date;
   updatedAt: Date;
@@ -45,6 +46,11 @@ const UserSchema = new mongoose.Schema<IUser>({
   image: {
     type: String,
     default: null,
+  },
+  bio: {
+    type: String,
+    maxlength: [200, '自己紹介は200文字以内で入力してください'],
+    default: '',
   },
   role: {
     type: String,
