@@ -28,14 +28,17 @@ const csrfTokenStore = new Map<string, CSRFTokenData>();
 /**
  * 定期的なトークンクリーンアップ
  */
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, data] of csrfTokenStore.entries()) {
-    if (now > data.expires) {
-      csrfTokenStore.delete(key);
+setInterval(
+  () => {
+    const now = Date.now();
+    for (const [key, data] of csrfTokenStore.entries()) {
+      if (now > data.expires) {
+        csrfTokenStore.delete(key);
+      }
     }
-  }
-}, 60 * 60 * 1000); // 1時間毎
+  },
+  60 * 60 * 1000
+); // 1時間毎
 
 /**
  * CSRFトークンの生成
@@ -43,13 +46,13 @@ setInterval(() => {
 export function generateCSRFToken(sessionId?: string): string {
   const token = crypto.randomBytes(32).toString('hex');
   const expires = Date.now() + CSRF_TOKEN_EXPIRY;
-  
+
   csrfTokenStore.set(token, {
     token,
     expires,
-    sessionId
+    sessionId,
   });
-  
+
   return token;
 }
 
@@ -58,21 +61,21 @@ export function generateCSRFToken(sessionId?: string): string {
  */
 export function verifyCSRFToken(token: string, sessionId?: string): boolean {
   if (!token) return false;
-  
+
   const tokenData = csrfTokenStore.get(token);
   if (!tokenData) return false;
-  
+
   // 有効期限チェック
   if (Date.now() > tokenData.expires) {
     csrfTokenStore.delete(token);
     return false;
   }
-  
+
   // セッションIDチェック（提供されている場合）
   if (sessionId && tokenData.sessionId && tokenData.sessionId !== sessionId) {
     return false;
   }
-  
+
   return true;
 }
 
@@ -99,11 +102,10 @@ export function revokeAllCSRFTokensForSession(sessionId: string): void {
  */
 export function extractCSRFToken(request: NextRequest): string | null {
   // ヘッダーから取得（優先）
-  let token = request.headers.get('X-CSRF-Token') || 
-              request.headers.get('X-Requested-With');
-  
+  let token = request.headers.get('X-CSRF-Token') || request.headers.get('X-Requested-With');
+
   if (token) return token;
-  
+
   // フォームデータから取得（フォールバック）
   try {
     const url = new URL(request.url);
@@ -112,7 +114,7 @@ export function extractCSRFToken(request: NextRequest): string | null {
   } catch {
     // URL解析エラーは無視
   }
-  
+
   return null;
 }
 
@@ -123,9 +125,9 @@ export function verifyOriginHeader(request: NextRequest): boolean {
   const origin = request.headers.get('origin');
   const referer = request.headers.get('referer');
   const host = request.headers.get('host');
-  
+
   if (!host) return false;
-  
+
   // Origin ヘッダーのチェック
   if (origin) {
     try {
@@ -138,7 +140,7 @@ export function verifyOriginHeader(request: NextRequest): boolean {
       return false;
     }
   }
-  
+
   // Referer ヘッダーのチェック（Origin がない場合）
   if (!origin && referer) {
     try {
@@ -151,20 +153,23 @@ export function verifyOriginHeader(request: NextRequest): boolean {
       return false;
     }
   }
-  
+
   // どちらのヘッダーもない場合は拒否
   if (!origin && !referer) {
     console.warn('🚫 Missing Origin and Referer headers');
     return false;
   }
-  
+
   return true;
 }
 
 /**
  * 包括的な CSRF チェック
  */
-export function performCSRFCheck(request: NextRequest, sessionId?: string): {
+export function performCSRFCheck(
+  request: NextRequest,
+  sessionId?: string
+): {
   valid: boolean;
   reason?: string;
 } {
@@ -173,37 +178,37 @@ export function performCSRFCheck(request: NextRequest, sessionId?: string): {
   if (safeMethod) {
     return { valid: true };
   }
-  
+
   // Content-Type チェック（JSON API の場合）
   const contentType = request.headers.get('content-type') || '';
   const isJsonRequest = contentType.includes('application/json');
-  
+
   // 1. Origin/Referer ヘッダーチェック
   if (!verifyOriginHeader(request)) {
-    return { 
-      valid: false, 
-      reason: 'Origin/Referer header validation failed' 
+    return {
+      valid: false,
+      reason: 'Origin/Referer header validation failed',
     };
   }
-  
+
   // 2. CSRF トークンチェック（JSON リクエストの場合）
   if (isJsonRequest) {
     const token = extractCSRFToken(request);
     if (!token) {
-      return { 
-        valid: false, 
-        reason: 'CSRF token missing' 
+      return {
+        valid: false,
+        reason: 'CSRF token missing',
       };
     }
-    
+
     if (!verifyCSRFToken(token, sessionId)) {
-      return { 
-        valid: false, 
-        reason: 'Invalid CSRF token' 
+      return {
+        valid: false,
+        reason: 'Invalid CSRF token',
       };
     }
   }
-  
+
   return { valid: true };
 }
 
@@ -212,14 +217,14 @@ export function performCSRFCheck(request: NextRequest, sessionId?: string): {
  */
 export function setCSRFCookie(token: string): string {
   const isProduction = process.env.NODE_ENV === 'production';
-  
+
   return [
     `csrf-token=${token}`,
     'HttpOnly',
     'SameSite=Strict',
     `Max-Age=${Math.floor(CSRF_TOKEN_EXPIRY / 1000)}`,
     'Path=/',
-    ...(isProduction ? ['Secure'] : [])
+    ...(isProduction ? ['Secure'] : []),
   ].join('; ');
 }
 
@@ -229,17 +234,21 @@ export function setCSRFCookie(token: string): string {
 export function createCSRFMiddleware() {
   return (request: NextRequest, sessionId?: string) => {
     const result = performCSRFCheck(request, sessionId);
-    
+
     if (!result.valid) {
+      // IPアドレス取得（Next.js 15対応）
+      const ip =
+        request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+
       console.warn('🛡️ CSRF攻撃を検出:', {
         method: request.method,
         url: request.url,
         reason: result.reason,
-        ip: request.ip,
-        userAgent: request.headers.get('user-agent')?.substring(0, 100)
+        ip,
+        userAgent: request.headers.get('user-agent')?.substring(0, 100),
       });
     }
-    
+
     return result;
   };
 }
@@ -255,7 +264,7 @@ export function getCSRFStatistics(): {
   const now = Date.now();
   let expiredTokens = 0;
   let validTokens = 0;
-  
+
   for (const data of csrfTokenStore.values()) {
     if (now > data.expires) {
       expiredTokens++;
@@ -263,10 +272,10 @@ export function getCSRFStatistics(): {
       validTokens++;
     }
   }
-  
+
   return {
     totalTokens: csrfTokenStore.size,
     expiredTokens,
-    validTokens
+    validTokens,
   };
 }

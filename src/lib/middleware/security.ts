@@ -87,7 +87,8 @@ export const getClientIP = (req: NextRequest): string => {
   const xVercelForwardedFor = req.headers.get('x-vercel-forwarded-for');
   if (xVercelForwardedFor) return xVercelForwardedFor;
 
-  return req.ip || 'unknown';
+  // Next.js 15対応：req.ipプロパティが存在しないため'unknown'を返す
+  return 'unknown';
 };
 
 /**
