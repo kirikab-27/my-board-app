@@ -21,8 +21,7 @@
     "doc:health": "node scripts/check-doc-health.js",
     "monitor:check": "node -e \"console.log('Monitoring services check...')\"",
     "monitor:dashboard": "next dev -p 3010",
-    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org $SENTRY_ORG --project $SENTRY_PROJECT ./build && sentry-cli sourcemaps upload --org $SENTRY_ORG --project $SENTRY_PROJECT ./build",
-    "prepare": "husky"
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org $SENTRY_ORG --project $SENTRY_PROJECT ./build && sentry-cli sourcemaps upload --org $SENTRY_ORG --project $SENTRY_PROJECT ./build"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
