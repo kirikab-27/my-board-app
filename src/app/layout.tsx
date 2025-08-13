@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import ClientThemeProvider from '@/components/ThemeProvider';
+import { SessionProvider } from '@/components/SessionProvider';
 
 export const metadata: Metadata = {
   title: "掲示板アプリ",
@@ -17,7 +18,9 @@ export default function RootLayout({
       <body>
         <AppRouterCacheProvider>
           <ClientThemeProvider>
-            {children}
+            <SessionProvider>
+              {children}
+            </SessionProvider>
           </ClientThemeProvider>
         </AppRouterCacheProvider>
       </body>
