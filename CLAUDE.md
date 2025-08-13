@@ -663,6 +663,30 @@ message: error?.message,  // ← TypeScriptがerrorの型を認識できない
 - Error以外の例外も`String(error)`で安全に処理
 - TypeScript strictモード完全対応
 
+**🔥 2025/08/13 大規模一括修正実施**:
+
+```bash
+# 調査結果
+- 全34ファイルのcatchブロック検索
+- error?.message パターンを全検索
+- 修正対象: 4ファイル特定
+```
+
+**修正ファイル一覧**:
+
+1. `src/app/api/auth/register/route.ts` - 94行目, 103行目
+2. `src/app/api/auth/reset-password/confirm/route.ts` - 95行目
+3. `src/app/api/auth/reset-password/request/route.ts` - 87行目
+4. `src/lib/mongodb.ts` - 47行目
+5. `src/lib/auth/nextauth.ts` - 111行目, 119-122行目
+
+**統一修正パターン**:
+
+```typescript
+// 全箇所を以下のパターンで統一
+error instanceof Error ? error.message : String(error);
+```
+
 #### 長文テキストの折り返し問題 ✅ **解決済み**
 
 **症状**: 投稿詳細・作成・編集画面で長文が入力枠を突き抜けて表示される
@@ -765,9 +789,9 @@ import { Box } from '@mui/material';
 - TypeScript型安全性を確保
 - Material-UI v7完全対応
 
-### 🚨 Vercelデプロイエラー完全解決ガイド（Phase 5.5）✅ **18項目解決済み**
+### 🚨 Vercelデプロイエラー完全解決ガイド（Phase 5.5）✅ **19項目解決済み**
 
-**問題背景**: Phase 5.5統合版（166ファイル・67,000行）の本番デプロイで18の技術問題が連鎖的に発生
+**問題背景**: Phase 5.5統合版（166ファイル・67,000行）の本番デプロイで19の技術問題が連鎖的に発生
 
 #### 解決済み問題一覧
 
@@ -781,7 +805,31 @@ import { Box } from '@mui/material';
 8. **Material-UI v7 Grid2** - ✅ Grid2モジュール未対応・従来Gridに復元
 9. **Material-UI Grid2モジュール未発見** - ✅ @mui/material/Grid2存在せず・通常Gridに戻し
 10. **Material-UI v7 Grid型エラー** - ✅ `item`プロパティ型定義削除・Flexboxレイアウトに変更（2025/08/13）
-11. **TypeScript catchブロックエラー** - ✅ `error`型ガード追加・instanceof Error実装（2025/08/13）
+11. **TypeScript catchブロックエラー（一括修正）** - ✅ 全34ファイルのcatchブロック調査・5ファイルに`error`型ガード追加（2025/08/13）
+
+#### TypeScript catchブロック一括修正詳細（問題11）
+
+**症状**: TypeScript strict modeで`error.message`が`Property 'message' does not exist on type 'unknown'`エラー
+
+**修正ファイル一覧**:
+
+- `src/app/api/auth/register/route.ts` - 行94,98,102: error.message型エラー3箇所
+- `src/app/api/auth/reset-password/request/route.ts` - 行90-94: error.message型エラー
+- `src/app/api/auth/reset-password/confirm/route.ts` - 行99-101: error.message型エラー
+- `src/lib/mongodb.ts` - 行51-52: MongoDB接続エラーハンドリング
+- `src/lib/auth/nextauth.ts` - 行114,119-122: 認証エラー・レート制限チェック
+
+**修正パターン**:
+
+```typescript
+// 修正前（エラー発生）
+console.error('エラー:', error.message);
+
+// 修正後（型安全）
+console.error('エラー:', error instanceof Error ? error.message : String(error));
+```
+
+**根本原因**: TypeScript 5のstrict modeでcatch(error)の型がunknownに変更・error.messageアクセス不可
 
 #### 根本原因分析
 
