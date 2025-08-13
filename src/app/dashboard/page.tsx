@@ -2,8 +2,24 @@
 
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { Container, Typography, Box, Paper, AppBar, Toolbar, Button, Grid, Card, CardContent, CircularProgress } from '@mui/material';
-import { Forum as ForumIcon, Security as SecurityIcon, Person as PersonIcon } from '@mui/icons-material';
+import {
+  Container,
+  Typography,
+  Box,
+  Paper,
+  AppBar,
+  Toolbar,
+  Button,
+  Grid,
+  Card,
+  CardContent,
+  CircularProgress,
+} from '@mui/material';
+import {
+  Forum as ForumIcon,
+  Security as SecurityIcon,
+  Person as PersonIcon,
+} from '@mui/icons-material';
 import { AuthButton } from '@/components/auth/AuthButton';
 import { useRouter } from 'next/navigation';
 
@@ -36,7 +52,7 @@ export default function DashboardPage() {
           <Typography variant="h4" gutterBottom>
             ようこそ！
           </Typography>
-          
+
           <Box sx={{ mt: 2 }}>
             <Typography variant="h6">ユーザー情報</Typography>
             <Typography>名前: {session.user?.name}</Typography>
@@ -50,7 +66,7 @@ export default function DashboardPage() {
               クイックアクション
             </Typography>
             <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid item xs={12} sm={6} md={4}>
+              <Grid xs={12} sm={6} md={4}>
                 <Card>
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -60,8 +76,8 @@ export default function DashboardPage() {
                     <Typography color="text.secondary" sx={{ mb: 2 }}>
                       投稿・いいね・検索機能を利用
                     </Typography>
-                    <Button 
-                      variant="contained" 
+                    <Button
+                      variant="contained"
                       onClick={async () => {
                         setLoadingButton('board');
                         router.push('/board');
@@ -80,7 +96,7 @@ export default function DashboardPage() {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid item xs={12} sm={6} md={4}>
+              <Grid xs={12} sm={6} md={4}>
                 <Card>
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -90,8 +106,8 @@ export default function DashboardPage() {
                     <Typography color="text.secondary" sx={{ mb: 2 }}>
                       セキュリティ管理機能
                     </Typography>
-                    <Button 
-                      variant="outlined" 
+                    <Button
+                      variant="outlined"
                       onClick={async () => {
                         setLoadingButton('security');
                         router.push('/admin/security');
@@ -110,7 +126,7 @@ export default function DashboardPage() {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid item xs={12} sm={6} md={4}>
+              <Grid xs={12} sm={6} md={4}>
                 <Card>
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -120,8 +136,8 @@ export default function DashboardPage() {
                     <Typography color="text.secondary" sx={{ mb: 2 }}>
                       プロフィール情報の確認・編集
                     </Typography>
-                    <Button 
-                      variant="outlined" 
+                    <Button
+                      variant="outlined"
                       onClick={async () => {
                         setLoadingButton('profile');
                         router.push('/profile');

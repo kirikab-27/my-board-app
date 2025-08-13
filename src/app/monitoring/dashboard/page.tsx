@@ -1,15 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  Grid,
-  Typography,
-  Alert,
-  Box,
-} from '@mui/material';
+import { Card, CardContent, CardHeader, Grid, Typography, Alert, Box } from '@mui/material';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -88,7 +80,10 @@ export default function MonitoringDashboard() {
     return <Alert severity="info">データがありません</Alert>;
   }
 
-  const getStatusColor = (value: number, thresholds: { warning: number; error: number }): 'success' | 'warning' | 'error' => {
+  const getStatusColor = (
+    value: number,
+    thresholds: { warning: number; error: number }
+  ): 'success' | 'warning' | 'error' => {
     if (value >= thresholds.error) return 'error';
     if (value >= thresholds.warning) return 'warning';
     return 'success';
@@ -102,12 +97,12 @@ export default function MonitoringDashboard() {
 
       <Grid container spacing={3}>
         {/* システム状態 */}
-        <Grid item xs={12} md={3}>
+        <Grid xs={12} md={3}>
           <Card>
             <CardHeader title="エラー率" />
             <CardContent>
-              <Typography 
-                variant="h3" 
+              <Typography
+                variant="h3"
                 color={getStatusColor(metrics.errorRate, { warning: 1, error: 5 })}
               >
                 {metrics.errorRate.toFixed(2)}%
@@ -116,12 +111,12 @@ export default function MonitoringDashboard() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={3}>
+        <Grid xs={12} md={3}>
           <Card>
             <CardHeader title="平均応答時間" />
             <CardContent>
-              <Typography 
-                variant="h3" 
+              <Typography
+                variant="h3"
                 color={getStatusColor(metrics.avgResponseTime, { warning: 500, error: 1000 })}
               >
                 {metrics.avgResponseTime.toFixed(0)}ms
@@ -130,7 +125,7 @@ export default function MonitoringDashboard() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={3}>
+        <Grid xs={12} md={3}>
           <Card>
             <CardHeader title="アクティブユーザー" />
             <CardContent>
@@ -141,12 +136,12 @@ export default function MonitoringDashboard() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={3}>
+        <Grid xs={12} md={3}>
           <Card>
             <CardHeader title="メモリ使用率" />
             <CardContent>
-              <Typography 
-                variant="h3" 
+              <Typography
+                variant="h3"
                 color={getStatusColor(metrics.memoryUsage, { warning: 70, error: 85 })}
               >
                 {metrics.memoryUsage.toFixed(1)}%
@@ -156,20 +151,22 @@ export default function MonitoringDashboard() {
         </Grid>
 
         {/* パフォーマンストレンド */}
-        <Grid item xs={12} md={8}>
+        <Grid xs={12} md={8}>
           <Card>
             <CardHeader title="応答時間トレンド" />
             <CardContent>
               <Line
                 data={{
                   labels: metrics.timeline,
-                  datasets: [{
-                    label: '応答時間 (ms)',
-                    data: metrics.responseTimeHistory,
-                    borderColor: 'rgb(75, 192, 192)',
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    tension: 0.1,
-                  }],
+                  datasets: [
+                    {
+                      label: '応答時間 (ms)',
+                      data: metrics.responseTimeHistory,
+                      borderColor: 'rgb(75, 192, 192)',
+                      backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                      tension: 0.1,
+                    },
+                  ],
                 }}
                 options={{
                   responsive: true,
@@ -189,23 +186,19 @@ export default function MonitoringDashboard() {
         </Grid>
 
         {/* エラー分布 */}
-        <Grid item xs={12} md={4}>
+        <Grid xs={12} md={4}>
           <Card>
             <CardHeader title="エラータイプ分布" />
             <CardContent>
               <Doughnut
                 data={{
                   labels: Object.keys(metrics.errorTypeDistribution),
-                  datasets: [{
-                    data: Object.values(metrics.errorTypeDistribution),
-                    backgroundColor: [
-                      '#FF6384',
-                      '#36A2EB',
-                      '#FFCE56',
-                      '#4BC0C0',
-                      '#9966FF',
-                    ],
-                  }],
+                  datasets: [
+                    {
+                      data: Object.values(metrics.errorTypeDistribution),
+                      backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
+                    },
+                  ],
                 }}
                 options={{
                   responsive: true,
@@ -217,18 +210,20 @@ export default function MonitoringDashboard() {
         </Grid>
 
         {/* トップページ */}
-        <Grid item xs={12}>
+        <Grid xs={12}>
           <Card>
             <CardHeader title="人気ページ" />
             <CardContent>
               <Bar
                 data={{
-                  labels: metrics.topPages.map(page => page.path),
-                  datasets: [{
-                    label: 'ページビュー',
-                    data: metrics.topPages.map(page => page.views),
-                    backgroundColor: 'rgba(54, 162, 235, 0.8)',
-                  }],
+                  labels: metrics.topPages.map((page) => page.path),
+                  datasets: [
+                    {
+                      label: 'ページビュー',
+                      data: metrics.topPages.map((page) => page.views),
+                      backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                    },
+                  ],
                 }}
                 options={{
                   responsive: true,
