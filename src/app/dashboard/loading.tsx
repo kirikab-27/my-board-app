@@ -13,7 +13,7 @@ export default function Loading() {
         {/* カードグリッド */}
         <Grid container spacing={3}>
           {[1, 2, 3, 4].map((index) => (
-            <Grid item xs={12} sm={6} md={3} key={index}>
+            <Grid xs={12} sm={6} md={3} key={index}>
               <Skeleton
                 variant="rectangular"
                 width="100%"

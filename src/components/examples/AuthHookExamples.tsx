@@ -169,7 +169,7 @@ export const AuthHookExamples: React.FC = () => {
       </Typography>
 
       <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
+        <Grid xs={12} md={6}>
           <Card>
             <CardContent>
               <Typography variant="h5" gutterBottom>
@@ -180,7 +180,7 @@ export const AuthHookExamples: React.FC = () => {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid xs={12} md={6}>
           <Card>
             <CardContent>
               <Typography variant="h5" gutterBottom>
@@ -191,7 +191,7 @@ export const AuthHookExamples: React.FC = () => {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid xs={12} md={6}>
           <Card>
             <CardContent>
               <Typography variant="h5" gutterBottom>
@@ -202,7 +202,7 @@ export const AuthHookExamples: React.FC = () => {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid xs={12} md={6}>
           <Card>
             <CardContent>
               <Typography variant="h5" gutterBottom>

@@ -111,7 +111,7 @@ export const DashboardSkeleton: React.FC = () => {
         <Skeleton variant="text" width="30%" height={32} sx={{ mb: 2 }} />
         <Grid container spacing={2} sx={{ mb: 4 }}>
           {[1, 2].map((item) => (
-            <Grid item xs={12} sm={6} key={item}>
+            <Grid xs={12} sm={6} key={item}>
               <Card>
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -233,7 +233,7 @@ export const ProfileSkeleton: React.FC = () => {
 
         {/* プロフィール情報 */}
         <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <Skeleton variant="text" width="30%" height={24} sx={{ mb: 1 }} />
             <Skeleton variant="rectangular" height={56} sx={{ mb: 3 }} />
 
@@ -241,7 +241,7 @@ export const ProfileSkeleton: React.FC = () => {
             <Skeleton variant="rectangular" height={56} sx={{ mb: 3 }} />
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <Skeleton variant="text" width="35%" height={24} sx={{ mb: 1 }} />
             <Skeleton variant="rectangular" height={56} sx={{ mb: 3 }} />
 

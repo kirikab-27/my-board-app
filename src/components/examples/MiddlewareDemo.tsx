@@ -137,7 +137,7 @@ export const MiddlewareDemo: React.FC = () => {
       {/* ルート設定テーブル */}
       <Grid container spacing={3}>
         {routeConfigs.map((category, index) => (
-          <Grid item xs={12} key={index}>
+          <Grid xs={12} key={index}>
             <Accordion defaultExpanded={index === 0}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -233,7 +233,7 @@ export const MiddlewareDemo: React.FC = () => {
         </Typography>
 
         <Grid container spacing={2}>
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -250,7 +250,7 @@ export const MiddlewareDemo: React.FC = () => {
             </Card>
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -267,7 +267,7 @@ export const MiddlewareDemo: React.FC = () => {
             </Card>
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -284,7 +284,7 @@ export const MiddlewareDemo: React.FC = () => {
             </Card>
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
