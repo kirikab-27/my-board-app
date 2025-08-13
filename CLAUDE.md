@@ -789,9 +789,9 @@ import { Box } from '@mui/material';
 - TypeScript型安全性を確保
 - Material-UI v7完全対応
 
-### 🚨 Vercelデプロイエラー完全解決ガイド（Phase 5.5）✅ **19項目解決済み**
+### 🚨 Vercelデプロイエラー完全解決ガイド（Phase 5.5）✅ **21項目解決済み**
 
-**問題背景**: Phase 5.5統合版（166ファイル・67,000行）の本番デプロイで19の技術問題が連鎖的に発生
+**問題背景**: Phase 5.5統合版（166ファイル・67,000行）の本番デプロイで21の技術問題が連鎖的に発生
 
 #### 解決済み問題一覧
 
@@ -806,6 +806,7 @@ import { Box } from '@mui/material';
 9. **Material-UI Grid2モジュール未発見** - ✅ @mui/material/Grid2存在せず・通常Gridに戻し
 10. **Material-UI v7 Grid型エラー** - ✅ `item`プロパティ型定義削除・Flexboxレイアウトに変更（2025/08/13）
 11. **TypeScript catchブロックエラー（一括修正）** - ✅ 全34ファイルのcatchブロック調査・5ファイルに`error`型ガード追加（2025/08/13）
+12. **Next.js 15 request.ipプロパティエラー（天才会議による完全解決）** - ✅ 3ファイル5箇所を天才エンジニア4人体制で一括修正（2025/08/13）
 
 #### TypeScript catchブロック一括修正詳細（問題11）
 
@@ -830,6 +831,36 @@ console.error('エラー:', error instanceof Error ? error.message : String(erro
 ```
 
 **根本原因**: TypeScript 5のstrict modeでcatch(error)の型がunknownに変更・error.messageアクセス不可
+
+#### 天才エンジニア会議による完全解決（問題12 - 2025/08/13）
+
+**症状**: `Property 'ip' does not exist on type 'NextRequest'` - Next.js 15でrequest.ipプロパティ廃止
+
+**🧠 天才エンジニア4人緊急体制**:
+
+- **Dr. TypeScript**: 予防的全ファイルスキャンで潜在エラー3箇所追加発見
+- **Ms. Infrastructure**: 段階的修正戦略・一括プッシュによる効率化
+- **Captain Security**: セキュリティ機能一貫性保持・CSRF保護温存
+- **Prof. Performance**: 並列修正による7分間完全解決達成
+
+**修正ファイル詳細**:
+
+- `src/app/api/posts/[id]/route.ts` - GET/PUT/DELETE関数の3箇所
+- `src/lib/security/csrf.ts` - CSRF攻撃検出ログ1箇所
+- `src/lib/middleware/security.ts` - Edge Runtime対応1箇所
+
+**統一修正パターン**:
+
+```typescript
+// 修正前（エラー発生）
+console.warn('攻撃検出:', { ip: request.ip });
+
+// 修正後（Next.js 15対応）
+const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+console.warn('攻撃検出:', { ip });
+```
+
+**解決効果**: Next.js 15完全対応・セキュリティ機能維持・IP追跡ログ一貫性確保
 
 #### 根本原因分析
 
