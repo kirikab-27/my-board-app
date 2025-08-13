@@ -16,7 +16,6 @@ import {
   InputLabel,
   Chip,
 } from '@mui/material';
-import { Grid } from '@mui/material';
 import { getSecurityStats, getRateLimitInfo, unblockIpOrUser } from '@/lib/security/rateLimit';
 
 interface SecurityStats {
@@ -164,8 +163,8 @@ export default function SecurityAdminPage() {
       )}
 
       {/* セキュリティ統計 */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} md={6}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 4 }}>
+        <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' } }}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -193,9 +192,9 @@ export default function SecurityAdminPage() {
               )}
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
 
-        <Grid item xs={12} md={6}>
+        <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' } }}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -224,8 +223,8 @@ export default function SecurityAdminPage() {
               )}
             </CardContent>
           </Card>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
 
       {/* レート制限情報確認 */}
       <Card sx={{ mb: 3 }}>
@@ -257,8 +256,8 @@ export default function SecurityAdminPage() {
           </Box>
 
           {rateLimitInfo && (
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+              <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 8px)' } }}>
                 <Card variant="outlined">
                   <CardContent>
                     <Typography variant="subtitle1">IP制限状況</Typography>
@@ -279,9 +278,9 @@ export default function SecurityAdminPage() {
                     )}
                   </CardContent>
                 </Card>
-              </Grid>
+              </Box>
 
-              <Grid item xs={12} md={6}>
+              <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 8px)' } }}>
                 <Card variant="outlined">
                   <CardContent>
                     <Typography variant="subtitle1">ユーザー制限状況</Typography>
@@ -310,8 +309,8 @@ export default function SecurityAdminPage() {
                     )}
                   </CardContent>
                 </Card>
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
           )}
         </CardContent>
       </Card>
