@@ -15,8 +15,8 @@ import {
   FormControl,
   InputLabel,
   Chip,
+  Grid,
 } from '@mui/material';
-import Grid from '@mui/material/Grid2';
 import { getSecurityStats, getRateLimitInfo, unblockIpOrUser } from '@/lib/security/rateLimit';
 
 interface SecurityStats {
@@ -164,8 +164,8 @@ export default function SecurityAdminPage() {
       )}
 
       {/* セキュリティ統計 */}
-      <Grid spacing={3} sx={{ mb: 4 }}>
-        <Grid xs={12} md={6}>
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12} md={6}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -195,7 +195,7 @@ export default function SecurityAdminPage() {
           </Card>
         </Grid>
 
-        <Grid xs={12} md={6}>
+        <Grid item xs={12} md={6}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -257,8 +257,8 @@ export default function SecurityAdminPage() {
           </Box>
 
           {rateLimitInfo && (
-            <Grid spacing={2}>
-              <Grid xs={12} md={6}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={6}>
                 <Card variant="outlined">
                   <CardContent>
                     <Typography variant="subtitle1">IP制限状況</Typography>
@@ -281,7 +281,7 @@ export default function SecurityAdminPage() {
                 </Card>
               </Grid>
 
-              <Grid xs={12} md={6}>
+              <Grid item xs={12} md={6}>
                 <Card variant="outlined">
                   <CardContent>
                     <Typography variant="subtitle1">ユーザー制限状況</Typography>
