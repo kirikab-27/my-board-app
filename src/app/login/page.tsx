@@ -6,7 +6,6 @@ import {
   Card,
   CardContent,
   CardHeader,
-  CardTitle,
   TextField,
   Button,
   Alert,
@@ -153,7 +152,9 @@ export default function LoginPage() {
     <Container maxWidth="sm" sx={{ mt: 8, mb: 4 }}>
       <Card sx={{ maxWidth: 400, width: '100%', mx: 'auto' }}>
         <CardHeader>
-          <CardTitle>ログイン</CardTitle>
+          <Typography variant="h5" component="h1" gutterBottom>
+            ログイン
+          </Typography>
         </CardHeader>
         <CardContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
