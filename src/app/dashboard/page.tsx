@@ -66,7 +66,7 @@ export default function DashboardPage() {
               クイックアクション
             </Typography>
             <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid xs={12} sm={6} md={4}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <Card>
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -96,7 +96,7 @@ export default function DashboardPage() {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid xs={12} sm={6} md={4}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <Card>
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -126,7 +126,7 @@ export default function DashboardPage() {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid xs={12} sm={6} md={4}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <Card>
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>

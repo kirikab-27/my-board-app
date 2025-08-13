@@ -138,7 +138,7 @@ export default function LandingPage() {
 
         {/* 機能紹介セクション */}
         <Grid container spacing={4} sx={{ mb: 8 }}>
-          <Grid xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Card
               sx={{
                 height: '100%',
@@ -164,7 +164,7 @@ export default function LandingPage() {
             </Card>
           </Grid>
 
-          <Grid xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Card
               sx={{
                 height: '100%',
@@ -190,7 +190,7 @@ export default function LandingPage() {
             </Card>
           </Grid>
 
-          <Grid xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Card
               sx={{
                 height: '100%',
@@ -223,7 +223,7 @@ export default function LandingPage() {
             ご利用手順
           </Typography>
           <Grid container spacing={4} sx={{ mt: 2 }}>
-            <Grid xs={12} sm={4}>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <Box textAlign="center">
                 <PersonAddIcon sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
                 <Typography variant="h6" gutterBottom>
@@ -234,7 +234,7 @@ export default function LandingPage() {
                 </Typography>
               </Box>
             </Grid>
-            <Grid xs={12} sm={4}>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <Box textAlign="center">
                 <LoginIcon sx={{ fontSize: 48, color: 'secondary.main', mb: 2 }} />
                 <Typography variant="h6" gutterBottom>
@@ -245,7 +245,7 @@ export default function LandingPage() {
                 </Typography>
               </Box>
             </Grid>
-            <Grid xs={12} sm={4}>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <Box textAlign="center">
                 <DashboardIcon sx={{ fontSize: 48, color: 'success.main', mb: 2 }} />
                 <Typography variant="h6" gutterBottom>
