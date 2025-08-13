@@ -5,17 +5,20 @@ import VerificationToken from '@/models/VerificationToken';
 import { z } from 'zod';
 
 // バリデーションスキーマ
-const resetConfirmSchema = z.object({
-  token: z.string().min(1, 'トークンが必要です'),
-  password: z.string()
-    .min(8, 'パスワードは8文字以上で入力してください')
-    .max(100, 'パスワードは100文字以内で入力してください')
-    .regex(/^(?=.*[a-zA-Z])(?=.*\d)/, 'パスワードは英数字を含む必要があります'),
-  confirmPassword: z.string(),
-}).refine(data => data.password === data.confirmPassword, {
-  message: 'パスワードが一致しません',
-  path: ['confirmPassword'],
-});
+const resetConfirmSchema = z
+  .object({
+    token: z.string().min(1, 'トークンが必要です'),
+    password: z
+      .string()
+      .min(8, 'パスワードは8文字以上で入力してください')
+      .max(100, 'パスワードは100文字以内で入力してください')
+      .regex(/^(?=.*[a-zA-Z])(?=.*\d)/, 'パスワードは英数字を含む必要があります'),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'パスワードが一致しません',
+    path: ['confirmPassword'],
+  });
 
 export async function POST(req: NextRequest) {
   try {
@@ -48,7 +51,10 @@ export async function POST(req: NextRequest) {
     if (!resetToken) {
       console.error('❌ Invalid or expired reset token');
       return NextResponse.json(
-        { error: 'リセットトークンが無効または期限切れです。再度パスワードリセットを要求してください。' },
+        {
+          error:
+            'リセットトークンが無効または期限切れです。再度パスワードリセットを要求してください。',
+        },
         { status: 400 }
       );
     }
@@ -59,10 +65,7 @@ export async function POST(req: NextRequest) {
     const user = await User.findOne({ email: resetToken.identifier });
     if (!user) {
       console.error('❌ User not found for reset:', resetToken.identifier);
-      return NextResponse.json(
-        { error: 'ユーザーが見つかりません。' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'ユーザーが見つかりません。' }, { status: 404 });
     }
 
     // パスワード更新（bcryptハッシュ化は User model の pre-save で実行される）
@@ -75,9 +78,9 @@ export async function POST(req: NextRequest) {
     console.log('✅ Used reset token deleted');
 
     // セキュリティのため、そのユーザーの全リセットトークンを削除
-    await VerificationToken.deleteMany({ 
+    await VerificationToken.deleteMany({
       identifier: resetToken.identifier,
-      type: 'password-reset'
+      type: 'password-reset',
     });
 
     console.log('✅ Password reset completed for:', user.email);
@@ -85,14 +88,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       message: 'パスワードが正常に更新されました。新しいパスワードでログインしてください。',
     });
-
   } catch (error) {
     console.error('❌ Password reset confirm error:', error);
-    
+
     return NextResponse.json(
-      { 
+      {
         error: 'パスワードリセットの処理に失敗しました。しばらく待ってから再度お試しください。',
-        details: process.env.NODE_ENV === 'development' ? error?.message : undefined 
+        details:
+          process.env.NODE_ENV === 'development'
+            ? error instanceof Error
+              ? error.message
+              : String(error)
+            : undefined,
       },
       { status: 500 }
     );
