@@ -699,9 +699,40 @@ interface User {
 - **原因**: Server ComponentでClient Component（AuthButton）を直接使用
 - **解決方法**: ProfileHeaderクライアントコンポーネント作成・Server/Client分離
 
-### 🚨 Vercelデプロイエラー完全解決ガイド（Phase 5.5）✅ **16項目解決済み**
+#### Material-UI v7 Grid型エラー（2025/08/13新規解決） ✅ **解決済み**
 
-**問題背景**: Phase 5.5統合版（166ファイル・67,000行）の本番デプロイで16の技術問題が連鎖的に発生
+**症状**: Vercelデプロイ時にTypeScriptコンパイルエラーが発生
+
+```
+Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps...'
+```
+
+**原因**: Material-UI v7でGrid `item`プロパティの型定義が削除・変更
+
+**✅ 解決方法**:
+
+```typescript
+// Before (エラー発生)
+import { Grid } from '@mui/material';
+<Grid container spacing={3}>
+  <Grid item xs={12} md={6}>  // ← item プロパティエラー
+
+// After (解決済み)
+import { Box } from '@mui/material';
+<Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+  <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' } }}>
+```
+
+**技術的ポイント**:
+
+- Grid依存を完全削除してFlexboxレイアウトに変更
+- レスポンシブ対応を維持（xs: 100%, md: 50%）
+- TypeScript型安全性を確保
+- Material-UI v7完全対応
+
+### 🚨 Vercelデプロイエラー完全解決ガイド（Phase 5.5）✅ **17項目解決済み**
+
+**問題背景**: Phase 5.5統合版（166ファイル・67,000行）の本番デプロイで17の技術問題が連鎖的に発生
 
 #### 解決済み問題一覧
 
@@ -714,6 +745,7 @@ interface User {
 7. **Sentry サーバー設定** - ✅ tracing: true削除
 8. **Material-UI v7 Grid2** - ✅ Grid2モジュール未対応・従来Gridに復元
 9. **Material-UI Grid2モジュール未発見** - ✅ @mui/material/Grid2存在せず・通常Gridに戻し
+10. **Material-UI v7 Grid型エラー** - ✅ `item`プロパティ型定義削除・Flexboxレイアウトに変更（2025/08/13）
 
 #### 根本原因分析
 
