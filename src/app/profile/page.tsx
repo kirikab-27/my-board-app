@@ -20,8 +20,8 @@ async function getProfile(userId: string) {
 
   if (!user) return null;
 
-  // 型安全性確保のため明示的にキャスト
-  const safeUser = user as {
+  // 型安全性確保のためunknown経由でキャスト
+  const safeUser = user as unknown as {
     _id: any;
     name: string;
     email: string;

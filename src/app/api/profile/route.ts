@@ -28,8 +28,8 @@ export async function GET() {
       return NextResponse.json({ error: 'ユーザーが見つかりません' }, { status: 404 });
     }
 
-    // 型安全性確保のため明示的にキャスト
-    const safeUser = user as {
+    // 型安全性確保のためunknown経由でキャスト
+    const safeUser = user as unknown as {
       _id: any;
       name: string;
       email: string;
