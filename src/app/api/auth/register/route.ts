@@ -100,7 +100,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         error: 'ユーザー登録に失敗しました。しばらく待ってから再度お試しください。',
-        details: process.env.NODE_ENV === 'development' ? error?.message : undefined,
+        details:
+          process.env.NODE_ENV === 'development'
+            ? error instanceof Error
+              ? error.message
+              : String(error)
+            : undefined,
       },
       { status: 500 }
     );
