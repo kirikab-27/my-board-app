@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, Grid, Typography, Alert, Box } from '@mui/material';
+import { Card, CardContent, CardHeader, Grid2, Typography, Alert, Box } from '@mui/material';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -95,9 +95,9 @@ export default function MonitoringDashboard() {
         システム監視ダッシュボード
       </Typography>
 
-      <Grid container spacing={3}>
+      <Grid2 container spacing={3}>
         {/* システム状態 */}
-        <Grid xs={12} md={3}>
+        <Grid2 xs={12} md={3}>
           <Card>
             <CardHeader title="エラー率" />
             <CardContent>
@@ -109,9 +109,9 @@ export default function MonitoringDashboard() {
               </Typography>
             </CardContent>
           </Card>
-        </Grid>
+        </Grid2>
 
-        <Grid xs={12} md={3}>
+        <Grid2 xs={12} md={3}>
           <Card>
             <CardHeader title="平均応答時間" />
             <CardContent>
@@ -123,9 +123,9 @@ export default function MonitoringDashboard() {
               </Typography>
             </CardContent>
           </Card>
-        </Grid>
+        </Grid2>
 
-        <Grid xs={12} md={3}>
+        <Grid2 xs={12} md={3}>
           <Card>
             <CardHeader title="アクティブユーザー" />
             <CardContent>
@@ -134,9 +134,9 @@ export default function MonitoringDashboard() {
               </Typography>
             </CardContent>
           </Card>
-        </Grid>
+        </Grid2>
 
-        <Grid xs={12} md={3}>
+        <Grid2 xs={12} md={3}>
           <Card>
             <CardHeader title="メモリ使用率" />
             <CardContent>
@@ -148,10 +148,10 @@ export default function MonitoringDashboard() {
               </Typography>
             </CardContent>
           </Card>
-        </Grid>
+        </Grid2>
 
         {/* パフォーマンストレンド */}
-        <Grid xs={12} md={8}>
+        <Grid2 xs={12} md={8}>
           <Card>
             <CardHeader title="応答時間トレンド" />
             <CardContent>
@@ -183,10 +183,10 @@ export default function MonitoringDashboard() {
               />
             </CardContent>
           </Card>
-        </Grid>
+        </Grid2>
 
         {/* エラー分布 */}
-        <Grid xs={12} md={4}>
+        <Grid2 xs={12} md={4}>
           <Card>
             <CardHeader title="エラータイプ分布" />
             <CardContent>
@@ -207,10 +207,10 @@ export default function MonitoringDashboard() {
               />
             </CardContent>
           </Card>
-        </Grid>
+        </Grid2>
 
         {/* トップページ */}
-        <Grid xs={12}>
+        <Grid2 xs={12}>
           <Card>
             <CardHeader title="人気ページ" />
             <CardContent>
@@ -240,8 +240,8 @@ export default function MonitoringDashboard() {
               />
             </CardContent>
           </Card>
-        </Grid>
-      </Grid>
+        </Grid2>
+      </Grid2>
     </Box>
   );
 }

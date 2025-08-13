@@ -6,7 +6,7 @@ import {
   Container,
   Paper,
   Skeleton,
-  Grid,
+  Grid2,
   Card,
   CardContent,
   AppBar,
@@ -109,9 +109,9 @@ export const DashboardSkeleton: React.FC = () => {
 
         {/* クイックアクション */}
         <Skeleton variant="text" width="30%" height={32} sx={{ mb: 2 }} />
-        <Grid container spacing={2} sx={{ mb: 4 }}>
+        <Grid2 container spacing={2} sx={{ mb: 4 }}>
           {[1, 2].map((item) => (
-            <Grid xs={12} sm={6} key={item}>
+            <Grid2 xs={12} sm={6} key={item}>
               <Card>
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -122,9 +122,9 @@ export const DashboardSkeleton: React.FC = () => {
                   <Skeleton variant="rectangular" width="100%" height={36} />
                 </CardContent>
               </Card>
-            </Grid>
+            </Grid2>
           ))}
-        </Grid>
+        </Grid2>
 
         {/* 追加情報 */}
         <Skeleton variant="text" width="25%" height={24} sx={{ mb: 1 }} />
@@ -232,23 +232,23 @@ export const ProfileSkeleton: React.FC = () => {
         </Box>
 
         {/* プロフィール情報 */}
-        <Grid container spacing={3}>
-          <Grid xs={12} md={6}>
+        <Grid2 container spacing={3}>
+          <Grid2 xs={12} md={6}>
             <Skeleton variant="text" width="30%" height={24} sx={{ mb: 1 }} />
             <Skeleton variant="rectangular" height={56} sx={{ mb: 3 }} />
 
             <Skeleton variant="text" width="40%" height={24} sx={{ mb: 1 }} />
             <Skeleton variant="rectangular" height={56} sx={{ mb: 3 }} />
-          </Grid>
+          </Grid2>
 
-          <Grid xs={12} md={6}>
+          <Grid2 xs={12} md={6}>
             <Skeleton variant="text" width="35%" height={24} sx={{ mb: 1 }} />
             <Skeleton variant="rectangular" height={56} sx={{ mb: 3 }} />
 
             <Skeleton variant="text" width="25%" height={24} sx={{ mb: 1 }} />
             <Skeleton variant="rectangular" height={56} sx={{ mb: 3 }} />
-          </Grid>
-        </Grid>
+          </Grid2>
+        </Grid2>
 
         {/* 保存ボタン */}
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>

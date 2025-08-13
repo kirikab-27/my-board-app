@@ -1,4 +1,4 @@
-import { Box, Skeleton, Stack, Container, Grid } from '@mui/material';
+import { Box, Skeleton, Stack, Container, Grid2 } from '@mui/material';
 
 export default function Loading() {
   return (
@@ -11,9 +11,9 @@ export default function Loading() {
         </Box>
 
         {/* カードグリッド */}
-        <Grid container spacing={3}>
+        <Grid2 container spacing={3}>
           {[1, 2, 3, 4].map((index) => (
-            <Grid xs={12} sm={6} md={3} key={index}>
+            <Grid2 xs={12} sm={6} md={3} key={index}>
               <Skeleton
                 variant="rectangular"
                 width="100%"
@@ -21,9 +21,9 @@ export default function Loading() {
                 sx={{ borderRadius: 2 }}
                 animation="wave"
               />
-            </Grid>
+            </Grid2>
           ))}
-        </Grid>
+        </Grid2>
 
         {/* アクションボタン */}
         <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
