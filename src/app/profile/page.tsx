@@ -20,15 +20,27 @@ async function getProfile(userId: string) {
 
   if (!user) return null;
 
+  // 型安全性確保のため明示的にキャスト
+  const safeUser = user as {
+    _id: any;
+    name: string;
+    email: string;
+    bio?: string;
+    emailVerified: Date | null;
+    role: string;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+
   return {
-    id: user._id.toString(),
-    name: user.name,
-    email: user.email,
-    bio: user.bio || '',
-    emailVerified: user.emailVerified,
-    role: user.role,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt,
+    id: safeUser._id.toString(),
+    name: safeUser.name,
+    email: safeUser.email,
+    bio: safeUser.bio || '',
+    emailVerified: safeUser.emailVerified,
+    role: safeUser.role,
+    createdAt: safeUser.createdAt,
+    updatedAt: safeUser.updatedAt,
   };
 }
 
