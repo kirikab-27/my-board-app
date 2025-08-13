@@ -3,7 +3,7 @@
  * XSS攻撃の多層防御を提供
  */
 
-import crypto from 'crypto';
+// Web Crypto API を使用 (Edge Runtime対応)
 
 /**
  * 本番環境用のCSPヘッダー（厳格）
@@ -26,7 +26,10 @@ const productionCSP = `
     https://accounts.google.com 
     https://oauth2.googleapis.com
     https://www.googleapis.com;
-`.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+`
+  .replace(/\n/g, ' ')
+  .replace(/\s+/g, ' ')
+  .trim();
 
 /**
  * 開発環境用のCSPヘッダー（緩い）
@@ -51,16 +54,17 @@ const developmentCSP = `
     https://accounts.google.com 
     https://oauth2.googleapis.com
     https://www.googleapis.com;
-`.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+`
+  .replace(/\n/g, ' ')
+  .replace(/\s+/g, ' ')
+  .trim();
 
 /**
  * 包括的なセキュリティヘッダー
  */
 export const securityHeaders = {
   // Content Security Policy
-  'Content-Security-Policy': process.env.NODE_ENV === 'production' 
-    ? productionCSP 
-    : developmentCSP,
+  'Content-Security-Policy': process.env.NODE_ENV === 'production' ? productionCSP : developmentCSP,
 
   // XSS保護
   'X-Content-Type-Options': 'nosniff',
@@ -83,10 +87,16 @@ export const securityHeaders = {
 };
 
 /**
- * CSPのnonce生成（動的CSP用）
+ * CSPのnonce生成（動的CSP用）- Edge Runtime対応
  */
 export function generateCSPNonce(): string {
-  return Buffer.from(crypto.randomUUID()).toString('base64');
+  // Web Crypto API使用（Edge Runtime対応）
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return btoa(crypto.randomUUID());
+  }
+
+  // フォールバック（開発環境など）
+  return btoa(Math.random().toString(36).substring(2) + Date.now().toString(36));
 }
 
 /**
@@ -94,12 +104,9 @@ export function generateCSPNonce(): string {
  */
 export function generateCSPWithNonce(nonce: string): string {
   const baseCSP = process.env.NODE_ENV === 'production' ? productionCSP : developmentCSP;
-  
+
   // script-srcにnonceを追加
-  return baseCSP.replace(
-    "script-src 'self'",
-    `script-src 'self' 'nonce-${nonce}'`
-  );
+  return baseCSP.replace("script-src 'self'", `script-src 'self' 'nonce-${nonce}'`);
 }
 
 /**
@@ -110,12 +117,15 @@ export const cspReportingHeaders = {
     ${process.env.NODE_ENV === 'production' ? productionCSP : developmentCSP};
     report-uri /api/security/csp-report;
     report-to csp-endpoint;
-  `.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim(),
-  
+  `
+    .replace(/\n/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim(),
+
   'Report-To': JSON.stringify({
     group: 'csp-endpoint',
     max_age: 10886400,
-    endpoints: [{ url: '/api/security/csp-report' }]
+    endpoints: [{ url: '/api/security/csp-report' }],
   }),
 };
 
@@ -133,7 +143,10 @@ export const pageSpecificCSP = {
     connect-src 'self' https://api.github.com https://accounts.google.com;
     frame-src https://accounts.google.com https://github.com;
     form-action 'self' https://github.com https://accounts.google.com;
-  `.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim(),
+  `
+    .replace(/\n/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim(),
 
   // 管理ダッシュボード用（Chart.js許可）
   admin: `
@@ -143,7 +156,10 @@ export const pageSpecificCSP = {
     font-src 'self' https://fonts.gstatic.com;
     img-src 'self' data: blob:;
     connect-src 'self';
-  `.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim(),
+  `
+    .replace(/\n/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim(),
 };
 
 /**
@@ -169,7 +185,7 @@ export function processCSPViolation(violation: CSPViolation): void {
       directive: violation['violated-directive'],
       blocked: violation['blocked-uri'],
       source: violation['source-file'],
-      line: violation['line-number']
+      line: violation['line-number'],
     });
   }
 
