@@ -173,13 +173,16 @@ export const authOptions: NextAuthOptions = {
           if (dbUser) {
             token.role = dbUser.role || 'user'; // デフォルトロール
             token.emailVerified = dbUser.emailVerified;
+            token.bio = dbUser.bio || ''; // 自己紹介追加
             console.log('✅ JWT callback - token updated:', {
               role: token.role,
               emailVerified: !!token.emailVerified,
+              bio: !!token.bio,
             });
           } else {
             token.role = 'user'; // デフォルトロール
             token.emailVerified = null;
+            token.bio = ''; // デフォルト自己紹介
             console.log('⚠️ JWT callback - user not found in DB, using defaults');
           }
         } catch (error) {
@@ -201,6 +204,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
         session.user.emailVerified = token.emailVerified as Date | null;
+        session.user.bio = token.bio as string;
       }
       return session;
     },
