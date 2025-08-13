@@ -6,7 +6,7 @@ import {
   Typography,
   Box,
   Paper,
-  Grid2,
+  Grid,
   Card,
   CardContent,
   Button,
@@ -135,9 +135,9 @@ export const MiddlewareDemo: React.FC = () => {
       </Box>
 
       {/* ルート設定テーブル */}
-      <Grid2 container spacing={3}>
+      <Grid container spacing={3}>
         {routeConfigs.map((category, index) => (
-          <Grid2 xs={12} key={index}>
+          <Grid item xs={12} key={index}>
             <Accordion defaultExpanded={index === 0}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -222,9 +222,9 @@ export const MiddlewareDemo: React.FC = () => {
                 </TableContainer>
               </AccordionDetails>
             </Accordion>
-          </Grid2>
+          </Grid>
         ))}
-      </Grid2>
+      </Grid>
 
       {/* セキュリティ機能概要 */}
       <Box sx={{ mt: 4 }}>
@@ -232,8 +232,8 @@ export const MiddlewareDemo: React.FC = () => {
           🔒 セキュリティ機能
         </Typography>
 
-        <Grid2 container spacing={2}>
-          <Grid2 xs={12} md={6}>
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={6}>
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -248,9 +248,9 @@ export const MiddlewareDemo: React.FC = () => {
                 </Typography>
               </CardContent>
             </Card>
-          </Grid2>
+          </Grid>
 
-          <Grid2 xs={12} md={6}>
+          <Grid item xs={12} md={6}>
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -265,9 +265,9 @@ export const MiddlewareDemo: React.FC = () => {
                 </Typography>
               </CardContent>
             </Card>
-          </Grid2>
+          </Grid>
 
-          <Grid2 xs={12} md={6}>
+          <Grid item xs={12} md={6}>
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -282,9 +282,9 @@ export const MiddlewareDemo: React.FC = () => {
                 </Typography>
               </CardContent>
             </Card>
-          </Grid2>
+          </Grid>
 
-          <Grid2 xs={12} md={6}>
+          <Grid item xs={12} md={6}>
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -299,8 +299,8 @@ export const MiddlewareDemo: React.FC = () => {
                 </Typography>
               </CardContent>
             </Card>
-          </Grid2>
-        </Grid2>
+          </Grid>
+        </Grid>
       </Box>
 
       {/* テスト結果 */}

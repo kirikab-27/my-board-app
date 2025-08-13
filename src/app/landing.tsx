@@ -7,7 +7,7 @@ import {
   Box,
   Button,
   Paper,
-  Grid2,
+  Grid,
   Card,
   CardContent,
   Stack,
@@ -137,8 +137,8 @@ export default function LandingPage() {
         </Box>
 
         {/* 機能紹介セクション */}
-        <Grid2 container spacing={4} sx={{ mb: 8 }}>
-          <Grid2 xs={12} md={4}>
+        <Grid container spacing={4} sx={{ mb: 8 }}>
+          <Grid item xs={12} md={4}>
             <Card
               sx={{
                 height: '100%',
@@ -162,9 +162,9 @@ export default function LandingPage() {
                 </Typography>
               </CardContent>
             </Card>
-          </Grid2>
+          </Grid>
 
-          <Grid2 xs={12} md={4}>
+          <Grid item xs={12} md={4}>
             <Card
               sx={{
                 height: '100%',
@@ -188,9 +188,9 @@ export default function LandingPage() {
                 </Typography>
               </CardContent>
             </Card>
-          </Grid2>
+          </Grid>
 
-          <Grid2 xs={12} md={4}>
+          <Grid item xs={12} md={4}>
             <Card
               sx={{
                 height: '100%',
@@ -214,16 +214,16 @@ export default function LandingPage() {
                 </Typography>
               </CardContent>
             </Card>
-          </Grid2>
-        </Grid2>
+          </Grid>
+        </Grid>
 
         {/* 利用手順セクション */}
         <Paper sx={{ p: 4, mb: 6 }}>
           <Typography variant="h4" textAlign="center" gutterBottom>
             ご利用手順
           </Typography>
-          <Grid2 container spacing={4} sx={{ mt: 2 }}>
-            <Grid2 xs={12} sm={4}>
+          <Grid container spacing={4} sx={{ mt: 2 }}>
+            <Grid item xs={12} sm={4}>
               <Box textAlign="center">
                 <PersonAddIcon sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
                 <Typography variant="h6" gutterBottom>
@@ -233,8 +233,8 @@ export default function LandingPage() {
                   メールアドレスでアカウントを作成し、 認証メールを確認
                 </Typography>
               </Box>
-            </Grid2>
-            <Grid2 xs={12} sm={4}>
+            </Grid>
+            <Grid item xs={12} sm={4}>
               <Box textAlign="center">
                 <LoginIcon sx={{ fontSize: 48, color: 'secondary.main', mb: 2 }} />
                 <Typography variant="h6" gutterBottom>
@@ -244,8 +244,8 @@ export default function LandingPage() {
                   メール・Google・GitHub いずれかの方法でログイン
                 </Typography>
               </Box>
-            </Grid2>
-            <Grid2 xs={12} sm={4}>
+            </Grid>
+            <Grid item xs={12} sm={4}>
               <Box textAlign="center">
                 <DashboardIcon sx={{ fontSize: 48, color: 'success.main', mb: 2 }} />
                 <Typography variant="h6" gutterBottom>
@@ -255,8 +255,8 @@ export default function LandingPage() {
                   投稿作成・いいね・検索など すべての機能をご利用可能
                 </Typography>
               </Box>
-            </Grid2>
-          </Grid2>
+            </Grid>
+          </Grid>
         </Paper>
 
         {/* CTAセクション */}

@@ -9,7 +9,7 @@ import {
   Alert,
   CircularProgress,
   Button,
-  Grid2,
+  Grid,
   Card,
   CardContent,
   Chip,
@@ -168,8 +168,8 @@ export const AuthHookExamples: React.FC = () => {
         現在のログインユーザー: {user?.name || '未ログイン'} ({user?.role || 'N/A'})
       </Typography>
 
-      <Grid2 container spacing={3}>
-        <Grid2 xs={12} md={6}>
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={6}>
           <Card>
             <CardContent>
               <Typography variant="h5" gutterBottom>
@@ -178,9 +178,9 @@ export const AuthHookExamples: React.FC = () => {
               <BasicAuthExample />
             </CardContent>
           </Card>
-        </Grid2>
+        </Grid>
 
-        <Grid2 xs={12} md={6}>
+        <Grid item xs={12} md={6}>
           <Card>
             <CardContent>
               <Typography variant="h5" gutterBottom>
@@ -189,9 +189,9 @@ export const AuthHookExamples: React.FC = () => {
               <AdminOnlyExample />
             </CardContent>
           </Card>
-        </Grid2>
+        </Grid>
 
-        <Grid2 xs={12} md={6}>
+        <Grid item xs={12} md={6}>
           <Card>
             <CardContent>
               <Typography variant="h5" gutterBottom>
@@ -200,9 +200,9 @@ export const AuthHookExamples: React.FC = () => {
               <EmailVerifiedExample />
             </CardContent>
           </Card>
-        </Grid2>
+        </Grid>
 
-        <Grid2 xs={12} md={6}>
+        <Grid item xs={12} md={6}>
           <Card>
             <CardContent>
               <Typography variant="h5" gutterBottom>
@@ -211,8 +211,8 @@ export const AuthHookExamples: React.FC = () => {
               <CustomCheckExample />
             </CardContent>
           </Card>
-        </Grid2>
-      </Grid2>
+        </Grid>
+      </Grid>
 
       {/* コード例 */}
       <Box sx={{ mt: 4 }}>

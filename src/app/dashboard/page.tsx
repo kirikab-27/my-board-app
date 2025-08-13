@@ -10,7 +10,7 @@ import {
   AppBar,
   Toolbar,
   Button,
-  Grid2,
+  Grid,
   Card,
   CardContent,
   CircularProgress,
@@ -65,8 +65,8 @@ export default function DashboardPage() {
             <Typography variant="h6" gutterBottom>
               クイックアクション
             </Typography>
-            <Grid2 container spacing={2} sx={{ mt: 1 }}>
-              <Grid2 xs={12} sm={6} md={4}>
+            <Grid container spacing={2} sx={{ mt: 1 }}>
+              <Grid item xs={12} sm={6} md={4}>
                 <Card>
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -95,8 +95,8 @@ export default function DashboardPage() {
                     </Button>
                   </CardContent>
                 </Card>
-              </Grid2>
-              <Grid2 xs={12} sm={6} md={4}>
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
                 <Card>
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -125,8 +125,8 @@ export default function DashboardPage() {
                     </Button>
                   </CardContent>
                 </Card>
-              </Grid2>
-              <Grid2 xs={12} sm={6} md={4}>
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
                 <Card>
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -155,8 +155,8 @@ export default function DashboardPage() {
                     </Button>
                   </CardContent>
                 </Card>
-              </Grid2>
-            </Grid2>
+              </Grid>
+            </Grid>
           </Box>
 
           <Box sx={{ mt: 4 }}>
