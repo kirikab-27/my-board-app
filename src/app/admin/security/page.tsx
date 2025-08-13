@@ -15,8 +15,8 @@ import {
   FormControl,
   InputLabel,
   Chip,
-  Grid,
 } from '@mui/material';
+import { Grid } from '@mui/material';
 import { getSecurityStats, getRateLimitInfo, unblockIpOrUser } from '@/lib/security/rateLimit';
 
 interface SecurityStats {
