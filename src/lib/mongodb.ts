@@ -16,7 +16,7 @@ async function dbConnect() {
 
   if (!cached.promise) {
     let uri = MONGODB_URI;
-    
+
     // メモリデータベースを使用する場合（テスト環境のみ）
     if (USE_MEMORY_DB && process.env.NODE_ENV === 'test') {
       const { MongoMemoryServer } = await import('mongodb-memory-server');
@@ -25,7 +25,7 @@ async function dbConnect() {
       uri = mongoMemoryServer.getUri();
       console.log('Memory MongoDB started at:', uri);
     }
-    
+
     if (!uri) {
       throw new Error('MongoDB URI is not defined. Please set MONGODB_URI in your .env.local file');
     }
@@ -39,14 +39,20 @@ async function dbConnect() {
 
     console.log('Attempting to connect to MongoDB...');
     console.log('URI:', uri.replace(/\/\/([^:]+):([^@]+)@/, '//[username]:[password]@')); // パスワードを隠す
-    
-    cached.promise = mongoose.connect(uri, opts).then((mongoose) => {
-      console.log('MongoDB connected successfully');
-      return mongoose.connection;
-    }).catch((error) => {
-      console.error('MongoDB connection error:', error.message);
-      throw error;
-    });
+
+    cached.promise = mongoose
+      .connect(uri, opts)
+      .then((mongoose) => {
+        console.log('MongoDB connected successfully');
+        return mongoose.connection;
+      })
+      .catch((error) => {
+        console.error(
+          'MongoDB connection error:',
+          error instanceof Error ? error.message : String(error)
+        );
+        throw error;
+      });
   }
 
   try {
