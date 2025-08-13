@@ -11,7 +11,6 @@ import {
   CardContent,
   AppBar,
   Toolbar,
-  useTheme
 } from '@mui/material';
 import type { SkeletonLoadingProps } from '@/types/loading';
 
@@ -24,7 +23,7 @@ export const SkeletonBase: React.FC<SkeletonLoadingProps> = ({
   height = 40,
   lines = 1,
   animation = 'pulse',
-  sx
+  sx,
 }) => {
   if (variant === 'text' && lines > 1) {
     return (
@@ -43,50 +42,40 @@ export const SkeletonBase: React.FC<SkeletonLoadingProps> = ({
     );
   }
 
-  return (
-    <Skeleton
-      variant={variant}
-      width={width}
-      height={height}
-      animation={animation}
-      sx={sx}
-    />
-  );
+  return <Skeleton variant={variant} width={width} height={height} animation={animation} sx={sx} />;
 };
 
 /**
  * 認証ページ用スケルトン
  */
 export const AuthPageSkeleton: React.FC = () => {
-  const theme = useTheme();
-
   return (
     <Container maxWidth="sm" sx={{ mt: 8 }}>
       <Paper sx={{ p: 4 }}>
         {/* タイトル */}
         <Skeleton variant="text" width="60%" height={48} sx={{ mb: 3, mx: 'auto' }} />
-        
+
         {/* フォームフィールド */}
         <Box sx={{ mb: 3 }}>
           <Skeleton variant="text" width="30%" height={24} sx={{ mb: 1 }} />
           <Skeleton variant="rectangular" height={56} sx={{ mb: 2 }} />
         </Box>
-        
+
         <Box sx={{ mb: 3 }}>
           <Skeleton variant="text" width="40%" height={24} sx={{ mb: 1 }} />
           <Skeleton variant="rectangular" height={56} sx={{ mb: 2 }} />
         </Box>
-        
+
         {/* ボタン */}
         <Skeleton variant="rectangular" height={48} sx={{ mb: 2 }} />
-        
+
         {/* 区切り線 */}
         <Box sx={{ display: 'flex', alignItems: 'center', my: 3 }}>
           <Skeleton variant="rectangular" height={1} sx={{ flex: 1 }} />
           <Skeleton variant="text" width={60} height={24} sx={{ mx: 2 }} />
           <Skeleton variant="rectangular" height={1} sx={{ flex: 1 }} />
         </Box>
-        
+
         {/* ソーシャルログインボタン */}
         <Skeleton variant="rectangular" height={48} sx={{ mb: 1 }} />
         <Skeleton variant="rectangular" height={48} />
@@ -122,7 +111,7 @@ export const DashboardSkeleton: React.FC = () => {
         <Skeleton variant="text" width="30%" height={32} sx={{ mb: 2 }} />
         <Grid container spacing={2} sx={{ mb: 4 }}>
           {[1, 2].map((item) => (
-            <Grid item xs={12} sm={6} key={item}>
+            <Grid xs={12} sm={6} key={item}>
               <Card>
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -200,12 +189,12 @@ export const BoardSkeleton: React.FC = () => {
                 <Skeleton variant="text" width={150} height={16} />
               </Box>
             </Box>
-            
+
             {/* 投稿内容 */}
             <Skeleton variant="text" width="100%" height={20} sx={{ mb: 1 }} />
             <Skeleton variant="text" width="80%" height={20} sx={{ mb: 1 }} />
             <Skeleton variant="text" width="60%" height={20} sx={{ mb: 2 }} />
-            
+
             {/* アクションボタン */}
             <Box sx={{ display: 'flex', gap: 2 }}>
               <Skeleton variant="rectangular" width={60} height={28} />
@@ -244,18 +233,18 @@ export const ProfileSkeleton: React.FC = () => {
 
         {/* プロフィール情報 */}
         <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <Skeleton variant="text" width="30%" height={24} sx={{ mb: 1 }} />
             <Skeleton variant="rectangular" height={56} sx={{ mb: 3 }} />
-            
+
             <Skeleton variant="text" width="40%" height={24} sx={{ mb: 1 }} />
             <Skeleton variant="rectangular" height={56} sx={{ mb: 3 }} />
           </Grid>
-          
-          <Grid item xs={12} md={6}>
+
+          <Grid xs={12} md={6}>
             <Skeleton variant="text" width="35%" height={24} sx={{ mb: 1 }} />
             <Skeleton variant="rectangular" height={56} sx={{ mb: 3 }} />
-            
+
             <Skeleton variant="text" width="25%" height={24} sx={{ mb: 1 }} />
             <Skeleton variant="rectangular" height={56} sx={{ mb: 3 }} />
           </Grid>
@@ -277,7 +266,16 @@ export const ListItemSkeleton: React.FC<{ count?: number }> = ({ count = 3 }) =>
   return (
     <Box>
       {Array.from({ length: count }).map((_, index) => (
-        <Box key={index} sx={{ display: 'flex', alignItems: 'center', p: 2, borderBottom: 1, borderColor: 'divider' }}>
+        <Box
+          key={index}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            p: 2,
+            borderBottom: 1,
+            borderColor: 'divider',
+          }}
+        >
           <Skeleton variant="circular" width={40} height={40} sx={{ mr: 2 }} />
           <Box sx={{ flex: 1 }}>
             <Skeleton variant="text" width="40%" height={20} sx={{ mb: 0.5 }} />
