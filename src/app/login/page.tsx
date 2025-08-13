@@ -41,9 +41,14 @@ export default function LoginPage() {
   const [showAttemptWarning, setShowAttemptWarning] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   // URLパラメータからcallbackUrlを取得
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+
+  // OAuth設定の有効性をチェック（環境変数の存在確認）
+  // 本番環境でOAuthを有効にする場合は、環境変数を設定してください
+  const isGoogleAuthEnabled = false; // 開発中のため無効化
+  const isGitHubAuthEnabled = false; // 開発中のため無効化
 
   const {
     register,
@@ -66,7 +71,7 @@ export default function LoginPage() {
         const data = await response.json();
         if (data.success) {
           setRateLimitInfo(data.data.user);
-          
+
           // 残り試行回数が少ない場合は警告表示
           if (data.data.user.remainingAttempts <= 2 && data.data.user.totalAttempts > 0) {
             setShowAttemptWarning(true);
@@ -99,7 +104,7 @@ export default function LoginPage() {
         } else {
           setError('ログインに失敗しました');
         }
-        
+
         // ログイン失敗後、レート制限情報を更新
         await fetchRateLimitInfo(data.email);
       } else if (result?.ok) {
@@ -132,7 +137,7 @@ export default function LoginPage() {
   const handleSocialLogin = async (provider: 'google' | 'github') => {
     setIsSocialLoading(provider);
     setError(null);
-    
+
     try {
       // callbackUrlを引き継いでソーシャルログイン
       const redirectTo = decodeURIComponent(callbackUrl);
@@ -152,9 +157,7 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {error && (
-              <Alert severity="error">{error}</Alert>
-            )}
+            {error && <Alert severity="error">{error}</Alert>}
 
             {/* レート制限警告 */}
             {showAttemptWarning && rateLimitInfo && !rateLimitInfo.isLocked && (
@@ -167,7 +170,7 @@ export default function LoginPage() {
             {/* ブロック状態表示 */}
             {rateLimitInfo?.isLocked && (
               <Alert severity="error">
-                <strong>アカウントロック中:</strong> 
+                <strong>アカウントロック中:</strong>
                 {rateLimitInfo.lockUntil && (
                   <> {new Date(rateLimitInfo.lockUntil).toLocaleString()} まで</>
                 )}
@@ -176,16 +179,18 @@ export default function LoginPage() {
 
             {/* 試行回数表示（デバッグ用・開発時のみ） */}
             {rateLimitInfo && !rateLimitInfo.isLocked && rateLimitInfo.totalAttempts > 0 && (
-              <Box sx={{ 
-                p: 1, 
-                bgcolor: 'background.paper', 
-                border: 1, 
-                borderColor: 'divider', 
-                borderRadius: 1,
-                fontSize: '0.875rem',
-                color: 'text.secondary'
-              }}>
-                試行状況: {rateLimitInfo.totalAttempts}/{rateLimitInfo.maxAttempts} 
+              <Box
+                sx={{
+                  p: 1,
+                  bgcolor: 'background.paper',
+                  border: 1,
+                  borderColor: 'divider',
+                  borderRadius: 1,
+                  fontSize: '0.875rem',
+                  color: 'text.secondary',
+                }}
+              >
+                試行状況: {rateLimitInfo.totalAttempts}/{rateLimitInfo.maxAttempts}
                 （残り{rateLimitInfo.remainingAttempts}回）
               </Box>
             )}
@@ -222,11 +227,7 @@ export default function LoginPage() {
                   disabled={isLoading || !!isSocialLoading}
                   fullWidth
                 >
-                  {isLoading ? (
-                    <CircularProgress size={24} color="inherit" />
-                  ) : (
-                    'ログイン'
-                  )}
+                  {isLoading ? <CircularProgress size={24} color="inherit" /> : 'ログイン'}
                 </Button>
               </Box>
             </form>
@@ -243,21 +244,26 @@ export default function LoginPage() {
               size="large"
               fullWidth
               startIcon={<GoogleIcon />}
-              onClick={() => handleSocialLogin('google')}
-              disabled={isLoading || isSocialLoading === 'google'}
-              sx={{ 
-                borderColor: '#4285f4',
-                color: '#4285f4',
-                '&:hover': { 
-                  borderColor: '#357ae8',
-                  backgroundColor: 'rgba(66, 133, 244, 0.04)'
-                }
+              onClick={isGoogleAuthEnabled ? () => handleSocialLogin('google') : undefined}
+              disabled={!isGoogleAuthEnabled || isLoading || isSocialLoading === 'google'}
+              sx={{
+                borderColor: isGoogleAuthEnabled ? '#4285f4' : '#ccc',
+                color: isGoogleAuthEnabled ? '#4285f4' : '#999',
+                '&:hover': isGoogleAuthEnabled
+                  ? {
+                      borderColor: '#357ae8',
+                      backgroundColor: 'rgba(66, 133, 244, 0.04)',
+                    }
+                  : {},
+                cursor: isGoogleAuthEnabled ? 'pointer' : 'not-allowed',
               }}
             >
               {isSocialLoading === 'google' ? (
                 <CircularProgress size={24} />
-              ) : (
+              ) : isGoogleAuthEnabled ? (
                 'Googleで続ける'
+              ) : (
+                'Googleで続ける（開発中）'
               )}
             </Button>
 
@@ -266,21 +272,26 @@ export default function LoginPage() {
               size="large"
               fullWidth
               startIcon={<GitHubIcon />}
-              onClick={() => handleSocialLogin('github')}
-              disabled={isLoading || isSocialLoading === 'github'}
-              sx={{ 
-                borderColor: '#333',
-                color: '#333',
-                '&:hover': { 
-                  borderColor: '#000',
-                  backgroundColor: 'rgba(0, 0, 0, 0.04)'
-                }
+              onClick={isGitHubAuthEnabled ? () => handleSocialLogin('github') : undefined}
+              disabled={!isGitHubAuthEnabled || isLoading || isSocialLoading === 'github'}
+              sx={{
+                borderColor: isGitHubAuthEnabled ? '#333' : '#ccc',
+                color: isGitHubAuthEnabled ? '#333' : '#999',
+                '&:hover': isGitHubAuthEnabled
+                  ? {
+                      borderColor: '#000',
+                      backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                    }
+                  : {},
+                cursor: isGitHubAuthEnabled ? 'pointer' : 'not-allowed',
               }}
             >
               {isSocialLoading === 'github' ? (
                 <CircularProgress size={24} />
-              ) : (
+              ) : isGitHubAuthEnabled ? (
                 'GitHubで続ける'
+              ) : (
+                'GitHubで続ける（開発中）'
               )}
             </Button>
 

@@ -7,33 +7,42 @@ import type { UserRole } from '@/types/auth';
 
 export interface RouteConfig {
   /** 認証が必要なルート */
-  protected: Record<string, {
-    /** 必要な最小ロール */
-    requiredRole?: UserRole;
-    /** メール認証必須 */
-    requireEmailVerified?: boolean;
-    /** 認証失敗時のリダイレクト先 */
-    redirectTo?: string;
-    /** カスタム説明 */
-    description?: string;
-  }>;
-  
+  protected: Record<
+    string,
+    {
+      /** 必要な最小ロール */
+      requiredRole?: UserRole;
+      /** メール認証必須 */
+      requireEmailVerified?: boolean;
+      /** 認証失敗時のリダイレクト先 */
+      redirectTo?: string;
+      /** カスタム説明 */
+      description?: string;
+    }
+  >;
+
   /** ゲスト専用ルート（認証済みユーザーはリダイレクト） */
-  guestOnly: Record<string, {
-    /** 認証済みユーザーのリダイレクト先 */
-    redirectTo: string;
-    /** 説明 */
-    description?: string;
-  }>;
-  
+  guestOnly: Record<
+    string,
+    {
+      /** 認証済みユーザーのリダイレクト先 */
+      redirectTo: string;
+      /** 説明 */
+      description?: string;
+    }
+  >;
+
   /** 管理者専用ルート */
-  adminOnly: Record<string, {
-    /** 権限不足時のリダイレクト先 */
-    redirectTo?: string;
-    /** 説明 */
-    description?: string;
-  }>;
-  
+  adminOnly: Record<
+    string,
+    {
+      /** 権限不足時のリダイレクト先 */
+      redirectTo?: string;
+      /** 説明 */
+      description?: string;
+    }
+  >;
+
   /** 公開ルート（認証不要） */
   public: string[];
 }
@@ -48,66 +57,68 @@ export const routeConfig: RouteConfig = {
       requiredRole: 'user',
       requireEmailVerified: false,
       redirectTo: '/login',
-      description: '会員限定掲示板'
+      description: '会員限定掲示板',
     },
     '/dashboard': {
       requiredRole: 'user',
       requireEmailVerified: false,
       redirectTo: '/login',
-      description: 'ユーザーダッシュボード'
+      description: 'ユーザーダッシュボード',
     },
     '/profile': {
       requiredRole: 'user',
       requireEmailVerified: true,
       redirectTo: '/login',
-      description: 'プロフィール管理'
+      description: 'プロフィール管理',
     },
     '/members-only': {
       requiredRole: 'user',
       requireEmailVerified: false,
       redirectTo: '/login',
-      description: '会員限定ページ（デモ）'
+      description: '会員限定ページ（デモ）',
     },
     '/settings': {
       requiredRole: 'user',
       requireEmailVerified: true,
       redirectTo: '/login',
-      description: 'アカウント設定'
-    }
+      description: 'アカウント設定',
+    },
+    '/admin/security': {
+      requiredRole: 'user',
+      requireEmailVerified: false,
+      redirectTo: '/login',
+      description: 'セキュリティ管理（テスト用・一般ユーザーアクセス可）',
+    },
   },
-  
+
   // ゲスト専用ルート
   guestOnly: {
     '/login': {
       redirectTo: '/board',
-      description: 'ログインページ'
+      description: 'ログインページ',
     },
     '/register': {
       redirectTo: '/board',
-      description: '新規登録ページ'
+      description: '新規登録ページ',
     },
     '/auth/reset-password': {
       redirectTo: '/dashboard',
-      description: 'パスワードリセット'
-    }
+      description: 'パスワードリセット',
+    },
   },
-  
+
   // 管理者専用ルート
   adminOnly: {
     '/admin': {
       redirectTo: '/unauthorized',
-      description: '管理者専用エリア'
-    },
-    '/admin/security': {
-      redirectTo: '/unauthorized',
-      description: 'セキュリティ管理'
+      description: '管理者専用エリア',
     },
     '/admin/users': {
       redirectTo: '/unauthorized',
-      description: 'ユーザー管理'
-    }
+      description: 'ユーザー管理',
+    },
   },
-  
+
   // 公開ルート
   public: [
     '/',
@@ -119,8 +130,8 @@ export const routeConfig: RouteConfig = {
     '/auth/verified',
     '/auth/verify-email',
     '/unauthorized',
-    '/access-denied'
-  ]
+    '/access-denied',
+  ],
 };
 
 /**
@@ -129,18 +140,18 @@ export const routeConfig: RouteConfig = {
 export const matchesPath = (pathname: string, pattern: string): boolean => {
   // 完全一致
   if (pathname === pattern) return true;
-  
+
   // プレフィックスマッチ（/admin* -> /admin/anything）
   if (pattern.endsWith('*')) {
     const prefix = pattern.slice(0, -1);
     return pathname.startsWith(prefix);
   }
-  
+
   // ルートパスの特別処理（"/" は完全一致のみ）
   if (pattern === '/') {
     return pathname === '/';
   }
-  
+
   // その他のパスはプレフィックスマッチなし
   return false;
 };
@@ -148,18 +159,21 @@ export const matchesPath = (pathname: string, pattern: string): boolean => {
 /**
  * ロール階層チェック
  */
-export const hasRequiredRole = (userRole: UserRole | undefined, requiredRole: UserRole): boolean => {
+export const hasRequiredRole = (
+  userRole: UserRole | undefined,
+  requiredRole: UserRole
+): boolean => {
   if (!userRole) return false;
-  
+
   const roleHierarchy: Record<UserRole, number> = {
-    'user': 1,
-    'moderator': 2,
-    'admin': 3
+    user: 1,
+    moderator: 2,
+    admin: 3,
   };
-  
+
   const userLevel = roleHierarchy[userRole] || 0;
   const requiredLevel = roleHierarchy[requiredRole] || 0;
-  
+
   return userLevel >= requiredLevel;
 };
 
@@ -173,26 +187,26 @@ export const getRouteConfig = (pathname: string) => {
       return { type: 'protected', route, config };
     }
   }
-  
+
   // ゲスト専用ルートチェック
   for (const [route, config] of Object.entries(routeConfig.guestOnly)) {
     if (matchesPath(pathname, route)) {
       return { type: 'guestOnly', route, config };
     }
   }
-  
+
   // 管理者専用ルートチェック
   for (const [route, config] of Object.entries(routeConfig.adminOnly)) {
     if (matchesPath(pathname, route)) {
       return { type: 'adminOnly', route, config };
     }
   }
-  
+
   // 公開ルートチェック
-  if (routeConfig.public.some(route => matchesPath(pathname, route))) {
+  if (routeConfig.public.some((route) => matchesPath(pathname, route))) {
     return { type: 'public', route: pathname, config: {} };
   }
-  
+
   return null;
 };
 

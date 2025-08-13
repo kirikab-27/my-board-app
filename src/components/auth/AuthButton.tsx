@@ -2,7 +2,14 @@
 
 import React from 'react';
 import { Button, Menu, MenuItem, Box, Typography, IconButton } from '@mui/material';
-import { Login as LoginIcon, Logout as LogoutIcon, PersonAdd as PersonAddIcon, Forum as ForumIcon, Home as HomeIcon, Person as PersonIcon } from '@mui/icons-material';
+import {
+  Login as LoginIcon,
+  Logout as LogoutIcon,
+  PersonAdd as PersonAddIcon,
+  Forum as ForumIcon,
+  Home as HomeIcon,
+  Person as PersonIcon,
+} from '@mui/icons-material';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
@@ -46,7 +53,7 @@ export const AuthButton: React.FC = () => {
 
   const handleHome = () => {
     handleMenuClose();
-    router.push('/');
+    router.push('/dashboard');
   };
 
   if (status === 'loading') {
@@ -56,18 +63,10 @@ export const AuthButton: React.FC = () => {
   if (!session) {
     return (
       <Box sx={{ display: 'flex', gap: 1 }}>
-        <Button
-          variant="outlined"
-          startIcon={<LoginIcon />}
-          onClick={handleLogin}
-        >
+        <Button variant="outlined" startIcon={<LoginIcon />} onClick={handleLogin}>
           ログイン
         </Button>
-        <Button
-          variant="contained"
-          startIcon={<PersonAddIcon />}
-          onClick={handleRegister}
-        >
+        <Button variant="contained" startIcon={<PersonAddIcon />} onClick={handleRegister}>
           新規登録
         </Button>
       </Box>

@@ -27,7 +27,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
 export default function LandingPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const theme = useTheme();
   const [loadingButton, setLoadingButton] = useState<string | null>(null);
@@ -52,10 +52,12 @@ export default function LandingPage() {
   }
 
   return (
-    <Box sx={{ 
-      minHeight: '100vh',
-      background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`,
-    }}>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`,
+      }}
+    >
       <Container maxWidth="lg" sx={{ pt: 8, pb: 6 }}>
         {/* ヒーローセクション */}
         <Box textAlign="center" mb={8}>
@@ -74,18 +76,14 @@ export default function LandingPage() {
           >
             掲示板アプリ
           </Typography>
-          
-          <Typography
-            variant="h5"
-            color="text.secondary"
-            sx={{ mb: 4, maxWidth: 600, mx: 'auto' }}
-          >
+
+          <Typography variant="h5" color="text.secondary" sx={{ mb: 4, maxWidth: 600, mx: 'auto' }}>
             安全で使いやすい会員制コミュニティプラットフォーム
           </Typography>
 
-          <Stack 
-            direction={{ xs: 'column', sm: 'row' }} 
-            spacing={2} 
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={2}
             justifyContent="center"
             sx={{ mb: 4 }}
           >
@@ -141,81 +139,78 @@ export default function LandingPage() {
         {/* 機能紹介セクション */}
         <Grid container spacing={4} sx={{ mb: 8 }}>
           <Grid item xs={12} md={4}>
-            <Card 
-              sx={{ 
-                height: '100%', 
+            <Card
+              sx={{
+                height: '100%',
                 transition: 'transform 0.2s',
                 '&:hover': { transform: 'translateY(-4px)' },
               }}
             >
               <CardContent sx={{ textAlign: 'center', p: 4 }}>
-                <ForumIcon 
-                  sx={{ 
-                    fontSize: 60, 
-                    color: theme.palette.primary.main, 
-                    mb: 2 
-                  }} 
+                <ForumIcon
+                  sx={{
+                    fontSize: 60,
+                    color: theme.palette.primary.main,
+                    mb: 2,
+                  }}
                 />
                 <Typography variant="h5" gutterBottom fontWeight="bold">
                   リアルタイム掲示板
                 </Typography>
                 <Typography color="text.secondary">
-                  投稿・いいね・検索・並び替え機能を備えた
-                  モダンな掲示板システム
+                  投稿・いいね・検索・並び替え機能を備えた モダンな掲示板システム
                 </Typography>
               </CardContent>
             </Card>
           </Grid>
 
           <Grid item xs={12} md={4}>
-            <Card 
-              sx={{ 
-                height: '100%', 
+            <Card
+              sx={{
+                height: '100%',
                 transition: 'transform 0.2s',
                 '&:hover': { transform: 'translateY(-4px)' },
               }}
             >
               <CardContent sx={{ textAlign: 'center', p: 4 }}>
-                <SecurityIcon 
-                  sx={{ 
-                    fontSize: 60, 
-                    color: theme.palette.secondary.main, 
-                    mb: 2 
-                  }} 
+                <SecurityIcon
+                  sx={{
+                    fontSize: 60,
+                    color: theme.palette.secondary.main,
+                    mb: 2,
+                  }}
                 />
                 <Typography variant="h5" gutterBottom fontWeight="bold">
                   セキュリティ
                 </Typography>
                 <Typography color="text.secondary">
-                  メール認証・ブルートフォース対策・
-                  CSRF保護による安全な認証システム
+                  メール認証・ブルートフォース対策・ CSRF保護による安全な認証システム
                 </Typography>
               </CardContent>
             </Card>
           </Grid>
 
           <Grid item xs={12} md={4}>
-            <Card 
-              sx={{ 
-                height: '100%', 
+            <Card
+              sx={{
+                height: '100%',
                 transition: 'transform 0.2s',
                 '&:hover': { transform: 'translateY(-4px)' },
               }}
             >
               <CardContent sx={{ textAlign: 'center', p: 4 }}>
-                <PeopleIcon 
-                  sx={{ 
-                    fontSize: 60, 
-                    color: theme.palette.success.main, 
-                    mb: 2 
-                  }} 
+                <PeopleIcon
+                  sx={{
+                    fontSize: 60,
+                    color: theme.palette.success.main,
+                    mb: 2,
+                  }}
                 />
                 <Typography variant="h5" gutterBottom fontWeight="bold">
                   会員コミュニティ
                 </Typography>
                 <Typography color="text.secondary">
-                  認証ユーザー限定の安全な
-                  コミュニケーション環境
+                  認証ユーザー限定の安全な コミュニケーション環境
                 </Typography>
               </CardContent>
             </Card>
@@ -235,8 +230,7 @@ export default function LandingPage() {
                   1. ユーザー登録
                 </Typography>
                 <Typography color="text.secondary">
-                  メールアドレスでアカウントを作成し、
-                  認証メールを確認
+                  メールアドレスでアカウントを作成し、 認証メールを確認
                 </Typography>
               </Box>
             </Grid>
@@ -247,8 +241,7 @@ export default function LandingPage() {
                   2. ログイン
                 </Typography>
                 <Typography color="text.secondary">
-                  メール・Google・GitHub
-                  いずれかの方法でログイン
+                  メール・Google・GitHub いずれかの方法でログイン
                 </Typography>
               </Box>
             </Grid>
@@ -259,8 +252,7 @@ export default function LandingPage() {
                   3. 掲示板利用
                 </Typography>
                 <Typography color="text.secondary">
-                  投稿作成・いいね・検索など
-                  すべての機能をご利用可能
+                  投稿作成・いいね・検索など すべての機能をご利用可能
                 </Typography>
               </Box>
             </Grid>

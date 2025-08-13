@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation'; // 開発中で未使用
 import {
   Card,
   CardContent,
@@ -30,12 +30,18 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [password, setPassword] = useState('');
-  const router = useRouter();
+  // const router = useRouter(); // 現在未使用
+
+  // OAuth設定の有効性をチェック（開発中のため無効化）
+  const isGoogleAuthEnabled = false; // 開発中のため無効化
+  const isGitHubAuthEnabled = false; // 開発中のため無効化
 
   // パスワード強度計算関数
-  const calculatePasswordStrength = (password: string): { score: number; level: string; color: string; feedback: string } => {
+  const calculatePasswordStrength = (
+    password: string
+  ): { score: number; level: string; color: string; feedback: string } => {
     if (!password) return { score: 0, level: '入力してください', color: '#ccc', feedback: '' };
-    
+
     let score = 0;
     const feedback: string[] = [];
 
@@ -72,7 +78,7 @@ export default function RegisterPage() {
 
     let level: string;
     let color: string;
-    
+
     if (score < 25) {
       level = '弱い';
       color = '#f44336';
@@ -87,11 +93,12 @@ export default function RegisterPage() {
       color = '#2196f3';
     }
 
-    return { 
-      score: Math.min(score, 100), 
-      level, 
-      color, 
-      feedback: feedback.length > 0 ? `改善提案: ${feedback.join('、')}` : '✅ 安全なパスワードです'
+    return {
+      score: Math.min(score, 100),
+      level,
+      color,
+      feedback:
+        feedback.length > 0 ? `改善提案: ${feedback.join('、')}` : '✅ 安全なパスワードです',
     };
   };
 
@@ -131,7 +138,7 @@ export default function RegisterPage() {
 
       console.log('✅ Registration successful:', result);
       setSuccess(result.message);
-      
+
       // Phase 2: メール認証が必須のため、ログインページではなくメール確認画面へ誘導
       // 自動リダイレクトはせず、ユーザーがメール認証を完了するまで待機
     } catch (err) {
@@ -145,7 +152,7 @@ export default function RegisterPage() {
   const handleSocialLogin = async (provider: 'google' | 'github') => {
     setIsSocialLoading(provider);
     setError(null);
-    
+
     try {
       await signIn(provider, { callbackUrl: '/dashboard' });
     } catch (err) {
@@ -165,19 +172,20 @@ export default function RegisterPage() {
         </CardHeader>
         <CardContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {error && (
-              <Alert severity="error">{error}</Alert>
-            )}
-            
+            {error && <Alert severity="error">{error}</Alert>}
+
             {success && (
               <Alert severity="success">
                 <Typography variant="body1" gutterBottom>
                   🎉 {success}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  <strong>次の手順:</strong><br />
-                  1. メールボックスを確認してください<br />
-                  2. 「メールアドレス認証」メール内のリンクをクリック<br />
+                  <strong>次の手順:</strong>
+                  <br />
+                  1. メールボックスを確認してください
+                  <br />
+                  2. 「メールアドレス認証」メール内のリンクをクリック
+                  <br />
                   3. 認証完了後、ログインしてご利用ください
                 </Typography>
                 <Typography variant="body2" sx={{ mt: 1, fontWeight: 'bold' }}>
@@ -189,90 +197,99 @@ export default function RegisterPage() {
             {/* メールアドレス登録フォーム */}
             <form onSubmit={handleSubmit(onSubmit)} noValidate>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <TextField
+                  {...register('name')}
+                  label="名前"
+                  error={!!errors.name}
+                  helperText={errors.name?.message}
+                  fullWidth
+                  required
+                  disabled={isLoading}
+                />
 
-              <TextField
-                {...register('name')}
-                label="名前"
-                error={!!errors.name}
-                helperText={errors.name?.message}
-                fullWidth
-                required
-                disabled={isLoading}
-              />
+                <TextField
+                  {...register('email')}
+                  type="email"
+                  label="メールアドレス"
+                  error={!!errors.email}
+                  helperText={errors.email?.message}
+                  fullWidth
+                  required
+                  disabled={isLoading}
+                />
 
-              <TextField
-                {...register('email')}
-                type="email"
-                label="メールアドレス"
-                error={!!errors.email}
-                helperText={errors.email?.message}
-                fullWidth
-                required
-                disabled={isLoading}
-              />
+                <TextField
+                  {...register('password')}
+                  type="password"
+                  label="パスワード"
+                  error={!!errors.password}
+                  helperText={errors.password?.message}
+                  fullWidth
+                  required
+                  disabled={isLoading}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    register('password').onChange(e);
+                  }}
+                />
 
-              <TextField
-                {...register('password')}
-                type="password"
-                label="パスワード"
-                error={!!errors.password}
-                helperText={errors.password?.message}
-                fullWidth
-                required
-                disabled={isLoading}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  register('password').onChange(e);
-                }}
-              />
-              
-              {/* パスワード強度インジケーター */}
-              {password && (
-                <Box sx={{ mt: 1, mb: 1 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                    <Typography variant="caption" color="text.secondary">
-                      パスワード強度
-                    </Typography>
-                    <Typography 
-                      variant="caption" 
-                      sx={{ color: calculatePasswordStrength(password).color, fontWeight: 'bold' }}
+                {/* パスワード強度インジケーター */}
+                {password && (
+                  <Box sx={{ mt: 1, mb: 1 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        mb: 0.5,
+                      }}
                     >
-                      {calculatePasswordStrength(password).level}
+                      <Typography variant="caption" color="text.secondary">
+                        パスワード強度
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: calculatePasswordStrength(password).color,
+                          fontWeight: 'bold',
+                        }}
+                      >
+                        {calculatePasswordStrength(password).level}
+                      </Typography>
+                    </Box>
+                    <LinearProgress
+                      variant="determinate"
+                      value={calculatePasswordStrength(password).score}
+                      sx={{
+                        height: 6,
+                        borderRadius: 3,
+                        backgroundColor: '#e0e0e0',
+                        '& .MuiLinearProgress-bar': {
+                          backgroundColor: calculatePasswordStrength(password).color,
+                          borderRadius: 3,
+                        },
+                      }}
+                    />
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ display: 'block', mt: 0.5, fontSize: '0.75rem' }}
+                    >
+                      {calculatePasswordStrength(password).feedback}
                     </Typography>
                   </Box>
-                  <LinearProgress
-                    variant="determinate"
-                    value={calculatePasswordStrength(password).score}
-                    sx={{
-                      height: 6,
-                      borderRadius: 3,
-                      backgroundColor: '#e0e0e0',
-                      '& .MuiLinearProgress-bar': {
-                        backgroundColor: calculatePasswordStrength(password).color,
-                        borderRadius: 3,
-                      },
-                    }}
-                  />
-                  <Typography 
-                    variant="caption" 
-                    color="text.secondary" 
-                    sx={{ display: 'block', mt: 0.5, fontSize: '0.75rem' }}
-                  >
-                    {calculatePasswordStrength(password).feedback}
-                  </Typography>
-                </Box>
-              )}
+                )}
 
-              <TextField
-                {...register('confirmPassword')}
-                type="password"
-                label="パスワード（確認）"
-                error={!!errors.confirmPassword}
-                helperText={errors.confirmPassword?.message}
-                fullWidth
-                required
-                disabled={isLoading}
-              />
+                <TextField
+                  {...register('confirmPassword')}
+                  type="password"
+                  label="パスワード（確認）"
+                  error={!!errors.confirmPassword}
+                  helperText={errors.confirmPassword?.message}
+                  fullWidth
+                  required
+                  disabled={isLoading}
+                />
 
                 <Button
                   type="submit"
@@ -304,21 +321,28 @@ export default function RegisterPage() {
               size="large"
               fullWidth
               startIcon={<GoogleIcon />}
-              onClick={() => handleSocialLogin('google')}
-              disabled={isLoading || !!success || isSocialLoading === 'google'}
-              sx={{ 
-                borderColor: '#4285f4',
-                color: '#4285f4',
-                '&:hover': { 
-                  borderColor: '#357ae8',
-                  backgroundColor: 'rgba(66, 133, 244, 0.04)'
-                }
+              onClick={isGoogleAuthEnabled ? () => handleSocialLogin('google') : undefined}
+              disabled={
+                !isGoogleAuthEnabled || isLoading || !!success || isSocialLoading === 'google'
+              }
+              sx={{
+                borderColor: isGoogleAuthEnabled ? '#4285f4' : '#ccc',
+                color: isGoogleAuthEnabled ? '#4285f4' : '#999',
+                '&:hover': isGoogleAuthEnabled
+                  ? {
+                      borderColor: '#357ae8',
+                      backgroundColor: 'rgba(66, 133, 244, 0.04)',
+                    }
+                  : {},
+                cursor: isGoogleAuthEnabled ? 'pointer' : 'not-allowed',
               }}
             >
               {isSocialLoading === 'google' ? (
                 <CircularProgress size={24} />
-              ) : (
+              ) : isGoogleAuthEnabled ? (
                 'Googleで続ける'
+              ) : (
+                'Googleで続ける（開発中）'
               )}
             </Button>
 
@@ -327,21 +351,28 @@ export default function RegisterPage() {
               size="large"
               fullWidth
               startIcon={<GitHubIcon />}
-              onClick={() => handleSocialLogin('github')}
-              disabled={isLoading || !!success || isSocialLoading === 'github'}
-              sx={{ 
-                borderColor: '#333',
-                color: '#333',
-                '&:hover': { 
-                  borderColor: '#000',
-                  backgroundColor: 'rgba(0, 0, 0, 0.04)'
-                }
+              onClick={isGitHubAuthEnabled ? () => handleSocialLogin('github') : undefined}
+              disabled={
+                !isGitHubAuthEnabled || isLoading || !!success || isSocialLoading === 'github'
+              }
+              sx={{
+                borderColor: isGitHubAuthEnabled ? '#333' : '#ccc',
+                color: isGitHubAuthEnabled ? '#333' : '#999',
+                '&:hover': isGitHubAuthEnabled
+                  ? {
+                      borderColor: '#000',
+                      backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                    }
+                  : {},
+                cursor: isGitHubAuthEnabled ? 'pointer' : 'not-allowed',
               }}
             >
               {isSocialLoading === 'github' ? (
                 <CircularProgress size={24} />
-              ) : (
+              ) : isGitHubAuthEnabled ? (
                 'GitHubで続ける'
+              ) : (
+                'GitHubで続ける（開発中）'
               )}
             </Button>
 
