@@ -2,7 +2,7 @@
 
 ## 📋 概要
 
-Phase 5.5統合版（166ファイル・67,000行）のVercel本番デプロイで発生した16の技術問題とその解決方法を記録。
+Phase 5.5統合版（166ファイル・67,000行）のVercel本番デプロイで発生した19の技術問題とその解決方法を記録。
 
 ## 🚨 エラー発生背景
 
@@ -19,7 +19,7 @@ Phase 5.5統合版（166ファイル・67,000行）のVercel本番デプロイ�
 3. **環境差異**: ローカル開発 vs Vercel本番の厳格性
 4. **型システム厳格化**: Next.js 15 + TypeScript v5
 
-## 🔧 解決済み問題一覧（16項目）
+## 🔧 解決済み問題一覧（19項目）
 
 ### 1. MongoDB依存関係競合
 
@@ -82,6 +82,35 @@ Phase 5.5統合版（166ファイル・67,000行）のVercel本番デプロイ�
 ```
 エラー: Can't resolve '@mui/material/Grid2'
 解決: Grid2インポート削除 → 通常Gridインポート + item/container復元
+```
+
+### 10. cross-envコマンドエラー（2025/08/14）
+
+```
+エラー: sh: line 1: cross-env: command not found
+原因: Vercel環境にcross-envが存在しない
+解決: package.jsonのbuildコマンドからcross-env削除
+      "build": "cross-env NODE_OPTIONS=..." → "build": "next build"
+      vercel.jsonでNODE_OPTIONS環境変数設定
+```
+
+### 11. AppRouterCacheProviderインポートエラー（2025/08/14）
+
+```
+エラー: Cannot resolve '@mui/material-nextjs/v15-appRouter'
+原因: Material-UI v7でパッケージ構造変更
+解決: AppRouterCacheProvider完全削除（Material-UI v7では不要）
+      layout.tsxをシンプル化
+```
+
+### 12. CSP違反による画面真っ白問題（2025/08/14）
+
+```
+エラー: Refused to execute inline script (CSP violation)
+      画面が真っ白、Next.jsのインラインスクリプトがブロック
+原因: 本番環境CSPでscript-srcに'unsafe-inline'が未設定
+解決: csp-headers.tsの本番CSPに'unsafe-inline'追加
+      script-src 'self' 'unsafe-eval' 'unsafe-inline'
 ```
 
 ## 🛠️ 技術的解決パターン
@@ -183,7 +212,7 @@ npm outdated
 
 ✅ **包括的環境対応**: 複数バージョン・フレームワーク対応  
 ✅ **高品質エラーハンドリング**: 本番環境問題の事前解決  
-✅ **堅牢性向上**: 16の潜在的問題根本解決  
+✅ **堅牢性向上**: 19の潜在的問題根本解決  
 ✅ **技術スキル向上**: 複雑な依存関係問題解決経験
 
 ## 🏆 最終結果
