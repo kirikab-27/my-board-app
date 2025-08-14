@@ -4,14 +4,14 @@ import { Avatar, AvatarProps } from '@mui/material';
 import { deepOrange, deepPurple, blue, green, pink, indigo } from '@mui/material/colors';
 
 interface ProfileAvatarProps {
-  name?: string;
+  name?: string | null;
   size?: 'small' | 'medium' | 'large' | 'xlarge';
   sx?: AvatarProps['sx'];
   className?: string;
 }
 
 // 名前から色を決定する関数
-const getColorFromName = (name: string) => {
+const getColorFromName = (name: string | null | undefined) => {
   if (!name) return deepOrange[500];
   
   const colors = [
@@ -46,7 +46,7 @@ const getSizeStyles = (size: ProfileAvatarProps['size']) => {
 
 export function ProfileAvatar({ name, size = 'medium', sx, className }: ProfileAvatarProps) {
   // 名前から頭文字を取得
-  const getInitial = (name?: string) => {
+  const getInitial = (name?: string | null) => {
     if (!name) return '?';
     
     // 日本語の場合は最初の1文字
