@@ -3,9 +3,11 @@
 import { Avatar, AvatarProps } from '@mui/material';
 import { deepOrange, deepPurple, blue, green, pink, indigo } from '@mui/material/colors';
 
-interface ProfileAvatarProps extends Omit<AvatarProps, 'children'> {
+interface ProfileAvatarProps {
   name?: string;
   size?: 'small' | 'medium' | 'large' | 'xlarge';
+  sx?: AvatarProps['sx'];
+  className?: string;
 }
 
 // 名前から色を決定する関数
@@ -42,9 +44,7 @@ const getSizeStyles = (size: ProfileAvatarProps['size']) => {
   }
 };
 
-export function ProfileAvatar({ name, size = 'medium', sx, ...props }: ProfileAvatarProps) {
-  // sizeプロパティをpropsから除外
-  const { ...avatarProps } = props;
+export function ProfileAvatar({ name, size = 'medium', sx, className }: ProfileAvatarProps) {
   // 名前から頭文字を取得
   const getInitial = (name?: string) => {
     if (!name) return '?';
@@ -70,7 +70,7 @@ export function ProfileAvatar({ name, size = 'medium', sx, ...props }: ProfileAv
 
   return (
     <Avatar
-      {...avatarProps}
+      className={className}
       sx={{
         ...sizeStyles,
         backgroundColor,
