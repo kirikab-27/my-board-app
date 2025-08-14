@@ -251,6 +251,12 @@ npm run build         # コミット前に必ず実行（エラー事前発見�
 npm run type-check    # TypeScript厳格チェック
 npm run build && npm run start  # PR前に本番環境テスト
 
+# 🚀 並走開発（リアルタイムエラー検知）
+npm run dev:safe      # Next.js + TypeScript + ESLint 同時実行
+npm run dev:all       # 上記と同じ（エラー時全停止版）
+npm run typecheck:watch  # TypeScript監視のみ
+npm run lint:watch    # ESLint監視のみ
+
 # 認証保護APIテスト
 node scripts/test-auth-apis.js
 

@@ -39,6 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.tsbuildinfo
+
+# eslint cache
+.eslintcache
 
 # Editor settings (念のため両方記載)
 .cursor/

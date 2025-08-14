@@ -21,7 +21,11 @@
     "doc:health": "node scripts/check-doc-health.js",
     "monitor:check": "node -e \"console.log('Monitoring services check...')\"",
     "monitor:dashboard": "next dev -p 3010",
-    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org $SENTRY_ORG --project $SENTRY_PROJECT ./build && sentry-cli sourcemaps upload --org $SENTRY_ORG --project $SENTRY_PROJECT ./build"
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org $SENTRY_ORG --project $SENTRY_PROJECT ./build && sentry-cli sourcemaps upload --org $SENTRY_ORG --project $SENTRY_PROJECT ./build",
+    "typecheck:watch": "tsc --noEmit --watch --preserveWatchOutput",
+    "lint:watch": "esw . --ext .ts,.tsx --watch --cache",
+    "dev:safe": "concurrently -n \"NEXT,TS,LINT\" -c \"green,blue,yellow\" \"npm run dev\" \"npm run typecheck:watch\" \"npm run lint:watch\"",
+    "dev:all": "concurrently --kill-others-on-fail \"npm run dev\" \"npm run typecheck:watch\" \"npm run lint:watch\""
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -78,10 +82,12 @@
     "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^8.39.0",
     "@typescript-eslint/parser": "^8.39.0",
+    "concurrently": "^9.2.0",
     "cross-env": "^10.0.0",
     "eslint": "^9.33.0",
     "eslint-config-next": "15.4.5",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-watch": "^8.0.0",
     "husky": "^9.1.7",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
