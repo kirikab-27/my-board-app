@@ -1,11 +1,17 @@
 {
-  "buildCommand": "npm install --legacy-peer-deps && npm run build",
+  "buildCommand": "npm run vercel-build",
   "installCommand": "npm install --legacy-peer-deps",
   "build": {
     "env": {
+      "NODE_OPTIONS": "--max-old-space-size=8192",
       "DISABLE_ESLINT_PLUGIN": "true",
       "SENTRY_SUPPRESS_INSTRUMENTATION_FILE_WARNING": "1",
       "SENTRY_SUPPRESS_GLOBAL_ERROR_HANDLER_FILE_WARNING": "1"
+    }
+  },
+  "functions": {
+    "app/api/**/*.ts": {
+      "maxDuration": 30
     }
   }
 }
