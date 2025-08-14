@@ -13,6 +13,7 @@ import {
   recordFailedAttempt,
   resetAttempts,
 } from '@/lib/security/rateLimit';
+import type { UserRole } from '@/types/auth';
 
 const client = new MongoClient(process.env.MONGODB_URI!);
 const clientPromise = client.connect();
@@ -36,8 +37,6 @@ export const authOptions: NextAuthOptions = {
         const ip =
           (req?.headers?.['x-forwarded-for'] as string) ||
           (req?.headers?.['x-real-ip'] as string) ||
-          req?.connection?.remoteAddress ||
-          req?.socket?.remoteAddress ||
           '127.0.0.1';
 
         const clientIP = Array.isArray(ip) ? ip[0] : ip.split(',')[0].trim();
@@ -202,7 +201,7 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.id as string;
-        session.user.role = token.role as string;
+        session.user.role = token.role as UserRole;
         session.user.emailVerified = token.emailVerified as Date | null;
         session.user.bio = token.bio as string;
       }

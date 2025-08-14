@@ -3,27 +3,27 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, usePathname } from 'next/navigation';
-import type { 
-  UseRequireAuthOptions, 
-  UseRequireAuthReturn, 
-  AuthUser, 
-  UserRole, 
-  AuthFailureReason 
+import type {
+  UseRequireAuthOptions,
+  UseRequireAuthReturn,
+  AuthUser,
+  UserRole,
+  AuthFailureReason,
 } from '@/types/auth';
 
 /**
  * 認証必須フック - ページやコンポーネントで認証状態を管理
- * 
+ *
  * @example
  * ```tsx
  * const { user, isLoading, error } = useRequireAuth({
  *   requiredRole: 'admin',
  *   requireEmailVerified: true
  * });
- * 
+ *
  * if (isLoading) return <LoadingSpinner />;
  * if (error) return <ErrorMessage error={error} />;
- * 
+ *
  * return <ProtectedContent user={user} />;
  * ```
  */
@@ -34,20 +34,20 @@ export const useRequireAuth = (options: UseRequireAuthOptions = {}): UseRequireA
     redirectTo = '/login',
     onUnauthorized,
     onLoading,
-    customCheck
+    customCheck,
   } = options;
 
   const { data: session, status, update: refreshSession } = useSession();
   const router = useRouter();
   const pathname = usePathname();
-  
+
   const [error, setError] = useState<AuthFailureReason | null>(null);
   const [hasRedirected, setHasRedirected] = useState(false);
 
   // セッションからAuthUserを変換
   const user: AuthUser | null = useMemo(() => {
     if (!session?.user) return null;
-    
+
     return {
       id: session.user.id || '',
       email: session.user.email || '',
@@ -56,43 +56,46 @@ export const useRequireAuth = (options: UseRequireAuthOptions = {}): UseRequireA
       emailVerified: session.user.emailVerified || null,
       image: session.user.image || undefined,
       createdAt: new Date((session.user as any).createdAt || Date.now()),
-      updatedAt: new Date((session.user as any).updatedAt || Date.now())
+      updatedAt: new Date((session.user as any).updatedAt || Date.now()),
     };
   }, [session]);
 
   // ロール階層の定義
   const roleHierarchy: Record<UserRole, number> = {
-    'user': 1,
-    'moderator': 2,
-    'admin': 3
+    user: 1,
+    moderator: 2,
+    admin: 3,
   };
 
   // 権限チェック関数
-  const checkPermissions = useCallback((currentUser: AuthUser | null): AuthFailureReason | null => {
-    if (!currentUser) {
-      return 'not_authenticated';
-    }
+  const checkPermissions = useCallback(
+    (currentUser: AuthUser | null): AuthFailureReason | null => {
+      if (!currentUser) {
+        return 'not_authenticated';
+      }
 
-    // メール認証チェック
-    if (requireEmailVerified && !currentUser.emailVerified) {
-      return 'email_not_verified';
-    }
+      // メール認証チェック
+      if (requireEmailVerified && !currentUser.emailVerified) {
+        return 'email_not_verified';
+      }
 
-    // ロール権限チェック
-    const currentRoleLevel = roleHierarchy[currentUser.role] || 0;
-    const requiredRoleLevel = roleHierarchy[requiredRole] || 0;
-    
-    if (currentRoleLevel < requiredRoleLevel) {
-      return 'insufficient_permissions';
-    }
+      // ロール権限チェック
+      const currentRoleLevel = roleHierarchy[currentUser.role] || 0;
+      const requiredRoleLevel = roleHierarchy[requiredRole] || 0;
 
-    // カスタムチェック
-    if (customCheck && !customCheck(currentUser)) {
-      return 'custom_check_failed';
-    }
+      if (currentRoleLevel < requiredRoleLevel) {
+        return 'insufficient_permissions';
+      }
 
-    return null;
-  }, [requireEmailVerified, requiredRole, customCheck, roleHierarchy]);
+      // カスタムチェック
+      if (customCheck && !customCheck(currentUser)) {
+        return 'custom_check_failed';
+      }
+
+      return null;
+    },
+    [requireEmailVerified, requiredRole, customCheck, roleHierarchy]
+  );
 
   // 認証状態の計算
   const isLoading = status === 'loading';
@@ -118,25 +121,25 @@ export const useRequireAuth = (options: UseRequireAuthOptions = {}): UseRequireA
     const currentError = checkPermissions(user);
     if (currentError) {
       onUnauthorized?.(currentError);
-      
+
       // リダイレクト先の決定
       let redirectUrl = redirectTo;
-      
+
       switch (currentError) {
         case 'not_authenticated':
           // ログインページにcallbackUrlを付与
           const callbackUrl = encodeURIComponent(pathname);
           redirectUrl = `${redirectTo}?callbackUrl=${callbackUrl}`;
           break;
-          
+
         case 'email_not_verified':
           redirectUrl = '/auth/verify-email';
           break;
-          
+
         case 'insufficient_permissions':
           redirectUrl = '/unauthorized';
           break;
-          
+
         case 'custom_check_failed':
           redirectUrl = '/access-denied';
           break;
@@ -146,15 +149,15 @@ export const useRequireAuth = (options: UseRequireAuthOptions = {}): UseRequireA
       router.push(redirectUrl);
     }
   }, [
-    user, 
-    status, 
-    isLoading, 
-    hasRedirected, 
-    router, 
-    pathname, 
-    redirectTo, 
-    onUnauthorized, 
-    checkPermissions
+    user,
+    status,
+    isLoading,
+    hasRedirected,
+    router,
+    pathname,
+    redirectTo,
+    onUnauthorized,
+    checkPermissions,
   ]);
 
   // ローディング状態のコールバック
@@ -179,7 +182,9 @@ export const useRequireAuth = (options: UseRequireAuthOptions = {}): UseRequireA
     hasRequiredPermission,
     error,
     recheckAuth,
-    refreshSession: useCallback(() => refreshSession(), [refreshSession])
+    refreshSession: useCallback(async () => {
+      await refreshSession();
+    }, [refreshSession]),
   };
 };
 
@@ -188,11 +193,11 @@ export const useRequireAuth = (options: UseRequireAuthOptions = {}): UseRequireA
  */
 export const useAuth = () => {
   const { data: session, status } = useSession();
-  
+
   return {
     user: session?.user || null,
     isLoading: status === 'loading',
-    isAuthenticated: status === 'authenticated'
+    isAuthenticated: status === 'authenticated',
   };
 };
 
@@ -202,7 +207,7 @@ export const useAuth = () => {
 export const useRequireAdmin = (options?: Omit<UseRequireAuthOptions, 'requiredRole'>) => {
   return useRequireAuth({
     ...options,
-    requiredRole: 'admin'
+    requiredRole: 'admin',
   });
 };
 
@@ -212,6 +217,6 @@ export const useRequireAdmin = (options?: Omit<UseRequireAuthOptions, 'requiredR
 export const useRequireModerator = (options?: Omit<UseRequireAuthOptions, 'requiredRole'>) => {
   return useRequireAuth({
     ...options,
-    requiredRole: 'moderator'
+    requiredRole: 'moderator',
   });
 };

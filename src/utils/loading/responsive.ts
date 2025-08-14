@@ -49,7 +49,7 @@ interface ResponsiveLoadingConfig {
 const sizeMapping = {
   small: { width: 20, height: 20 },
   medium: { width: 40, height: 40 },
-  large: { width: 60, height: 60 }
+  large: { width: 60, height: 60 },
 };
 
 /**
@@ -60,7 +60,7 @@ export const createResponsiveLoadingStyle = (
   config: ResponsiveLoadingConfig
 ): SxProps<Theme> => {
   const breakpoints: Breakpoint[] = ['xs', 'sm', 'md', 'lg', 'xl'];
-  
+
   return breakpoints.reduce((styles, breakpoint) => {
     const bpConfig = config[breakpoint];
     if (!bpConfig) return styles;
@@ -77,9 +77,9 @@ export const createResponsiveLoadingStyle = (
           left: 0,
           right: 0,
           bottom: 0,
-          zIndex: theme.zIndex.modal + 1
-        })
-      }
+          zIndex: theme.zIndex.modal + 1,
+        }),
+      },
     };
   }, {} as SxProps<Theme>);
 };
@@ -94,26 +94,26 @@ export const getMobileFirstLoadingConfig = (
     size: 'small',
     variant: 'circular',
     text: false,
-    fullScreen: false
+    fullScreen: false,
   },
   sm: {
     size: baseSize,
     variant: 'circular',
     text: true,
-    fullScreen: false
+    fullScreen: false,
   },
   md: {
     size: baseSize,
     variant: 'circular',
     text: true,
-    fullScreen: false
+    fullScreen: false,
   },
   lg: {
     size: 'large',
     variant: 'circular',
     text: true,
-    fullScreen: false
-  }
+    fullScreen: false,
+  },
 });
 
 /**
@@ -126,26 +126,26 @@ export const getDesktopFirstLoadingConfig = (
     size: 'small',
     variant: 'dots',
     text: false,
-    fullScreen: true
+    fullScreen: true,
   },
   sm: {
     size: 'medium',
     variant: 'circular',
     text: false,
-    fullScreen: false
+    fullScreen: false,
   },
   md: {
     size: baseSize,
     variant: 'circular',
     text: true,
-    fullScreen: false
+    fullScreen: false,
   },
   lg: {
     size: baseSize,
     variant: 'circular',
     text: true,
-    fullScreen: false
-  }
+    fullScreen: false,
+  },
 });
 
 /**
@@ -155,7 +155,7 @@ export const createContainerQueryLoadingStyle = (
   minWidth: number,
   maxWidth?: number
 ): SxProps<Theme> => {
-  const containerQuery = maxWidth 
+  const containerQuery = maxWidth
     ? `@container (min-width: ${minWidth}px) and (max-width: ${maxWidth}px)`
     : `@container (min-width: ${minWidth}px)`;
 
@@ -164,10 +164,10 @@ export const createContainerQueryLoadingStyle = (
       '& .loading-container': {
         padding: minWidth < 480 ? '8px' : '16px',
         '& .loading-text': {
-          fontSize: minWidth < 480 ? '0.75rem' : '0.875rem'
-        }
-      }
-    }
+          fontSize: minWidth < 480 ? '0.75rem' : '0.875rem',
+        },
+      },
+    },
   };
 };
 
@@ -178,15 +178,15 @@ export const getOrientationAwareLoadingStyle = (): SxProps<Theme> => ({
   '@media (orientation: portrait)': {
     '& .loading-container': {
       flexDirection: 'column',
-      gap: '16px'
-    }
+      gap: '16px',
+    },
   },
   '@media (orientation: landscape)': {
     '& .loading-container': {
       flexDirection: 'row',
-      gap: '24px'
-    }
-  }
+      gap: '24px',
+    },
+  },
 });
 
 /**
@@ -197,18 +197,18 @@ export const getViewportHeightAwareStyle = (): SxProps<Theme> => ({
     '& .loading-container': {
       padding: '8px',
       '& .loading-text': {
-        fontSize: '0.75rem'
-      }
-    }
+        fontSize: '0.75rem',
+      },
+    },
   },
   '@media (min-height: 800px)': {
     '& .loading-container': {
       padding: '24px',
       '& .loading-text': {
-        fontSize: '1rem'
-      }
-    }
-  }
+        fontSize: '1rem',
+      },
+    },
+  },
 });
 
 /**
@@ -221,18 +221,18 @@ export const getTouchDeviceLoadingStyle = (): SxProps<Theme> => ({
       padding: '12px',
       '& .loading-button': {
         minHeight: '44px',
-        padding: '12px 24px'
-      }
-    }
+        padding: '12px 24px',
+      },
+    },
   },
   '@media (hover: hover) and (pointer: fine)': {
     '& .loading-container': {
       '& .loading-button': {
         minHeight: '36px',
-        padding: '8px 16px'
-      }
-    }
-  }
+        padding: '8px 16px',
+      },
+    },
+  },
 });
 
 /**
@@ -241,16 +241,16 @@ export const getTouchDeviceLoadingStyle = (): SxProps<Theme> => ({
 export const getPrintMediaLoadingStyle = (): SxProps<Theme> => ({
   '@media print': {
     '& .loading-container': {
-      display: 'none'
+      display: 'none',
     },
     '&::after': {
       content: '"Loading..."',
       display: 'block',
       textAlign: 'center',
       padding: '20px',
-      border: '1px solid #ccc'
-    }
-  }
+      border: '1px solid #ccc',
+    },
+  },
 });
 
 /**
@@ -260,13 +260,13 @@ export const getHighContrastLoadingStyle = (theme: Theme): SxProps<Theme> => ({
   '@media (prefers-contrast: high)': {
     '& .loading-spinner': {
       borderWidth: '3px',
-      borderColor: theme.palette.mode === 'dark' ? '#ffffff' : '#000000'
+      borderColor: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
     },
     '& .loading-text': {
       fontWeight: 'bold',
-      color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000'
-    }
-  }
+      color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
+    },
+  },
 });
 
 /**
@@ -275,11 +275,11 @@ export const getHighContrastLoadingStyle = (theme: Theme): SxProps<Theme> => ({
 export const getMotionPreferenceLoadingStyle = (): SxProps<Theme> => ({
   '@media (prefers-reduced-motion: reduce)': {
     '& .loading-spinner': {
-      animation: 'none'
+      animation: 'none',
     },
     '& .loading-dots': {
       animation: 'none',
-      opacity: 0.7
+      opacity: 0.7,
     },
     '&::before': {
       content: '"Loading..."',
@@ -288,14 +288,14 @@ export const getMotionPreferenceLoadingStyle = (): SxProps<Theme> => ({
       top: 'auto',
       width: '1px',
       height: '1px',
-      overflow: 'hidden'
-    }
+      overflow: 'hidden',
+    },
   },
   '@media (prefers-reduced-motion: no-preference)': {
     '& .loading-spinner': {
-      animation: 'spin 1s linear infinite'
-    }
-  }
+      animation: 'spin 1s linear infinite',
+    },
+  },
 });
 
 /**
@@ -306,13 +306,13 @@ export const getBatteryAwareLoadingStyle = (): SxProps<Theme> => ({
   '@supports not (battery: low)': {
     '& .loading-container.battery-low': {
       '& .loading-animation': {
-        animation: 'none'
+        animation: 'none',
       },
       '& .loading-text::after': {
-        content: '" (省電力モード)"'
-      }
-    }
-  }
+        content: '" (省電力モード)"',
+      },
+    },
+  },
 });
 
 /**
@@ -325,22 +325,22 @@ export const getNetworkAwareLoadingStyle = (): SxProps<Theme> => ({
       fontSize: '0.875rem',
       '&::after': {
         content: '" - 接続速度が低下しています"',
-        color: 'warning.main'
-      }
-    }
+        color: 'warning.main',
+      },
+    },
   },
   // オフライン時の調整
   '&.offline': {
     '& .loading-spinner': {
-      display: 'none'
+      display: 'none',
     },
     '& .loading-text': {
       color: 'error.main',
       '&::before': {
-        content: '"オフライン: "'
-      }
-    }
-  }
+        content: '"オフライン: "',
+      },
+    },
+  },
 });
 
 /**
@@ -352,14 +352,14 @@ export const getWearableLoadingStyle = (): SxProps<Theme> => ({
       padding: '4px',
       '& .loading-spinner': {
         width: '16px',
-        height: '16px'
+        height: '16px',
       },
       '& .loading-text': {
         fontSize: '0.625rem',
-        lineHeight: 1.2
-      }
-    }
-  }
+        lineHeight: 1.2,
+      },
+    },
+  },
 });
 
 /**
@@ -370,17 +370,20 @@ export const createComprehensiveResponsiveLoadingStyle = (
   config?: ResponsiveLoadingConfig
 ): SxProps<Theme> => {
   const baseConfig = config || getMobileFirstLoadingConfig();
-  
-  return {
-    ...createResponsiveLoadingStyle(theme, baseConfig),
-    ...getOrientationAwareLoadingStyle(),
-    ...getViewportHeightAwareStyle(),
-    ...getTouchDeviceLoadingStyle(),
-    ...getPrintMediaLoadingStyle(),
-    ...getHighContrastLoadingStyle(theme),
-    ...getMotionPreferenceLoadingStyle(),
-    ...getBatteryAwareLoadingStyle(),
-    ...getNetworkAwareLoadingStyle(),
-    ...getWearableLoadingStyle()
-  };
+
+  const styles = Object.assign(
+    {},
+    createResponsiveLoadingStyle(theme, baseConfig),
+    getOrientationAwareLoadingStyle(),
+    getViewportHeightAwareStyle(),
+    getTouchDeviceLoadingStyle(),
+    getPrintMediaLoadingStyle(),
+    getHighContrastLoadingStyle(theme),
+    getMotionPreferenceLoadingStyle(),
+    getBatteryAwareLoadingStyle(),
+    getNetworkAwareLoadingStyle(),
+    getWearableLoadingStyle()
+  );
+
+  return styles as SxProps<Theme>;
 };

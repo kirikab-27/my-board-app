@@ -2,8 +2,8 @@ import '@testing-library/jest-dom';
 import { TextEncoder, TextDecoder } from 'util';
 
 // Node.js環境でのポリフィル
-global.TextEncoder = TextEncoder;
-global.TextDecoder = TextDecoder as typeof TextDecoder;
+(global as any).TextEncoder = TextEncoder;
+(global as any).TextDecoder = TextDecoder;
 
 // Mock implementations
 jest.mock('next/navigation', () => ({

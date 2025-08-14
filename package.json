@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3010",
-    "build": "next build",
-    "vercel-build": "npm install --legacy-peer-deps && next build",
+    "build": "cross-env NODE_OPTIONS=\"--max-old-space-size=8192\" next build",
+    "vercel-build": "npm install --legacy-peer-deps && cross-env NODE_OPTIONS=\"--max-old-space-size=8192\" next build",
     "start": "next start -p 3010",
     "lint": "eslint . --ext .ts,.tsx --max-warnings 50",
     "lint:fix": "eslint . --ext .ts,.tsx --fix",

@@ -114,7 +114,7 @@ export const loadingKeyframes = {
     100% {
       background-position: 468px 0;
     }
-  `
+  `,
 };
 
 /**
@@ -126,7 +126,7 @@ export const createAnimationStyle = (
   delay: number = 0,
   iterationCount: number | 'infinite' = 'infinite'
 ) => ({
-  animation: `${loadingKeyframes[animationType]} ${duration}ms ease-in-out ${delay}ms ${iterationCount}`
+  animation: `${loadingKeyframes[animationType]} ${duration}ms ease-in-out ${delay}ms ${iterationCount}`,
 });
 
 /**
@@ -146,12 +146,12 @@ export const getThemedAnimationStyle = (
     duration = 800,
     delay = 0,
     color = 'primary',
-    iterationCount = 'infinite'
+    iterationCount = 'infinite',
   } = options || {};
 
   return {
     ...createAnimationStyle(animationType, duration, delay, iterationCount),
-    color: theme.palette[color].main
+    color: (theme.palette[color] as any)?.main || theme.palette.primary.main,
   };
 };
 
@@ -169,23 +169,43 @@ export const getResponsiveAnimationStyle = (
   }
 ) => {
   const baseStyle = createAnimationStyle(animationType);
-  
+
   if (!breakpointConfig) return baseStyle;
 
   return {
     ...baseStyle,
     [theme.breakpoints.up('xs')]: {
-      ...(breakpointConfig.xs && createAnimationStyle(animationType, breakpointConfig.xs.duration, breakpointConfig.xs.delay))
+      ...(breakpointConfig.xs &&
+        createAnimationStyle(
+          animationType,
+          breakpointConfig.xs.duration,
+          breakpointConfig.xs.delay
+        )),
     },
     [theme.breakpoints.up('sm')]: {
-      ...(breakpointConfig.sm && createAnimationStyle(animationType, breakpointConfig.sm.duration, breakpointConfig.sm.delay))
+      ...(breakpointConfig.sm &&
+        createAnimationStyle(
+          animationType,
+          breakpointConfig.sm.duration,
+          breakpointConfig.sm.delay
+        )),
     },
     [theme.breakpoints.up('md')]: {
-      ...(breakpointConfig.md && createAnimationStyle(animationType, breakpointConfig.md.duration, breakpointConfig.md.delay))
+      ...(breakpointConfig.md &&
+        createAnimationStyle(
+          animationType,
+          breakpointConfig.md.duration,
+          breakpointConfig.md.delay
+        )),
     },
     [theme.breakpoints.up('lg')]: {
-      ...(breakpointConfig.lg && createAnimationStyle(animationType, breakpointConfig.lg.duration, breakpointConfig.lg.delay))
-    }
+      ...(breakpointConfig.lg &&
+        createAnimationStyle(
+          animationType,
+          breakpointConfig.lg.duration,
+          breakpointConfig.lg.delay
+        )),
+    },
   };
 };
 
@@ -208,13 +228,15 @@ export const getPerformantAnimationStyle = (
     ...baseStyle,
     willChange,
     // prefers-reduced-motion対応
-    '@media (prefers-reduced-motion: reduce)': reduceMotion ? {
-      animation: 'none'
-    } : {},
+    '@media (prefers-reduced-motion: reduce)': reduceMotion
+      ? {
+          animation: 'none',
+        }
+      : {},
     // GPU加速の利用
     transform: 'translateZ(0)',
     backfaceVisibility: 'hidden' as const,
-    perspective: 1000
+    perspective: 1000,
   };
 };
 
@@ -228,7 +250,7 @@ export const createDotsAnimation = (
 ) => {
   return Array.from({ length: dotCount }, (_, index) => ({
     animationDelay: `${index * stagger}ms`,
-    ...createAnimationStyle('dots', duration)
+    ...createAnimationStyle('dots', duration),
   }));
 };
 
@@ -242,7 +264,7 @@ export const createWaveAnimation = (
 ) => {
   return Array.from({ length: barCount }, (_, index) => ({
     animationDelay: `${index * stagger}ms`,
-    ...createAnimationStyle('wave', duration)
+    ...createAnimationStyle('wave', duration),
   }));
 };
 
@@ -255,7 +277,7 @@ export const createShimmerEffect = (theme: Theme, width: number = 468) => ({
     ${theme.palette.action.hover} 50%, 
     ${theme.palette.background.paper} 100%)`,
   backgroundSize: `${width}px 100%`,
-  ...createAnimationStyle('shimmer', 1200)
+  ...createAnimationStyle('shimmer', 1200),
 });
 
 /**
@@ -264,27 +286,27 @@ export const createShimmerEffect = (theme: Theme, width: number = 468) => ({
 export const animationControls = {
   // アニメーション一時停止
   pause: {
-    animationPlayState: 'paused' as const
+    animationPlayState: 'paused' as const,
   },
-  
+
   // アニメーション再生
   play: {
-    animationPlayState: 'running' as const
+    animationPlayState: 'running' as const,
   },
-  
+
   // アニメーション速度調整
   setSpeed: (speed: number) => ({
-    animationDuration: `${800 / speed}ms`
+    animationDuration: `${800 / speed}ms`,
   }),
-  
+
   // アニメーション方向設定
   reverse: {
-    animationDirection: 'reverse' as const
+    animationDirection: 'reverse' as const,
   },
-  
+
   alternate: {
-    animationDirection: 'alternate' as const
-  }
+    animationDirection: 'alternate' as const,
+  },
 };
 
 /**
@@ -298,10 +320,10 @@ export const a11yFriendlyAnimation = (
     fallbackContent?: string;
   }
 ) => {
-  const { 
-    duration = 800, 
+  const {
+    duration = 800,
     respectUserPreferences = true,
-    fallbackContent = '読み込み中...'
+    fallbackContent = '読み込み中...',
   } = options || {};
 
   return {
@@ -317,9 +339,9 @@ export const a11yFriendlyAnimation = (
         '&::after': {
           content: `"${fallbackContent}"`,
           position: 'absolute',
-          left: '-9999px'
-        }
-      }
-    })
+          left: '-9999px',
+        },
+      },
+    }),
   };
 };
