@@ -345,7 +345,7 @@ export default function PasswordChangePage() {
                 fullWidth
                 disabled={saving}
                 error={
-                  formData.confirmPassword && formData.newPassword !== formData.confirmPassword
+                  !!(formData.confirmPassword && formData.newPassword !== formData.confirmPassword)
                 }
                 helperText={
                   formData.confirmPassword && formData.newPassword !== formData.confirmPassword
