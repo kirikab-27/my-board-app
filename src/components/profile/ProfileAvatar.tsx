@@ -43,6 +43,8 @@ const getSizeStyles = (size: ProfileAvatarProps['size']) => {
 };
 
 export function ProfileAvatar({ name, size = 'medium', sx, ...props }: ProfileAvatarProps) {
+  // sizeプロパティをpropsから除外
+  const { ...avatarProps } = props;
   // 名前から頭文字を取得
   const getInitial = (name?: string) => {
     if (!name) return '?';
@@ -68,7 +70,7 @@ export function ProfileAvatar({ name, size = 'medium', sx, ...props }: ProfileAv
 
   return (
     <Avatar
-      {...props}
+      {...avatarProps}
       sx={{
         ...sizeStyles,
         backgroundColor,
