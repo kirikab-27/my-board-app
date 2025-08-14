@@ -33,6 +33,22 @@ import {
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
+// ルート設定の型定義
+interface RouteConfig {
+  path: string;
+  role?: string;
+  emailRequired?: boolean;
+  redirect?: string;
+  description: string;
+}
+
+interface RouteCategoryConfig {
+  category: string;
+  icon: React.ReactElement;
+  color: string;
+  routes: RouteConfig[];
+}
+
 /**
  * ミドルウェア保護デモコンポーネント
  */
@@ -45,7 +61,7 @@ export const MiddlewareDemo: React.FC = () => {
   const currentRole = (currentUser as any)?.role || 'guest';
 
   // ルート設定情報
-  const routeConfigs = [
+  const routeConfigs: RouteCategoryConfig[] = [
     {
       category: '保護ルート',
       icon: <LockIcon />,
@@ -101,7 +117,7 @@ export const MiddlewareDemo: React.FC = () => {
     setTestResults([]);
   };
 
-  const getAccessStatus = (route: any) => {
+  const getAccessStatus = (route: RouteConfig) => {
     if (!currentUser && route.role) {
       return { status: '拒否', color: 'error', reason: '未認証' };
     }
