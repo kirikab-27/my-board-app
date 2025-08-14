@@ -27,7 +27,7 @@ import {
   Security as SecurityIcon,
   Lock as LockIcon,
   Public as PublicIcon,
-  Admin as AdminIcon,
+  AdminPanelSettings as AdminIcon,
   Shield as ShieldIcon,
 } from '@mui/icons-material';
 import { useSession } from 'next-auth/react';
