@@ -1,0 +1,242 @@
+{
+  "users": [
+    {
+      "_id": "689868464fe2b2c660f3be0f",
+      "name": "テストユーザー",
+      "email": "test@example.com",
+      "password": "$2b$12$CEgMMYFCx1Y28M2LroTDeevLJJWY.hNSi2JXa44repzcj4WpvCVyG",
+      "emailVerified": "2025-08-10T09:37:10.575Z",
+      "image": null,
+      "createdAt": "2025-08-10T09:37:10.609Z",
+      "updatedAt": "2025-08-10T09:37:10.609Z",
+      "__v": 0,
+      "role": "admin"
+    },
+    {
+      "_id": "68987ef57504146cb5ebbac1",
+      "name": "Test User 2",
+      "email": "test2@example.com",
+      "password": "$2b$12$ik3RZbDHe5Q4wfU8xi1GJeQai2yOYpGpdjyybJ1BYxcuInvlcwEyq",
+      "emailVerified": null,
+      "image": null,
+      "createdAt": "2025-08-10T11:13:57.175Z",
+      "updatedAt": "2025-08-10T11:13:57.175Z",
+      "__v": 0,
+      "role": "admin"
+    },
+    {
+      "_id": "68987f3f7504146cb5ebbac7",
+      "name": "Test User 3",
+      "email": "test3@example.com",
+      "password": "$2b$12$Z0xAqlGvsmKHNF8INph3b.qDyC4IbJAZ9EyMWtkMXfzU6gtohyg5.",
+      "emailVerified": null,
+      "image": null,
+      "createdAt": "2025-08-10T11:15:11.040Z",
+      "updatedAt": "2025-08-10T11:15:11.040Z",
+      "__v": 0,
+      "role": "admin"
+    },
+    {
+      "_id": "6898801b7504146cb5ebbacd",
+      "name": "Password Test",
+      "email": "passwordtest@example.com",
+      "password": "$2b$12$UFn/lUoiIHTnv.5AEuBrruD/VE7j.VhGpCASQ45FHZoKIIQIo5jl2",
+      "emailVerified": null,
+      "image": null,
+      "createdAt": "2025-08-10T11:18:51.362Z",
+      "updatedAt": "2025-08-10T11:18:51.362Z",
+      "__v": 0,
+      "role": "admin"
+    },
+    {
+      "_id": "68988110559ff1f328a7c1e6",
+      "name": "kirikab",
+      "email": "kab27kav@gmail.com",
+      "password": "$2b$12$Yy4kdbciE22/v9DkhcHTSO1uNAxtJHRoz5vBIfuX0rvDksYeLcm1y",
+      "emailVerified": "2025-08-10T11:24:01.544Z",
+      "image": null,
+      "createdAt": "2025-08-10T11:22:56.250Z",
+      "updatedAt": "2025-08-11T11:50:26.821Z",
+      "__v": 0,
+      "role": "admin",
+      "bio": "テスト"
+    }
+  ],
+  "posts": [
+    {
+      "_id": "688fcf77680ef5ee87ed31c5",
+      "content": "test",
+      "createdAt": "2025-08-03T21:07:03.519Z",
+      "updatedAt": "2025-08-03T21:07:03.519Z",
+      "__v": 0,
+      "likedBy": [],
+      "title": null
+    },
+    {
+      "_id": "688fcf85680ef5ee87ed31c8",
+      "content": "tesuto",
+      "createdAt": "2025-08-03T21:07:17.620Z",
+      "updatedAt": "2025-08-03T21:07:17.620Z",
+      "__v": 0,
+      "likedBy": [],
+      "title": null
+    },
+    {
+      "_id": "688fd48a278cd90105aa7d0d",
+      "content": "test",
+      "createdAt": "2025-08-03T21:28:42.759Z",
+      "updatedAt": "2025-08-03T21:28:42.759Z",
+      "__v": 0,
+      "likedBy": [],
+      "title": null
+    },
+    {
+      "_id": "688fd4b5278cd90105aa7d12",
+      "content": "test2",
+      "createdAt": "2025-08-03T21:29:25.728Z",
+      "updatedAt": "2025-08-03T21:29:25.728Z",
+      "__v": 0,
+      "likedBy": [],
+      "title": null
+    },
+    {
+      "_id": "6891e6bf3e761ff642b178ec",
+      "content": "やっほー",
+      "createdAt": "2025-08-05T11:10:55.934Z",
+      "updatedAt": "2025-08-05T13:06:38.124Z",
+      "__v": 0,
+      "likes": 1,
+      "likedBy": [],
+      "title": null
+    },
+    {
+      "_id": "6891ec724a95f9b55e752c12",
+      "content": "やっほーほー！",
+      "createdAt": "2025-08-05T11:35:14.162Z",
+      "updatedAt": "2025-08-11T22:06:44.024Z",
+      "__v": 0,
+      "likes": 5,
+      "likedBy": [
+        "114.168.230.82",
+        "126.140.20.131",
+        "68988110559ff1f328a7c1e6"
+      ],
+      "title": null
+    },
+    {
+      "_id": "6891f4ddc18e8fae2c8732a9",
+      "content": "スマホから投稿",
+      "createdAt": "2025-08-05T12:11:09.541Z",
+      "updatedAt": "2025-08-10T01:47:06.972Z",
+      "__v": 0,
+      "likes": 8,
+      "likedBy": [
+        "114.168.230.82",
+        "114.164.236.85",
+        "126.140.20.131"
+      ],
+      "title": null
+    },
+    {
+      "_id": "68928269834c356348bd1f73",
+      "content": "こんにちは",
+      "likes": 1,
+      "likedBy": [
+        "114.168.230.82"
+      ],
+      "createdAt": "2025-08-05T22:15:05.560Z",
+      "updatedAt": "2025-08-06T14:38:37.701Z",
+      "__v": 0,
+      "title": null
+    },
+    {
+      "_id": "6892828a834c356348bd1f80",
+      "content": "おはようございます。",
+      "likes": 2,
+      "likedBy": [
+        "114.168.230.82",
+        "126.140.20.131"
+      ],
+      "createdAt": "2025-08-05T22:15:38.723Z",
+      "updatedAt": "2025-08-10T01:45:10.315Z",
+      "__v": 0,
+      "title": null
+    },
+    {
+      "_id": "6893cf2ec6d672e7deb24bc0",
+      "content": "がmg間bsbm：あlんb：sんーーーーーーーーmJ(0(#E>>R<>",
+      "likes": 1,
+      "likedBy": [
+        "118.104.208.118"
+      ],
+      "createdAt": "2025-08-06T21:54:54.802Z",
+      "updatedAt": "2025-08-08T23:39:10.510Z",
+      "__v": 0,
+      "title": null
+    },
+    {
+      "_id": "6897f9ec45532c9c88342925",
+      "content": "testあきらパパtestあきらパパtestあきらパパtestあきらパパtestあきらパパtestあきらパパtestあきらパパtestあきらパパtestあきらパパtestあきらパパtestあきらパパtestあきらパパtestあきらパパtestあきらパパtestあきらパパtestあきらパパtestあきらパパtestあきらパパtestあきらパパtestあきらパパtestあきらパパtestあきらパパ11",
+      "likes": 1,
+      "likedBy": [
+        "::1"
+      ],
+      "createdAt": "2025-08-10T01:46:20.695Z",
+      "updatedAt": "2025-08-11T22:06:39.278Z",
+      "__v": 0,
+      "title": null
+    },
+    {
+      "_id": "6899e767d0a9e66715d2cc3d",
+      "title": "テスト投稿",
+      "content": "テスト",
+      "likes": 0,
+      "likedBy": [],
+      "userId": "68988110559ff1f328a7c1e6",
+      "authorName": "kirikab",
+      "isPublic": true,
+      "createdAt": "2025-08-11T12:51:51.736Z",
+      "updatedAt": "2025-08-11T12:51:51.736Z",
+      "__v": 0
+    },
+    {
+      "_id": "6899e828d0a9e66715d2ccac",
+      "title": "123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_",
+      "content": "123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_",
+      "likes": 0,
+      "likedBy": [],
+      "userId": "68988110559ff1f328a7c1e6",
+      "authorName": "kirikab",
+      "isPublic": true,
+      "createdAt": "2025-08-11T12:55:04.660Z",
+      "updatedAt": "2025-08-11T22:06:31.589Z",
+      "__v": 0
+    },
+    {
+      "_id": "689e5fa8dc78d96d83d68775",
+      "title": "npm run dev の落とし穴",
+      "content": "開発モード（dev）は型エラーを無視し、CSPも緩く、本番ビルドで初めて問題が表面化する。今回19個のエラーは全てnpm run \n  buildで事前発見可能だった。\n\n  必須対策：\n  - コミット前にnpm run build実行\n  - PR前に本番環境テスト（build→start）\n  - 警告も即座に対応\n\n  開発環境≠本番環境。定期的な本番ビルドで技術的負債の蓄積を防ぐことが重要。",
+      "likes": 0,
+      "likedBy": [],
+      "userId": "68988110559ff1f328a7c1e6",
+      "authorName": "kirikab",
+      "isPublic": true,
+      "createdAt": "2025-08-14T22:14:00.783Z",
+      "updatedAt": "2025-08-14T22:14:00.783Z",
+      "__v": 0
+    },
+    {
+      "_id": "689e6422c9be7b386b1ed719",
+      "title": "並走開発（Concurrent Development）手法の導入",
+      "content": "概要\n\n  従来のnpm run dev単独実行から、3つのプロセスを同時監視する並走開発に移行。リアルタイムでTypeScriptエラー・ESLint警告・Next.jsビルドエラー\n  を検知し、本番デプロイ時の大量エラーを事前防止する手法。\n\n  技術実装\n\n  # 従来の開発\n  npm run dev  # Next.jsのみ\n\n  # 新しい並走開発\n  npm run dev:safe  # Next.js + TypeScript + ESLint同時実行\n\n  使用ツール:\n  - concurrently: 複数プロセス並列実行・カラー出力\n  - eslint-watch: ESLintのwatch機能\n  - TypeScript増分ビルド・ファイル監視最適化\n\n  効果と成果\n\n  - 即座にエラー発見: テストで28個のTypeScriptエラーを開発中に検出\n  - 本番ビルドエラー削減: 今回経験した19個のVercelエラーの大半を事前防止可能\n  - コード品質向上: リアルタイムフィードバックで継続的品質維持\n  - 技術的負債防止: 小さなエラーの蓄積を防ぎ、大きな問題を回避\n\n  教訓\n\n  開発環境≠本番環境の問題を根本解決。npm run devの「型エラー無視・CSP緩い・最適化なし」という落とし穴を、リアルタイム監視で補完。コーディン     \n  グ中に全てのエラーを検知することで、従来の「後からまとめて修正」から「その場で即座に修正」に開発フローを転換。\n\n  結論\n\n  並走開発により品質チェックの前倒しを実現。エラーの早期発見で開発効率とコード品質を同時向上させる、現代的なフロントエンド開発手法として確立。",
+      "likes": 0,
+      "likedBy": [],
+      "userId": "68988110559ff1f328a7c1e6",
+      "authorName": "kirikab",
+      "isPublic": true,
+      "createdAt": "2025-08-14T22:33:06.287Z",
+      "updatedAt": "2025-08-14T22:34:24.847Z",
+      "__v": 0
+    }
+  ]
+}

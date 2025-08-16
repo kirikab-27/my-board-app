@@ -7,7 +7,6 @@ import {
   Card,
   CardContent,
   Button,
-  Grid,
   Alert,
   Box,
   TextField,
@@ -105,25 +104,27 @@ export default function SecurityAdminPage() {
     setLoading(true);
     try {
       const success = unblockIpOrUser(unblockIdentifier, unblockType);
-      
+
       if (success) {
-        setMessage({ 
-          type: 'success', 
-          text: `${unblockType === 'ip' ? 'IP' : 'ユーザー'} ${unblockIdentifier} のブロックを解除しました` 
+        setMessage({
+          type: 'success',
+          text: `${unblockType === 'ip' ? 'IP' : 'ユーザー'} ${unblockIdentifier} のブロックを解除しました`,
         });
-        
+
         // 統計を再取得
         fetchStats();
-        
+
         // 同じ情報を表示中なら更新
-        if ((unblockType === 'ip' && queryIP === unblockIdentifier) || 
-            (unblockType === 'user' && queryEmail === unblockIdentifier)) {
+        if (
+          (unblockType === 'ip' && queryIP === unblockIdentifier) ||
+          (unblockType === 'user' && queryEmail === unblockIdentifier)
+        ) {
           fetchRateLimitInfo();
         }
       } else {
-        setMessage({ 
-          type: 'error', 
-          text: `${unblockIdentifier} のブロック記録が見つかりませんでした` 
+        setMessage({
+          type: 'error',
+          text: `${unblockIdentifier} のブロック記録が見つかりませんでした`,
         });
       }
     } catch (error) {
@@ -162,8 +163,8 @@ export default function SecurityAdminPage() {
       )}
 
       {/* セキュリティ統計 */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} md={6}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 4 }}>
+        <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' } }}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -175,23 +176,25 @@ export default function SecurityAdminPage() {
                     監視中IP数: <Chip label={stats.ip.totalIPs} color="primary" size="small" />
                   </Typography>
                   <Typography variant="body1" sx={{ mt: 1 }}>
-                    ブロック中IP数: <Chip 
-                      label={stats.ip.blockedIPs} 
-                      color={stats.ip.blockedIPs > 0 ? "error" : "success"} 
-                      size="small" 
+                    ブロック中IP数:{' '}
+                    <Chip
+                      label={stats.ip.blockedIPs}
+                      color={stats.ip.blockedIPs > 0 ? 'error' : 'success'}
+                      size="small"
                     />
                   </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-                    制限: {stats.config.IP_LIMIT.maxAttempts}回/{formatTime(stats.config.IP_LIMIT.windowMs)} 
-                    → {formatTime(stats.config.IP_LIMIT.lockoutMs)}ロック
+                    制限: {stats.config.IP_LIMIT.maxAttempts}回/
+                    {formatTime(stats.config.IP_LIMIT.windowMs)}→{' '}
+                    {formatTime(stats.config.IP_LIMIT.lockoutMs)}ロック
                   </Typography>
                 </Box>
               )}
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
 
-        <Grid item xs={12} md={6}>
+        <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' } }}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -200,25 +203,28 @@ export default function SecurityAdminPage() {
               {stats && (
                 <Box>
                   <Typography variant="body1">
-                    監視中ユーザー数: <Chip label={stats.user.totalUsers} color="primary" size="small" />
+                    監視中ユーザー数:{' '}
+                    <Chip label={stats.user.totalUsers} color="primary" size="small" />
                   </Typography>
                   <Typography variant="body1" sx={{ mt: 1 }}>
-                    ブロック中ユーザー数: <Chip 
-                      label={stats.user.blockedUsers} 
-                      color={stats.user.blockedUsers > 0 ? "error" : "success"} 
-                      size="small" 
+                    ブロック中ユーザー数:{' '}
+                    <Chip
+                      label={stats.user.blockedUsers}
+                      color={stats.user.blockedUsers > 0 ? 'error' : 'success'}
+                      size="small"
                     />
                   </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-                    制限: {stats.config.USER_LIMIT.maxAttempts}回/{formatTime(stats.config.USER_LIMIT.windowMs)} 
-                    → {formatTime(stats.config.USER_LIMIT.lockoutMs)}ロック
+                    制限: {stats.config.USER_LIMIT.maxAttempts}回/
+                    {formatTime(stats.config.USER_LIMIT.windowMs)}→{' '}
+                    {formatTime(stats.config.USER_LIMIT.lockoutMs)}ロック
                   </Typography>
                 </Box>
               )}
             </CardContent>
           </Card>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
 
       {/* レート制限情報確認 */}
       <Card sx={{ mb: 3 }}>
@@ -226,7 +232,7 @@ export default function SecurityAdminPage() {
           <Typography variant="h6" gutterBottom>
             レート制限情報確認
           </Typography>
-          
+
           <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
             <TextField
               label="IPアドレス"
@@ -244,25 +250,22 @@ export default function SecurityAdminPage() {
               size="small"
               sx={{ minWidth: 250 }}
             />
-            <Button 
-              variant="contained" 
-              onClick={fetchRateLimitInfo}
-              disabled={!queryIP}
-            >
+            <Button variant="contained" onClick={fetchRateLimitInfo} disabled={!queryIP}>
               確認
             </Button>
           </Box>
 
           {rateLimitInfo && (
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+              <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 8px)' } }}>
                 <Card variant="outlined">
                   <CardContent>
                     <Typography variant="subtitle1">IP制限状況</Typography>
                     <Typography>試行回数: {rateLimitInfo.ip.attempts}</Typography>
                     <Typography>残り回数: {rateLimitInfo.ip.remaining}</Typography>
                     <Typography>
-                      ロック状態: {rateLimitInfo.ip.locked ? (
+                      ロック状態:{' '}
+                      {rateLimitInfo.ip.locked ? (
                         <Chip label="ロック中" color="error" size="small" />
                       ) : (
                         <Chip label="正常" color="success" size="small" />
@@ -275,9 +278,9 @@ export default function SecurityAdminPage() {
                     )}
                   </CardContent>
                 </Card>
-              </Grid>
+              </Box>
 
-              <Grid item xs={12} md={6}>
+              <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 8px)' } }}>
                 <Card variant="outlined">
                   <CardContent>
                     <Typography variant="subtitle1">ユーザー制限状況</Typography>
@@ -286,7 +289,8 @@ export default function SecurityAdminPage() {
                         <Typography>試行回数: {rateLimitInfo.user.attempts}</Typography>
                         <Typography>残り回数: {rateLimitInfo.user.remaining}</Typography>
                         <Typography>
-                          ロック状態: {rateLimitInfo.user.locked ? (
+                          ロック状態:{' '}
+                          {rateLimitInfo.user.locked ? (
                             <Chip label="ロック中" color="error" size="small" />
                           ) : (
                             <Chip label="正常" color="success" size="small" />
@@ -305,8 +309,8 @@ export default function SecurityAdminPage() {
                     )}
                   </CardContent>
                 </Card>
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
           )}
         </CardContent>
       </Card>
@@ -317,7 +321,7 @@ export default function SecurityAdminPage() {
           <Typography variant="h6" gutterBottom>
             ブロック解除
           </Typography>
-          
+
           <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
             <FormControl size="small" sx={{ minWidth: 120 }}>
               <InputLabel>種別</InputLabel>
@@ -330,7 +334,7 @@ export default function SecurityAdminPage() {
                 <MenuItem value="user">ユーザー</MenuItem>
               </Select>
             </FormControl>
-            
+
             <TextField
               label={unblockType === 'ip' ? 'IPアドレス' : 'メールアドレス'}
               value={unblockIdentifier}
@@ -339,9 +343,9 @@ export default function SecurityAdminPage() {
               size="small"
               sx={{ minWidth: 250 }}
             />
-            
-            <Button 
-              variant="contained" 
+
+            <Button
+              variant="contained"
               color="warning"
               onClick={handleUnblock}
               disabled={loading || !unblockIdentifier}

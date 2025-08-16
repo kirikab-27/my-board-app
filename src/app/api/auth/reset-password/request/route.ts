@@ -7,7 +7,8 @@ import { z } from 'zod';
 
 // バリデーションスキーマ
 const resetRequestSchema = z.object({
-  email: z.string()
+  email: z
+    .string()
     .min(1, 'メールアドレスは必須です')
     .email('有効なメールアドレスを入力してください'),
 });
@@ -34,22 +35,23 @@ export async function POST(req: NextRequest) {
 
     // ユーザー存在確認
     const user = await User.findOne({ email });
-    
+
     // セキュリティのため、ユーザーが存在しなくても成功レスポンスを返す
     if (!user) {
       console.log('❌ User not found for reset request:', email);
       // タイミング攻撃防止のため、存在する場合と同じレスポンス
       return NextResponse.json({
-        message: 'パスワードリセット用のメールを送信しました。メール内のリンクをクリックして、新しいパスワードを設定してください。',
+        message:
+          'パスワードリセット用のメールを送信しました。メール内のリンクをクリックして、新しいパスワードを設定してください。',
       });
     }
 
     console.log('✅ User found for reset:', email);
 
     // 既存のパスワードリセットトークンを削除
-    await VerificationToken.deleteMany({ 
-      identifier: email, 
-      type: 'password-reset' 
+    await VerificationToken.deleteMany({
+      identifier: email,
+      type: 'password-reset',
     });
 
     // パスワードリセットトークン生成（1時間有効）
@@ -64,10 +66,10 @@ export async function POST(req: NextRequest) {
       console.log('✅ Password reset email sent successfully');
     } catch (emailError) {
       console.error('❌ Failed to send reset email:', emailError);
-      
+
       // メール送信失敗の場合はトークンも削除
       await VerificationToken.deleteOne({ _id: resetToken._id });
-      
+
       return NextResponse.json(
         { error: 'メール送信に失敗しました。しばらく待ってから再度お試しください。' },
         { status: 500 }
@@ -75,16 +77,21 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({
-      message: 'パスワードリセット用のメールを送信しました。メール内のリンクをクリックして、新しいパスワードを設定してください。',
+      message:
+        'パスワードリセット用のメールを送信しました。メール内のリンクをクリックして、新しいパスワードを設定してください。',
     });
-
   } catch (error) {
     console.error('❌ Password reset request error:', error);
-    
+
     return NextResponse.json(
-      { 
+      {
         error: 'パスワードリセット要求の処理に失敗しました。しばらく待ってから再度お試しください。',
-        details: process.env.NODE_ENV === 'development' ? error?.message : undefined 
+        details:
+          process.env.NODE_ENV === 'development'
+            ? error instanceof Error
+              ? error.message
+              : String(error)
+            : undefined,
       },
       { status: 500 }
     );

@@ -12,14 +12,9 @@ import {
   Grid,
   Card,
   CardContent,
-  Chip
+  Chip,
 } from '@mui/material';
-import { 
-  useRequireAuth, 
-  useAuth, 
-  useRequireAdmin, 
-  useRequireModerator 
-} from '@/hooks/useRequireAuth';
+import { useRequireAuth, useAuth, useRequireAdmin } from '@/hooks/useRequireAuth';
 
 /**
  * 基本的な認証フック使用例
@@ -38,11 +33,14 @@ export const BasicAuthExample: React.FC = () => {
 
   if (error) {
     return (
-      <Alert severity="error" action={
-        <Button color="inherit" size="small" onClick={recheckAuth}>
-          再試行
-        </Button>
-      }>
+      <Alert
+        severity="error"
+        action={
+          <Button color="inherit" size="small" onClick={recheckAuth}>
+            再試行
+          </Button>
+        }
+      >
         認証エラー: {error}
       </Alert>
     );
@@ -54,12 +52,7 @@ export const BasicAuthExample: React.FC = () => {
         ✅ 認証成功
       </Typography>
       <Typography>ようこそ、{user?.name}さん！</Typography>
-      <Chip 
-        label={`権限: ${user?.role}`} 
-        color="primary" 
-        size="small" 
-        sx={{ mt: 1 }} 
-      />
+      <Chip label={`権限: ${user?.role}`} color="primary" size="small" sx={{ mt: 1 }} />
     </Paper>
   );
 };
@@ -68,20 +61,16 @@ export const BasicAuthExample: React.FC = () => {
  * 管理者限定コンポーネント例
  */
 export const AdminOnlyExample: React.FC = () => {
-  const { user, isLoading, error, hasRequiredPermission } = useRequireAdmin({
+  const { user, isLoading, hasRequiredPermission } = useRequireAdmin({
     onUnauthorized: (reason) => {
       console.log('管理者権限が必要:', reason);
-    }
+    },
   });
 
   if (isLoading) return <CircularProgress />;
 
   if (!hasRequiredPermission) {
-    return (
-      <Alert severity="warning">
-        このコンテンツは管理者のみ閲覧できます
-      </Alert>
-    );
+    return <Alert severity="warning">このコンテンツは管理者のみ閲覧できます</Alert>;
   }
 
   return (
@@ -98,25 +87,17 @@ export const AdminOnlyExample: React.FC = () => {
 export const EmailVerifiedExample: React.FC = () => {
   const { user, isLoading, error, hasRequiredPermission } = useRequireAuth({
     requireEmailVerified: true,
-    redirectTo: '/auth/verify-email'
+    redirectTo: '/auth/verify-email',
   });
 
   if (isLoading) return <CircularProgress />;
 
   if (error === 'email_not_verified') {
-    return (
-      <Alert severity="info">
-        メール認証が必要です。認証ページにリダイレクトします...
-      </Alert>
-    );
+    return <Alert severity="info">メール認証が必要です。認証ページにリダイレクトします...</Alert>;
   }
 
   if (!hasRequiredPermission) {
-    return (
-      <Alert severity="error">
-        アクセス権限がありません
-      </Alert>
-    );
+    return <Alert severity="error">アクセス権限がありません</Alert>;
   }
 
   return (
@@ -144,25 +125,19 @@ export const CustomCheckExample: React.FC = () => {
     },
     onUnauthorized: () => {
       console.log('カスタムチェックに失敗しました');
-    }
+    },
   });
 
   if (isLoading) return <CircularProgress />;
 
   if (error === 'custom_check_failed') {
     return (
-      <Alert severity="warning">
-        この機能は新規ユーザー（登録から30日以内）のみ利用できます
-      </Alert>
+      <Alert severity="warning">この機能は新規ユーザー（登録から30日以内）のみ利用できます</Alert>
     );
   }
 
   if (!hasRequiredPermission) {
-    return (
-      <Alert severity="error">
-        アクセス条件を満たしていません
-      </Alert>
-    );
+    return <Alert severity="error">アクセス条件を満たしていません</Alert>;
   }
 
   return (
@@ -188,13 +163,13 @@ export const AuthHookExamples: React.FC = () => {
       <Typography variant="h3" gutterBottom>
         🔐 useRequireAuth フック使用例
       </Typography>
-      
+
       <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
         現在のログインユーザー: {user?.name || '未ログイン'} ({user?.role || 'N/A'})
       </Typography>
 
       <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardContent>
               <Typography variant="h5" gutterBottom>
@@ -205,7 +180,7 @@ export const AuthHookExamples: React.FC = () => {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardContent>
               <Typography variant="h5" gutterBottom>
@@ -216,7 +191,7 @@ export const AuthHookExamples: React.FC = () => {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardContent>
               <Typography variant="h5" gutterBottom>
@@ -227,7 +202,7 @@ export const AuthHookExamples: React.FC = () => {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardContent>
               <Typography variant="h5" gutterBottom>
@@ -246,7 +221,7 @@ export const AuthHookExamples: React.FC = () => {
         </Typography>
         <Paper sx={{ p: 2, bgcolor: 'grey.100' }}>
           <Typography variant="body2" component="pre" sx={{ fontFamily: 'monospace' }}>
-{`// 基本的な使用
+            {`// 基本的な使用
 const { user, isLoading, error } = useRequireAuth();
 
 // 管理者権限必須

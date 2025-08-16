@@ -164,12 +164,19 @@ export const SimpleAuthLoading: React.FC<{
     return (
       <>
         {fallback || (
-          <BaseLoading
-            text="読み込み中..."
-            variant="circular"
-            centered
-            minHeight="200px"
-          />
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: '200px'
+            }}
+          >
+            <BaseLoading
+              text="読み込み中..."
+              variant="circular"
+            />
+          </Box>
         )}
       </>
     );
@@ -270,13 +277,20 @@ export const ConditionalLoading: React.FC<{
   }
 
   return (
-    <BaseLoading
-      variant="circular"
-      size="medium"
-      text="読み込み中..."
-      centered
-      minHeight="300px"
-    />
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '300px'
+      }}
+    >
+      <BaseLoading
+        variant="circular"
+        size="medium"
+        text="読み込み中..."
+      />
+    </Box>
   );
 };
 
@@ -307,12 +321,19 @@ export const DelayedLoading: React.FC<{
     return (
       <>
         {fallback || (
-          <BaseLoading
-            variant="dots"
-            size="medium"
-            text="処理中..."
-            centered
-          />
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            <BaseLoading
+              variant="dots"
+              size="medium"
+              text="処理中..."
+            />
+          </Box>
         )}
       </>
     );

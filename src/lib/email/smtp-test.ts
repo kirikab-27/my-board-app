@@ -9,7 +9,7 @@ export async function testSMTPConnection() {
     console.log('✅ 環境変数: OK');
 
     console.log('🔧 SMTP接続の作成中...');
-    const transporter = nodemailer.createTransporter(emailConfig.smtp);
+    const transporter = nodemailer.createTransport(emailConfig.smtp);
 
     console.log('🔧 SMTP接続テスト中...');
     await transporter.verify();
@@ -18,9 +18,9 @@ export async function testSMTPConnection() {
     return { success: true, message: 'SMTP接続テスト成功' };
   } catch (error) {
     console.error('❌ SMTP接続テストエラー:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error' 
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }
@@ -28,9 +28,9 @@ export async function testSMTPConnection() {
 export async function sendTestEmail(recipientEmail: string) {
   try {
     console.log('🔧 テストメール送信中...');
-    
-    const transporter = nodemailer.createTransporter(emailConfig.smtp);
-    
+
+    const transporter = nodemailer.createTransport(emailConfig.smtp);
+
     const mailOptions = {
       from: `${emailConfig.from.name} <${emailConfig.from.address}>`,
       to: recipientEmail,
@@ -56,22 +56,22 @@ export async function sendTestEmail(recipientEmail: string) {
         
         このメールが届いた場合、メール設定は正常に動作しています。
       `,
-      replyTo: emailConfig.replyTo
+      replyTo: emailConfig.replyTo,
     };
 
     const info = await transporter.sendMail(mailOptions);
     console.log('✅ テストメール送信成功:', info.messageId);
-    
-    return { 
-      success: true, 
+
+    return {
+      success: true,
       messageId: info.messageId,
-      message: `テストメールを ${recipientEmail} に送信しました` 
+      message: `テストメールを ${recipientEmail} に送信しました`,
     };
   } catch (error) {
     console.error('❌ テストメール送信エラー:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error' 
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }

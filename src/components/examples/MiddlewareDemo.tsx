@@ -20,18 +20,34 @@ import {
   TableRow,
   Accordion,
   AccordionSummary,
-  AccordionDetails
+  AccordionDetails,
 } from '@mui/material';
 import {
   ExpandMore as ExpandMoreIcon,
   Security as SecurityIcon,
   Lock as LockIcon,
   Public as PublicIcon,
-  Admin as AdminIcon,
-  Shield as ShieldIcon
+  AdminPanelSettings as AdminIcon,
+  Shield as ShieldIcon,
 } from '@mui/icons-material';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+
+// ルート設定の型定義
+interface RouteConfig {
+  path: string;
+  role?: string;
+  emailRequired?: boolean;
+  redirect?: string;
+  description: string;
+}
+
+interface RouteCategoryConfig {
+  category: string;
+  icon: React.ReactElement;
+  color: string;
+  routes: RouteConfig[];
+}
 
 /**
  * ミドルウェア保護デモコンポーネント
@@ -45,7 +61,7 @@ export const MiddlewareDemo: React.FC = () => {
   const currentRole = (currentUser as any)?.role || 'guest';
 
   // ルート設定情報
-  const routeConfigs = [
+  const routeConfigs: RouteCategoryConfig[] = [
     {
       category: '保護ルート',
       icon: <LockIcon />,
@@ -55,8 +71,8 @@ export const MiddlewareDemo: React.FC = () => {
         { path: '/dashboard', role: 'user', description: 'ユーザーダッシュボード' },
         { path: '/profile', role: 'user', emailRequired: true, description: 'プロフィール管理' },
         { path: '/settings', role: 'user', emailRequired: true, description: 'アカウント設定' },
-        { path: '/members-only', role: 'user', description: '会員限定デモページ' }
-      ]
+        { path: '/members-only', role: 'user', description: '会員限定デモページ' },
+      ],
     },
     {
       category: 'ゲスト専用ルート',
@@ -65,8 +81,8 @@ export const MiddlewareDemo: React.FC = () => {
       routes: [
         { path: '/login', redirect: '/board', description: 'ログインページ' },
         { path: '/register', redirect: '/board', description: '新規登録ページ' },
-        { path: '/auth/reset-password', redirect: '/dashboard', description: 'パスワードリセット' }
-      ]
+        { path: '/auth/reset-password', redirect: '/dashboard', description: 'パスワードリセット' },
+      ],
     },
     {
       category: '管理者専用ルート',
@@ -75,8 +91,8 @@ export const MiddlewareDemo: React.FC = () => {
       routes: [
         { path: '/admin', role: 'admin', description: '管理者専用エリア' },
         { path: '/admin/security', role: 'admin', description: 'セキュリティ管理' },
-        { path: '/admin/users', role: 'admin', description: 'ユーザー管理' }
-      ]
+        { path: '/admin/users', role: 'admin', description: 'ユーザー管理' },
+      ],
     },
     {
       category: '公開ルート',
@@ -87,13 +103,13 @@ export const MiddlewareDemo: React.FC = () => {
         { path: '/about', description: 'About ページ' },
         { path: '/auth/error', description: '認証エラー' },
         { path: '/auth/verified', description: 'メール認証完了' },
-        { path: '/unauthorized', description: '権限不足' }
-      ]
-    }
+        { path: '/unauthorized', description: '権限不足' },
+      ],
+    },
   ];
 
   const testRoute = (path: string) => {
-    setTestResults(prev => [...prev, `Testing: ${path}`]);
+    setTestResults((prev) => [...prev, `Testing: ${path}`]);
     router.push(path);
   };
 
@@ -101,11 +117,11 @@ export const MiddlewareDemo: React.FC = () => {
     setTestResults([]);
   };
 
-  const getAccessStatus = (route: any) => {
+  const getAccessStatus = (route: RouteConfig) => {
     if (!currentUser && route.role) {
       return { status: '拒否', color: 'error', reason: '未認証' };
     }
-    
+
     if (route.role && route.role !== 'user' && currentRole !== route.role) {
       return { status: '拒否', color: 'error', reason: `${route.role}権限必要` };
     }
@@ -127,18 +143,17 @@ export const MiddlewareDemo: React.FC = () => {
         <Typography variant="h3" gutterBottom>
           🛡️ ミドルウェア保護システム
         </Typography>
-        
+
         <Alert severity="info" sx={{ mb: 3 }}>
-          現在のユーザー: {currentUser?.name || '未ログイン'} 
-          ({currentRole}) | 
-          メール認証: {currentUser?.emailVerified ? '✅' : '❌'}
+          現在のユーザー: {currentUser?.name || '未ログイン'}({currentRole}) | メール認証:{' '}
+          {currentUser?.emailVerified ? '✅' : '❌'}
         </Alert>
       </Box>
 
       {/* ルート設定テーブル */}
       <Grid container spacing={3}>
         {routeConfigs.map((category, index) => (
-          <Grid item xs={12} key={index}>
+          <Grid size={12} key={index}>
             <Accordion defaultExpanded={index === 0}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -173,25 +188,17 @@ export const MiddlewareDemo: React.FC = () => {
                             <TableCell>
                               <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
                                 {route.role && (
-                                  <Chip 
-                                    size="small" 
-                                    label={route.role} 
+                                  <Chip
+                                    size="small"
+                                    label={route.role}
                                     color={category.color as any}
                                   />
                                 )}
                                 {route.emailRequired && (
-                                  <Chip 
-                                    size="small" 
-                                    label="メール認証" 
-                                    color="secondary"
-                                  />
+                                  <Chip size="small" label="メール認証" color="secondary" />
                                 )}
                                 {route.redirect && (
-                                  <Chip 
-                                    size="small" 
-                                    label="認証時リダイレクト" 
-                                    color="info"
-                                  />
+                                  <Chip size="small" label="認証時リダイレクト" color="info" />
                                 )}
                                 {!route.role && !route.redirect && (
                                   <Chip size="small" label="なし" color="default" />
@@ -199,16 +206,14 @@ export const MiddlewareDemo: React.FC = () => {
                               </Box>
                             </TableCell>
                             <TableCell>
-                              <Chip 
-                                size="small" 
+                              <Chip
+                                size="small"
                                 label={access.status}
                                 color={access.color as any}
                               />
                             </TableCell>
                             <TableCell>
-                              <Typography variant="body2">
-                                {route.description}
-                              </Typography>
+                              <Typography variant="body2">{route.description}</Typography>
                               {access.reason && (
                                 <Typography variant="caption" color="text.secondary">
                                   {access.reason}
@@ -216,8 +221,8 @@ export const MiddlewareDemo: React.FC = () => {
                               )}
                             </TableCell>
                             <TableCell>
-                              <Button 
-                                size="small" 
+                              <Button
+                                size="small"
                                 variant="outlined"
                                 onClick={() => testRoute(route.path)}
                                 startIcon={<SecurityIcon />}
@@ -242,9 +247,9 @@ export const MiddlewareDemo: React.FC = () => {
         <Typography variant="h4" gutterBottom>
           🔒 セキュリティ機能
         </Typography>
-        
+
         <Grid container spacing={2}>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -252,15 +257,16 @@ export const MiddlewareDemo: React.FC = () => {
                   <Typography variant="h6">レート制限</Typography>
                 </Box>
                 <Typography variant="body2">
-                  • 一般: 15分間に200リクエスト<br/>
-                  • 認証: 5分間に10リクエスト<br/>
-                  • 自動IP検出・制限
+                  • 一般: 15分間に200リクエスト
+                  <br />
+                  • 認証: 5分間に10リクエスト
+                  <br />• 自動IP検出・制限
                 </Typography>
               </CardContent>
             </Card>
           </Grid>
-          
-          <Grid item xs={12} md={6}>
+
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -268,15 +274,16 @@ export const MiddlewareDemo: React.FC = () => {
                   <Typography variant="h6">CSRF保護</Typography>
                 </Box>
                 <Typography variant="body2">
-                  • Origin/Refererヘッダー検証<br/>
-                  • SameSite基本チェック<br/>
-                  • POSTリクエスト保護
+                  • Origin/Refererヘッダー検証
+                  <br />
+                  • SameSite基本チェック
+                  <br />• POSTリクエスト保護
                 </Typography>
               </CardContent>
             </Card>
           </Grid>
-          
-          <Grid item xs={12} md={6}>
+
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -284,15 +291,16 @@ export const MiddlewareDemo: React.FC = () => {
                   <Typography variant="h6">セキュリティヘッダー</Typography>
                 </Box>
                 <Typography variant="body2">
-                  • X-Frame-Options: DENY<br/>
-                  • X-XSS-Protection: 1; mode=block<br/>
-                  • Strict-Transport-Security
+                  • X-Frame-Options: DENY
+                  <br />
+                  • X-XSS-Protection: 1; mode=block
+                  <br />• Strict-Transport-Security
                 </Typography>
               </CardContent>
             </Card>
           </Grid>
-          
-          <Grid item xs={12} md={6}>
+
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -300,9 +308,10 @@ export const MiddlewareDemo: React.FC = () => {
                   <Typography variant="h6">ボット検出</Typography>
                 </Box>
                 <Typography variant="body2">
-                  • User-Agent検証<br/>
-                  • 疑わしいパターン検出<br/>
-                  • 保護ルートへのボットアクセス制限
+                  • User-Agent検証
+                  <br />
+                  • 疑わしいパターン検出
+                  <br />• 保護ルートへのボットアクセス制限
                 </Typography>
               </CardContent>
             </Card>

@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     console.log('📥 Registration request body:', body);
-    
+
     // バリデーション
     const validatedFields = registerSchema.safeParse(body);
     if (!validatedFields.success) {
@@ -55,9 +55,9 @@ export async function POST(req: NextRequest) {
     console.log('✅ User saved successfully with ID:', user._id);
 
     // 既存の認証トークンを削除（重複登録対応）
-    await VerificationToken.deleteMany({ 
-      identifier: email, 
-      type: 'email-verification' 
+    await VerificationToken.deleteMany({
+      identifier: email,
+      type: 'email-verification',
     });
 
     // メール認証トークン生成
@@ -78,7 +78,8 @@ export async function POST(req: NextRequest) {
     console.log('✅ User registered successfully:', email);
 
     return NextResponse.json({
-      message: 'アカウントを作成しました。メールに送信された認証リンクをクリックして、登録を完了してください。',
+      message:
+        'アカウントを作成しました。メールに送信された認証リンクをクリックして、登録を完了してください。',
       user: {
         id: user._id,
         name: user.name,
@@ -86,21 +87,25 @@ export async function POST(req: NextRequest) {
         emailVerified: false,
       },
     });
-
   } catch (error) {
     console.error('❌ Registration error:', error);
     console.error('❌ Error details:', {
       name: error?.constructor?.name,
-      message: error?.message,
-      stack: error?.stack
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
     });
-    
+
     // Sentry.captureException(error); // 一時的にコメントアウト
-    
+
     return NextResponse.json(
-      { 
+      {
         error: 'ユーザー登録に失敗しました。しばらく待ってから再度お試しください。',
-        details: process.env.NODE_ENV === 'development' ? error?.message : undefined 
+        details:
+          process.env.NODE_ENV === 'development'
+            ? error instanceof Error
+              ? error.message
+              : String(error)
+            : undefined,
       },
       { status: 500 }
     );

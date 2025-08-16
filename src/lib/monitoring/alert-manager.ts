@@ -67,9 +67,7 @@ export class AlertManager {
         severity: 'medium',
         message: 'メモリ使用率が80%を超えています',
         cooldown: 300,
-        actions: [
-          { type: 'console', config: {} },
-        ],
+        actions: [{ type: 'console', config: {} }],
       },
       {
         name: 'database_connection_issues',
@@ -86,7 +84,7 @@ export class AlertManager {
   }
 
   public checkAlerts(metrics: MetricsData) {
-    this.rules.forEach(rule => {
+    this.rules.forEach((rule) => {
       if (rule.condition(metrics)) {
         this.triggerAlert(rule, metrics);
       }
@@ -105,7 +103,7 @@ export class AlertManager {
     console.log(`🚨 Alert: ${rule.name} - ${rule.message}`);
 
     // アクション実行
-    rule.actions.forEach(action => {
+    rule.actions.forEach((action) => {
       this.executeAction(action, rule, metrics);
     });
 
@@ -123,7 +121,7 @@ export class AlertManager {
         break;
 
       case 'slack':
-        this.sendSlackAlert(rule, metrics, action.config);
+        this.sendSlackAlert(rule, metrics);
         break;
 
       case 'email':
@@ -134,11 +132,16 @@ export class AlertManager {
 
   private getSentryLevel(severity: string): 'info' | 'warning' | 'error' | 'fatal' {
     switch (severity) {
-      case 'low': return 'info';
-      case 'medium': return 'warning';
-      case 'high': return 'error';
-      case 'critical': return 'fatal';
-      default: return 'warning';
+      case 'low':
+        return 'info';
+      case 'medium':
+        return 'warning';
+      case 'high':
+        return 'error';
+      case 'critical':
+        return 'fatal';
+      default:
+        return 'warning';
     }
   }
 
@@ -147,15 +150,17 @@ export class AlertManager {
 
     const payload = {
       text: `🚨 ${rule.severity.toUpperCase()}: ${rule.message}`,
-      attachments: [{
-        color: this.getAlertColor(rule.severity),
-        fields: Object.entries(metrics).map(([key, value]) => ({
-          title: key,
-          value: String(value),
-          short: true,
-        })),
-        timestamp: Math.floor(Date.now() / 1000),
-      }],
+      attachments: [
+        {
+          color: this.getAlertColor(rule.severity),
+          fields: Object.entries(metrics).map(([key, value]) => ({
+            title: key,
+            value: String(value),
+            short: true,
+          })),
+          timestamp: Math.floor(Date.now() / 1000),
+        },
+      ],
     };
 
     try {
@@ -169,7 +174,11 @@ export class AlertManager {
     }
   }
 
-  private async sendEmailAlert(rule: AlertRule, metrics: MetricsData, config: Record<string, unknown>) {
+  private async sendEmailAlert(
+    rule: AlertRule,
+    metrics: MetricsData,
+    config: Record<string, unknown>
+  ) {
     try {
       await fetch('/api/monitoring/send-alert-email', {
         method: 'POST',
@@ -188,11 +197,16 @@ export class AlertManager {
 
   private getAlertColor(severity: string): string {
     switch (severity) {
-      case 'low': return '#36a64f';      // green
-      case 'medium': return '#ff9500';   // orange  
-      case 'high': return '#e01e5a';     // red
-      case 'critical': return '#8b0000'; // dark red
-      default: return '#808080';         // gray
+      case 'low':
+        return '#36a64f'; // green
+      case 'medium':
+        return '#ff9500'; // orange
+      case 'high':
+        return '#e01e5a'; // red
+      case 'critical':
+        return '#8b0000'; // dark red
+      default:
+        return '#808080'; // gray
     }
   }
 
@@ -201,7 +215,7 @@ export class AlertManager {
   }
 
   public removeRule(name: string) {
-    this.rules = this.rules.filter(rule => rule.name !== name);
+    this.rules = this.rules.filter((rule) => rule.name !== name);
   }
 
   public getRules(): AlertRule[] {
