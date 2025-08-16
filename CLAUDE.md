@@ -84,42 +84,40 @@
 - **Phase 4**: プロフィール管理・認証UI/UX改善・レスポンシブ ✅ **統合完了** ✨ **プロフィール機能・パスワード変更・頭文字アバター**
 - **Phase 4.5**: 会員制掲示板CRUD機能拡張 ✅ **統合完了** ✨ **タイトル付き投稿・編集削除権限・会員限定投稿・権限チェック**
 - **Phase 5**: セキュリティ強化・CSRF・レート制限・XSS対策 ✅ **統合完了** ✨ **エンタープライズ級セキュリティ基盤完成**
+- **Phase 6.0**: SNS機能・MongoDB拡張スキーマ・68インデックス最適化 ✅ **DryRunテスト完了** 🚧 **本番マイグレーション準備完了**
 
-### ✅ Phase 5.5統合完了（2025/08/13）- Vercel本番デプロイ完了
+### ✅ Phase 5.5統合完了（2025/08/13）
 
-- **5ブランチ統合**: feature/email-service・test-infrastructure・monitoring・profile-management・member-board ✅ **develop統合完了**
-- **依存関係解決**: MongoDB adapter・isomorphic-dompurify競合解決済み ✅ **--legacy-peer-deps適用**
-- **ビルド成功**: vercel.json作成・ESLint警告抑制・本番ビルド確認済み ✅ **デプロイ可能状態**
-- **統合タグ**: development-phase5.5-complete作成済み ✅ **バージョン管理完了**
-- **本番デプロイ**: 16項目の技術問題解決・コミット8054ab6 ✅ **https://kab137lab.com 稼働中**
+全ブランチ統合・依存関係解決・本番デプロイ完了。https://kab137lab.com 稼働中。
 
 ### ✅ Phase 5実装完了機能（セキュリティ強化）
 
-- **XSS完全対策**: DOMPurify導入・入力サニタイゼーション・CSP設定 ✅ **実装完了・SafeContentコンポーネント**
-- **CSRF強化**: トークンベース検証・Origin/Refererヘッダー検証 ✅ **実装完了・自動トークン管理**
-- **レート制限調整**: 1分5回制限（要件準拠）・API別制限設定 ✅ **実装完了・違反自動ログ**
-- **監査ログシステム**: MongoDB永続化・12種類イベント・4段階重要度・自動アラート ✅ **実装完了・管理者API**
-- **NoSQLインジェクション対策**: MongoDB演算子検出・ObjectID検証・入力サニタイゼーション ✅ **実装完了・プロトタイプ汚染防止**
-- **セキュリティ管理ダッシュボード**: `/admin/security` - 攻撃統計・レート制限監視・ブロック解除機能 ✅ **実装完了・リアルタイム管理**
-- **セキュリティテスト**: XSS/CSRF/NoSQL/レート制限・Jest単体テスト・侵入テストスクリプト ✅ **実装完了・自動化**
+エンタープライズ級セキュリティ基盤完成。詳細は `README-phase-5-security.md` 参照。
 
 ### ✅ Phase 4.5実装完了機能（会員制掲示板CRUD拡張）
 
-- **タイトル付き投稿機能**: タイトル（100文字）+ コンテンツ（1000文字）✅ **実装完了・動作確認済み**
-- **会員限定投稿**: 認証ユーザーのみ投稿・編集・削除可能 ✅ **実装完了・権限チェック済み**
-- **投稿詳細ページ**: `/board/[id]` - 個別投稿表示・いいね・編集削除リンク ✅ **実装完了・動作確認済み**
-- **投稿編集ページ**: `/board/[id]/edit` - 本人のみ編集権限 ✅ **実装完了・権限テスト済み**
-- **投稿作成ページ**: `/board/create` - 認証必須・リアルタイム文字カウント ✅ **実装完了・バリデーション確認済み**
-- **投稿管理機能**: 作成者のみ編集・削除可能・権限チェック ✅ **実装完了・セッション認証済み**
-- **PostListコンポーネント**: タイトル表示・権限ベースメニュー表示 ✅ **実装完了・UI確認済み**
-- **テキスト折り返し対応**: 長いタイトル・投稿内容の適切な折り返し表示 ✅ **実装完了・レスポンシブ対応済み**
-- **UI/UX改善**: SafeContent・TextField長文折り返し・日本語ハイフネーション対応 ✅ **実装完了・Material-UI最適化済み**
+タイトル付き投稿・会員限定CRUD・権限管理・UI/UX改善完了。詳細は `README-board-crud.md` 参照。
 
-### 📋 将来拡張機能
+### ✅ Phase 6.0実装完了機能（SNSプラットフォーム基盤）
 
-- 管理者ダッシュボード・ユーザー管理
-- リアルタイム通知・WebSocket統合
-- 画像アップロード・ファイル管理システム
+SNS機能・MongoDB拡張スキーマ・68インデックス最適化。詳細は `README-phase-6-sns-schema.md` 参照。
+
+### 🚧 Phase 6.0本番マイグレーション準備完了（2025/08/15）
+
+**DryRunテスト結果**（1.2秒・エラーなし・MongoDB Atlas接続成功）:
+- **データベース状態**: 21オブジェクト・5ユーザー・15投稿・MongoDB Atlas接続確認済み
+- **バックアップ作成**: `backups/phase5.5-backup-2025-08-15T13-51-46-545Z.json` 自動生成済み
+- **6新規コレクション**: follows・comments・notifications・hashtags・media・analytics 作成準備完了
+- **整合性問題3件検出**: ユーザー名なし（5件）・重複ユーザー名（1件）・投稿タイプ未設定（15件）→ **本番時自動修正**
+
+### 📋 Phase 6.1以降計画機能
+
+- **フォロー・タイムライン機能**: フォロー関係・パーソナライズドタイムライン・フィード生成
+- **コメント・リプライシステム**: ネストコメント・スレッド表示・メンション通知
+- **通知システム**: リアルタイム通知・プッシュ通知・バッチ処理・優先度管理
+- **ハッシュタグ・トレンド**: トレンド分析・関連タグ・カテゴリ分類・オートコンプリート
+- **メディア管理**: Cloudinary統合・画像・動画・アップロード・最適化・セキュリティスキャン
+- **分析ダッシュボード**: ユーザー行動・パフォーマンス・エンゲージメント・A/Bテスト統計
 
 ## 技術スタック
 
@@ -203,8 +201,15 @@ src/
 │   ├── auth.ts              # 認証関連型定義（UserRole・ProtectionLevel・認証オプション）
 │   └── loading.ts           # ローディング型定義（BaseLoadingProps・LoadingStateHook・LoadingMetrics）
 ├── models/
-│   ├── User.ts              # ユーザーモデル（bcrypt・自動ハッシュ化動作確認済み）
-│   ├── Post.ts              # 投稿モデル（権限管理・XSS対策統合）
+│   ├── User.ts              # ユーザーモデル（bcrypt・Phase 6.0拡張: username・stats・preferences・SNS機能対応）
+│   ├── Post.ts              # 投稿モデル（Phase 6.0拡張: hashtags・mentions・media・stats・SNS機能対応）
+│   ├── Follow.ts            # フォローモデル（Phase 6.0: フォロー関係・承認・ミュート・通知設定）
+│   ├── Comment.ts           # コメントモデル（Phase 6.0: ネストコメント・スレッド・メンション・いいね）
+│   ├── Notification.ts      # 通知モデル（Phase 6.0: リアルタイム・バッチ・優先度・自動期限削除）
+│   ├── Hashtag.ts           # ハッシュタグモデル（Phase 6.0: トレンド・関連タグ・統計・カテゴリ管理）
+│   ├── Media.ts             # メディアモデル（Phase 6.0: Cloudinary・統計・セキュリティ・使用箇所追跡）
+│   ├── Analytics.ts         # 分析モデル（Phase 6.0: ユーザー行動・パフォーマンス・36イベント・1年TTL）
+│   ├── index-optimization.ts # インデックス最適化（Phase 6.0: 68インデックス・パフォーマンス分析・レポート）
 │   ├── AuditLog.ts          # セキュリティ監査ログモデル（Phase 5・12種類イベント・4段階重要度）
 │   └── VerificationToken.ts # 認証トークン
 ├── utils/
@@ -275,6 +280,10 @@ node scripts/migrate-posts-add-title.js  # 既存投稿にタイトルフィー�
 
 # Phase 5: セキュリティテスト（実装完了）
 node scripts/test-security-phase5.js     # XSS・CSRF・NoSQL・レート制限・監査ログテスト ✅ **新規実装**
+
+# Phase 6.0: SNS機能マイグレーション（DryRunテスト完了・2025/08/15）
+node scripts/migrate-phase6-sns.js --dry-run --verbose  # DryRunテスト実行 ✅ **1.2秒・エラーなし・整合性チェック完了**
+node scripts/migrate-phase6-sns.js --verbose            # 本番マイグレーション実行 🚧 **準備完了**
 
 # Phase 5.5: Vercel本番デプロイ（既存プロジェクト更新）
 git checkout main                         # mainブランチ切り替え
@@ -639,180 +648,17 @@ interface User {
 2. `npm run lint` でESLintエラー確認
 3. 依存関係のバージョン競合確認
 
-#### 🚨 開発モード（npm run dev）の落とし穴（2025/08/14追加）
+- **開発環境注意**: `npm run build` でコミット前チェック必須
 
-**症状**: devで正常動作するが本番ビルドで大量エラー発生
-
-**原因**: 開発モードと本番モードの決定的な違い
-
-- **dev**: 型エラー無視、CSP緩い、Edge Runtime制約なし
-- **build**: 厳格な型チェック、CSP厳格、最適化実行
-
-**✅ 必須対策**:
-
-```bash
-# コミット前に必ず実行
-npm run build  # 本番ビルドチェック
-
-# PR前に必ず実行
-npm run build && npm run start  # 本番環境で動作確認
-```
-
-**教訓**: 開発環境≠本番環境。定期的な本番ビルドで技術的負債を防ぐ
-
-#### TypeScript catchブロックエラー（2025/08/13解決） ✅ **解決済み**
-
-**症状**: Vercelビルド時に `Property 'message' does not exist on type '{}'` エラー
-
-```typescript
-// エラー箇所: src/app/api/auth/register/route.ts:94
-message: error?.message,  // ← TypeScriptがerrorの型を認識できない
-```
-
-**原因**: catchブロックの`error`パラメータは`unknown`型で、プロパティアクセスが型安全でない
-
-**✅ 解決方法**:
-
-```typescript
-// Before (エラー発生)
-} catch (error) {
-  console.error('Error details:', {
-    message: error?.message,
-    stack: error?.stack
-  });
-
-// After (解決済み)
-} catch (error) {
-  console.error('Error details:', {
-    message: error instanceof Error ? error.message : String(error),
-    stack: error instanceof Error ? error.stack : undefined
-  });
-```
-
-**技術的ポイント**:
-
-- `instanceof Error`で型ガード実装
-- Error以外の例外も`String(error)`で安全に処理
-- TypeScript strictモード完全対応
-
-**🔥 2025/08/13 大規模一括修正実施**:
-
-```bash
-# 調査結果
-- 全34ファイルのcatchブロック検索
-- error?.message パターンを全検索
-- 修正対象: 4ファイル特定
-```
-
-**修正ファイル一覧**:
-
-1. `src/app/api/auth/register/route.ts` - 94行目, 103行目
-2. `src/app/api/auth/reset-password/confirm/route.ts` - 95行目
-3. `src/app/api/auth/reset-password/request/route.ts` - 87行目
-4. `src/lib/mongodb.ts` - 47行目
-5. `src/lib/auth/nextauth.ts` - 111行目, 119-122行目
-
-**統一修正パターン**:
-
-```typescript
-// 全箇所を以下のパターンで統一
-error instanceof Error ? error.message : String(error);
-```
-
-#### 長文テキストの折り返し問題 ✅ **解決済み**
-
-**症状**: 投稿詳細・作成・編集画面で長文が入力枠を突き抜けて表示される
-**原因**: CSS文字折り返し設定が不十分・Material-UI TextFieldの表示問題
-
-**✅ 解決方法（実装完了）**:
-
-- SafeContentコンポーネント：`wordWrap: 'break-word'`・`overflowWrap: 'break-word'`・`whiteSpace: 'pre-wrap'`追加
-- TextFieldコンポーネント：`MuiInputBase-input`セレクタに折り返し設定追加
-- 日本語ハイフネーション：`hyphens: 'auto'`で適切な単語分割対応
-- 子要素制限：`maxWidth: '100%'`で確実な幅制限実施
-
-#### NextAuth.js認証エラー（Phase 1実装完了・動作確認済み）
-
-- **✅ ユーザー登録時の名前バリデーションエラー**:
-  - **解決完了**: 日本語文字（ひらがな・カタカナ・漢字）対応の正則表現に修正済み
-  - **対応文字**: 英数字・ひらがな・カタカナ・漢字・スペース・ハイフン・アンダースコア
-  - **確認済み**: "テストユーザー"での登録が正常に完了
-- **✅ NextAuth.js依存関係エラー**: NextAuth.js v4.24.10使用（v5は依存関係競合のため回避）
-- **✅ MongoDB接続エラー**: `connectDB`インポート問題を修正（mongodb.tsでexportエイリアス追加）
-- **✅ セッションエラー**: MongoDB接続・環境変数（NEXTAUTH_URL, NEXTAUTH_SECRET）設定済み・動作確認完了
-
-#### 認証済みユーザーがunauthorizedページにリダイレクトされる問題
-
-**症状**: ログイン済みなのに `/` アクセス時に `/unauthorized` にリダイレクト  
-**原因**: ユーザーrole情報がJWTトークン・セッションに含まれていない複合的エラー
-
-- Userモデルにroleフィールド不足
-- NextAuth.js Callbackでroleがトークンに設定されない
-- 既存JWTトークンに古い情報が残存
-
-**解決方法**:
-
-1. `node scripts/update-user-roles.js` で既存ユーザーにrole追加
-2. NextAuth.js JWT/Session callbackでrole情報設定
-3. `NEXTAUTH_SECRET`変更で既存トークン無効化・サーバー再起動
-4. ブラウザでセッション状態確認・再ログイン
-
-#### メール送信・認証エラー
-
-- **SMTP接続エラー**: `node scripts/test-email.js` で接続確認
+- **TypeScript エラー**: catchブロック型エラーは `error instanceof Error` で解決済み
+- **認証エラー**: `node scripts/update-user-roles.js` でrole設定
+- **メール送信エラー**: `node scripts/test-email.js` でSMTP接続確認
 - **SPF認証失敗**: `node scripts/verify-spf.js kab137lab.com` で設定確認
 - **DKIM署名問題**: `node scripts/verify-dkim.js kab137lab.com default` で検証
 - **詳細解決策**: [メール認証設定チートシート](./docs/email-auth-cheatsheet.md)
 
-#### プロフィール機能エラー（Phase 4実装完了）
-
-**React Hydration Error** `<div>` cannot be a descendant of `<p>`
-
-- **症状**: コンソールでHTML構造エラー・サーバー/クライアント不一致
-- **原因**: Typography(p)内にChip(div)をネスト
-- **解決方法**: flexコンテナーでTypographyとChipを並列配置
-
-**プロフィール画像がイニシャル表示されない**
-
-- **症状**: アバターが空白で表示される
-- **原因**: 名前から正しくイニシャルが抽出されない（日本語・英語混在）
-- **解決方法**: ProfileAvatar.tsxの文字抽出ロジック確認
-
-**文字数制限バリデーションエラー**
-
-- **症状**: 文字数以内でもエラー表示・保存できない
-- **原因**: 全角文字カウント・trim処理・リアルタイム更新のずれ
-- **解決方法**: onChange時の文字数計算とバックエンドバリデーション統一
-
-**プロフィールページにヘッダーが表示されない**
-
-- **症状**: `/profile`ページでAppBarが表示されない・AuthButtonが動作しない
-- **原因**: Server ComponentでClient Component（AuthButton）を直接使用
-- **解決方法**: ProfileHeaderクライアントコンポーネント作成・Server/Client分離
-
-#### Material-UI v7 Grid型エラー（2025/08/13新規解決） ✅ **解決済み**
-
-**症状**: Vercelデプロイ時にTypeScriptコンパイルエラーが発生
-
-```
-Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps...'
-```
-
-**原因**: Material-UI v7でGrid `item`プロパティの型定義が削除・変更
-
-**✅ 解決方法**:
-
-```typescript
-// Before (エラー発生)
-import { Grid } from '@mui/material';
-<Grid container spacing={3}>
-  <Grid item xs={12} md={6}>  // ← item プロパティエラー
-
-// After (解決済み)
-import { Box } from '@mui/material';
-<Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-  <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' } }}>
-```
+- **プロフィール機能**: Hydration エラー・アバター・バリデーション解決済み
+- **Material-UI v7**: Grid型エラーはFlexboxレイアウトで解決済み
 
 **技術的ポイント**:
 
@@ -821,397 +667,55 @@ import { Box } from '@mui/material';
 - TypeScript型安全性を確保
 - Material-UI v7完全対応
 
-### 🚨 Vercelデプロイエラー完全解決ガイド（Phase 5.5）✅ **21項目解決済み**
+### Vercelデプロイ問題解決済み
 
-**問題背景**: Phase 5.5統合版（166ファイル・67,000行）の本番デプロイで21の技術問題が連鎖的に発生
+21項目の技術問題（MongoDB依存関係・TypeScript型エラー・Next.js 15対応等）を解決。詳細は `README-vercel-deploy-errors-phase55.md` 参照。https://kab137lab.com 正常稼働中。
 
-#### 解決済み問題一覧
+詳細なトラブルシューティング情報は参考ドキュメント参照。
 
-1. **MongoDB依存関係競合** - ✅ `@next-auth/mongodb-adapter` vs MongoDB v6
-2. **Huskyエラー** - ✅ Vercel環境でGit hooks無効化
-3. **TypeScriptビルドエラー** - ✅ members/page.tsx空ファイル修正
-4. **Edge Runtime互換性** - ✅ crypto→Web Crypto API移行
-5. **backup フォルダ古いコード** - ✅ 777行削除・参照エラー解決
-6. **Sentry クライアント設定** - ✅ tracePropagationTargets修正
-7. **Sentry サーバー設定** - ✅ tracing: true削除
-8. **Material-UI v7 Grid2** - ✅ Grid2モジュール未対応・従来Gridに復元
-9. **Material-UI Grid2モジュール未発見** - ✅ @mui/material/Grid2存在せず・通常Gridに戻し
-10. **Material-UI v7 Grid型エラー** - ✅ `item`プロパティ型定義削除・Flexboxレイアウトに変更（2025/08/13）
-11. **TypeScript catchブロックエラー（一括修正）** - ✅ 全34ファイルのcatchブロック調査・5ファイルに`error`型ガード追加（2025/08/13）
-12. **Next.js 15 request.ipプロパティエラー（天才会議による完全解決）** - ✅ 3ファイル5箇所を天才エンジニア4人体制で一括修正（2025/08/13）
+**本番環境**: https://kab137lab.com (Vercel + MongoDB Atlas + Cloudflare DNS)
 
-#### TypeScript catchブロック一括修正詳細（問題11）
-
-**症状**: TypeScript strict modeで`error.message`が`Property 'message' does not exist on type 'unknown'`エラー
-
-**修正ファイル一覧**:
-
-- `src/app/api/auth/register/route.ts` - 行94,98,102: error.message型エラー3箇所
-- `src/app/api/auth/reset-password/request/route.ts` - 行90-94: error.message型エラー
-- `src/app/api/auth/reset-password/confirm/route.ts` - 行99-101: error.message型エラー
-- `src/lib/mongodb.ts` - 行51-52: MongoDB接続エラーハンドリング
-- `src/lib/auth/nextauth.ts` - 行114,119-122: 認証エラー・レート制限チェック
-
-**修正パターン**:
-
-```typescript
-// 修正前（エラー発生）
-console.error('エラー:', error.message);
-
-// 修正後（型安全）
-console.error('エラー:', error instanceof Error ? error.message : String(error));
-```
-
-**根本原因**: TypeScript 5のstrict modeでcatch(error)の型がunknownに変更・error.messageアクセス不可
-
-#### 天才エンジニア会議による完全解決（問題12 - 2025/08/13）
-
-**症状**: `Property 'ip' does not exist on type 'NextRequest'` - Next.js 15でrequest.ipプロパティ廃止
-
-**🧠 天才エンジニア4人緊急体制**:
-
-- **Dr. TypeScript**: 予防的全ファイルスキャンで潜在エラー3箇所追加発見
-- **Ms. Infrastructure**: 段階的修正戦略・一括プッシュによる効率化
-- **Captain Security**: セキュリティ機能一貫性保持・CSRF保護温存
-- **Prof. Performance**: 並列修正による7分間完全解決達成
-
-**修正ファイル詳細**:
-
-- `src/app/api/posts/[id]/route.ts` - GET/PUT/DELETE関数の3箇所
-- `src/lib/security/csrf.ts` - CSRF攻撃検出ログ1箇所
-- `src/lib/middleware/security.ts` - Edge Runtime対応1箇所
-
-**統一修正パターン**:
-
-```typescript
-// 修正前（エラー発生）
-console.warn('攻撃検出:', { ip: request.ip });
-
-// 修正後（Next.js 15対応）
-const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
-console.warn('攻撃検出:', { ip });
-```
-
-**解決効果**: Next.js 15完全対応・セキュリティ機能維持・IP追跡ログ一貫性確保
-
-#### 根本原因分析
-
-```
-エラー頻発の原因:
-- 複雑な依存関係の連鎖反応
-- フレームワークバージョン変更（Material-UI v6→v7）
-- Next.js 15の厳格な型チェック
-- 開発環境と本番環境の差異
-```
-
-#### 技術的解決パターン
+## 開発コマンド
 
 ```bash
-# 1. 依存関係修正
-npm install --legacy-peer-deps
-MongoDB v6 → v5.9.2 ダウングレード
-
-# 2. Vercel設定統合
-vercel.json: buildCommand, installCommand設定
-.npmrc: legacy-peer-deps=true
-
-# 3. TypeScript互換性
-Grid2インポート・Edge Runtime対応・型定義修正
-```
-
-#### 効率的デプロイ戦略（将来参考用）
-
-```bash
-# 推奨アプローチ
-git checkout -b deployment-test
-npm run build  # ローカル本番ビルドテスト
-npx tsc --noEmit --strict  # TypeScript厳格チェック
-git checkout main && git merge deployment-test
-
-# 段階的統合（推奨）
-Phase毎の個別デプロイ → 安定性確認 → 次Phase統合
-```
-
-#### 学習ポイント
-
-- **依存関係管理**: バージョン固定・段階的アップグレード重要
-- **事前検証**: ローカル本番ビルドでVercel環境差異を事前検出
-- **エラー解決**: 連鎖的問題は段階的解決が効率的
-- **複雑統合**: 大規模統合（Phase 5.5）では16項目の問題が連鎖発生は正常
-
-**✅ 最終結果**: コミット`8054ab6`で全問題解決・https://kab137lab.com 正常稼働
-
-#### セキュリティ管理画面アクセス問題（2025/08/13対応）✅ **解決済み**
-
-**症状**: ダッシュボードの「管理画面へ」ボタンで「アクセス権限がありません」エラー
-
-**原因**: `/admin/security`が管理者専用ルート（adminOnly）設定・ユーザーロール不足
-
-**✅ 現在の状況（一時設定）**:
-
-1. **全ユーザーadmin権限付与**: 開発・テスト用に5名全員を`admin`ロール設定
-2. **ルート権限緩和**: `/admin/security`を`protected`ルート（user権限）に一時変更
-3. **管理画面アクセス**: 全ログインユーザーがセキュリティ管理画面利用可能
-
-**📋 将来の正規化計画**:
-
-- **正式管理者**: `kab27kav@gmail.com` を管理者ロール設定予定
-- **一般ユーザー**: その他テストアカウントを`user`ロールに戻す予定
-- **ルート権限復元**: `/admin/security`を`adminOnly`ルートに戻す予定
-
-**⚠️ セキュリティ注意点**:
-
-- 現在は開発・テスト環境のため全ユーザー管理者権限状態
-- 本番環境では適切な権限分離の実装が必要
-
-#### 本番ドメイン統一（2025/08/13完了）✅ **設定完了**
-
-**本番ドメイン**: `https://kab137lab.com`
-
-**✅ 統一完了項目**:
-
-1. **Vercel環境変数**: `NEXTAUTH_URL`・`APP_URL`を`https://kab137lab.com`に設定完了
-2. **メール設定**: 既に`noreply@kab137lab.com`・`kab137lab.sakura.ne.jp`でSMTP統合済み
-3. **DNS設定**: Cloudflareで`kab137lab.com`管理・DKIM/SPF/DMARC設定済み
-4. **OAuth設定**: 現在開発中で無効化・将来実装時は`https://kab137lab.com/api/auth/callback/*`使用予定
-
-**📋 本番環境構成**:
-
-- **WebURL**: https://kab137lab.com（メインアクセス）
-- **メール**: @kab137lab.com（SMTP・通知・管理者）
-- **DNS管理**: Cloudflare（kab137lab.com）
-- **サーバー**: Vercel（自動デプロイ・CDN）
-- **データベース**: MongoDB Atlas（クラウド）
-
-#### パフォーマンス目標
-
-- **ログイン応答**: < 500ms
-- **メール送信**: < 2秒
-- **ページ読込**: < 3秒
-- **同時接続数**: 100ユーザー以上
-- **本番URL**: https://kab137lab.com
-
-### 開発時のコマンド
-
-```bash
-# 基本開発コマンド
-npm run dev                    # 開発サーバー起動（Turbopack）
-npx tsc --noEmit              # 型チェック
-npm run lint                  # Lint実行
-
-# Phase別コマンド
-npm run test:unit             # Phase 0: 単体テスト
-npm run test:e2e              # Phase 0: E2Eテスト
-npm run monitor:check         # Phase 0.5: 監視確認
-npm run auth:test             # Phase 1+: 認証テスト
-node scripts/test-brute-force.js # Phase 2.5: ブルートフォース攻撃テスト
-
-# Phase 4: プロフィール機能（実装完了）
-powershell "Stop-Process -Id 15304 -Force" # ポート3010使用プロセス強制終了
-npm run dev                   # サーバー再起動でキャッシュクリア
-# ブラウザ: Ctrl+Shift+R でハードリロード
-
-# Phase 5.5: 統合・デプロイ準備（2025/08/12完了）✅
-git status                    # ブランチ統合状況確認
-git tag                       # development-phase5.5-complete確認
-npm run dev                   # 統合後動作確認
-npm run lint                  # ESLint 26エラー・68警告確認（非致命的）
-
-# 品質管理・デプロイ準備
-npm run test:coverage         # カバレッジ確認（80%以上目標）
-npm run security:scan         # セキュリティスキャン
-npm install --legacy-peer-deps # MongoDB adapter依存関係対応
-npm run build                 # 本番ビルド確認（Vercelデプロイ準備）
+# 基本開発
+npm run dev          # 開発サーバー起動
+npm run build        # 本番ビルド（コミット前必須）
+npm run lint         # コード品質チェック
+npm run test         # テスト実行
 ```
 
 ## Git ブランチ戦略
 
-このプロジェクトはGit Flowベースのブランチ戦略を採用しています：
-
-### ブランチ構成
-
-- `main` - 本番環境用（安定版）
-- `develop` - 開発統合用（次期リリース）
-- `feature/*` - 機能開発用（個別機能ごと）
-- `hotfix/*` - 緊急修正用
-- `release/*` - リリース準備用
-
-### フィーチャーブランチ統合状況
-
-- `feature/email-service` - ✅ **develop統合完了** (35ファイル・10,745行)
-- `feature/test-infrastructure` - ✅ **develop統合完了** (17ファイル・1,877行)
-- `feature/monitoring` - ✅ **develop統合完了** (101ファイル・20,871行)
-- `feature/profile-management` - ✅ **develop統合完了** (13ファイル・1,919行)
-- `feature/member-board` - ✅ **develop統合完了** (38ファイル統合・競合解決済み)
-- `feature/security-enhancement` - ✅ **Phase 5機能完全統合済み**
-- `feature/admin-panel` - 📋 管理者機能（将来）
-
-### 9段階開発フロー完了（Phase 5.5統合）
-
-1. **Phase 0**: `feature/email-service` → `feature/test-infrastructure` ✅ **統合完了**
-2. **Phase 0.5**: `feature/test-infrastructure` → `feature/monitoring` ✅ **統合完了**
-3. **Phase 1-2**: `feature/monitoring` → `feature/auth-system` ✅ **統合完了**
-4. **Phase 3**: `feature/auth-system` → 投稿認証API統合 ✅ **統合完了**
-5. **Phase 4**: `feature/profile-management` → プロフィール管理完了 ✅ **統合完了**
-6. **Phase 4.5**: `feature/member-board` → 会員制掲示板CRUD拡張 ✅ **統合完了**
-7. **Phase 5**: `feature/security-enhancement` → セキュリティ強化 ✅ **統合完了**
-8. **Phase 5.5**: 全ブランチ統合・依存関係解決・品質チェック ✅ **2025/08/12完了**
-9. **Phase 6**: `develop` → Vercelデプロイ ✅ **準備完了**
-
-### Phase 5.5ブランチ統合完了（2025/08/12）✅ **develop統合・デプロイ準備完了**
-
-**統合実績**:
-
-1. **feature/email-service**: 35ファイル・10,745行追加 → **develop統合完了**
-2. **feature/test-infrastructure**: 17ファイル・1,877行追加 → **develop統合完了**
-3. **feature/monitoring**: 101ファイル・20,871行追加 → **develop統合完了**
-4. **feature/profile-management**: 13ファイル・1,919行追加 → **develop統合完了**
-5. **feature/member-board**: 38ファイル統合・競合解決済み → **develop統合完了**
-6. **依存関係解決**: MongoDB adapter競合・package-lock.json競合解決済み
-7. **品質チェック**: ESLint 26エラー・68警告（非致命的・デプロイ可能状態）
-8. **バージョン管理**: development-phase5.5-completeタグ作成済み
-
-### Phase 5実装完了（feature/security-enhancement）✅ **2025/08/11完了**
-
-**実装済みセキュリティ機能**:
-
-1. **XSS対策** - DOMPurify統合・SafeContentコンポーネント・リアルタイム検出 ✅ **完全実装**
-2. **CSRF対策強化** - トークンベース検証・Origin/Refererヘッダー検証・自動管理 ✅ **完全実装**
-3. **レート制限調整** - 1分5回制限（要件準拠）・API別制限・違反自動ログ ✅ **完全実装**
-4. **セキュリティ監査ログ** - 12種類イベント・4段階重要度・MongoDB永続化 ✅ **完全実装**
-5. **NoSQLインジェクション対策** - MongoDB演算子検出・ObjectID検証・プロトタイプ汚染防止 ✅ **完全実装**
-6. **CSP設定** - Content Security Policy・本番環境対応・違反レポート収集 ✅ **完全実装**
-7. **セキュリティテスト** - Jest単体テスト・侵入テストスクリプト・自動化 ✅ **完全実装**
-8. **Edge Runtime対応** - middleware最適化・Mongoose依存除去・console.warn統合 ✅ **トラブル解決完了**
-9. **投稿編集機能修正** - handleEditPost未定義エラー修正・編集画面ナビゲーション ✅ **2025/08/11修正完了**
-
-**セキュリティレベル**: ✨ **エンタープライズ級** - OWASP Top 10対応・多層防御システム完成
-
-### 基盤Phase依存関係
-
-- **Phase 1+**: Phase 0（テスト基盤）必須
-- **Phase 1+**: Phase 0.5（観測基盤）必須
-- **失敗時**: 段階的ロールバック（基盤→認証→機能）
+全フィーチャーブランチをdevelopに統合完了。詳細は `README-phase-5.5-integration.md` 参照。
 
 ## テスト・品質保証・監視
 
-**✅ Phase 0実装完了**: 完全なテスト基盤が構築されています  
-**✅ Phase 0.5実装完了**: 包括的な監視・分析基盤が構築されています
-
-### 実装済みテストフレームワーク
-
-- **Jest 29.7**: 単体・統合テスト（カバレッジ80%目標設定済み）
-- **Testing Library**: React コンポーネントテスト
-- **Playwright**: E2Eテスト・ブラウザ自動化（Chromium・Firefox・Mobile対応）
-- **GitHub Actions**: CI/CDパイプライン・自動品質チェック
-- **ESLint**: TypeScript対応・Prettier統合
-- **Husky**: Git pre-commitフック・lint-staged設定
-
-### 実装済み監視・分析基盤（Phase 0.5）
-
-- **Sentry統合**: エラートラッキング・パフォーマンス監視・セッションリプレイ
-- **Web Vitals監視**: CLS・FID・FCP・LCP・TTFB自動測定・閾値アラート
-- **パフォーマンスモニター**: API応答時間・DB操作時間・カスタムメトリクス
-- **ユーザー行動分析**: イベント追跡・セッション分析・Google Analytics統合
-- **アラートマネージャー**: 閾値監視・Slack/メール通知・クールダウン制御
-- **リアルタイムダッシュボード**: システム状況・チャート・エラー分布可視化
-
-### 実行コマンド
-
-```bash
-# テスト実行
-npm run test:unit        # 単体テスト実行
-npm run test:integration # 統合テスト実行
-npm run test:e2e         # E2Eテスト実行
-npm run test:coverage    # カバレッジレポート生成
-npm run test:all         # 全テスト実行
-npm run lint             # コード品質チェック
-npm run type-check       # TypeScript型チェック
-
-# 監視・分析実行（Phase 0.5）
-npm run monitor:check    # 監視サービス状況確認
-npm run monitor:dashboard # ダッシュボードサーバー起動
-npm run sentry:sourcemaps # Sentryソースマップアップロード
-```
-
-### テストディレクトリ構造
-
-```
-tests/
-├── unit/                # 単体テスト
-├── integration/         # 統合テスト
-├── e2e/                 # E2Eテスト
-└── setup.ts             # Jest設定
+Jest・Playwright・Sentry・Web Vitals監視基盤完備。詳細は `docs/test-quality-strategy.md` 参照。
 ```
 
 ## 参考ドキュメント
 
-### 開発・実装ガイド
+### 主要実装ガイド
 
-#### トラブルシューティング・機能ガイド
+- **[Phase 6.0: SNS機能 MongoDB拡張スキーマ](./README-phase-6-sns-schema.md)** - DryRunテスト完了
+- **[Phase 5: セキュリティ強化](./README-phase-5-security.md)** - エンタープライズ級セキュリティ完全ガイド
+- **[会員制掲示板CRUD機能](./README-board-crud.md)** - タイトル付き投稿・権限管理
+- **[プロフィール機能](./README-profile.md)** - 表示・編集・パスワード変更・アバター
 
-プロジェクト開発時に発生する問題の解決方法については、以下の専用ドキュメントを参照してください：
+### Phase別実装手順
 
-- **[Phase 5: セキュリティ強化実装ガイド](./README-phase-5-security.md)** - XSS・CSRF・NoSQL・監査ログ・レート制限・Edge Runtime対応・エンタープライズ級セキュリティ完全ガイド ✅ **Phase 5実装完了** ✨ **新規追加**
-- **[プロフィール機能ガイド](./README-profile.md)** - プロフィール表示・編集・パスワード変更・頭文字アバター・完全実装手順 ✨ **新規追加**
-- **[会員制掲示板CRUD機能完全ガイド](./README-board-crud.md)** - タイトル付き投稿・詳細ページ・編集権限・テキスト折り返し対応 ✅ **Phase 4.5実装完了**
-- **[NextAuth.js認証トラブルシューティング](./README-auth-troubleshooting.md)** - 認証・セッション・role権限問題の詳細解決方法
-- **[メール送信機能 トラブルシューティングガイド](./docs/email-troubleshooting-guide.md)** - メール送信実装時のエラーと解決策
-- **[基本的なメールテスト手順](./README-email-test.md)** - さくらメール設定と動作確認方法
-- **[パスワード強度インジケーター機能](./README-password-strength.md)** - リアルタイム強度評価・UI/UX詳細・4段階評価
-- **[ブルートフォース攻撃対策](./README-brute-force-protection.md)** - レート制限・残り試行回数表示・段階的警告・管理者ダッシュボード
-- **[Phase 2.5 ページ構成最適化](./README-page-structure-optimization.md)** - 会員制システム基盤・ランディングページ・認証フロー改善
-- **[useRequireAuth認証フック](./README-useRequireAuth-hook.md)** - 権限制御・自動リダイレクト・エラーハンドリング・Material-UI統合・テスト完備
-- **[ミドルウェア保護システム](./README-middleware-protection.md)** - /board保護・ロール制御・レート制限・CSRF保護・セキュリティヘッダー・多層防御
-- **[ローディングUI統合システム](./README-loading-components.md)** - Material-UI統合・5種ローディング・4種スケルトン・useRequireAuth連携・レスポンシブ・アニメーション完備
-- **[学習用Phase 0-2実装ガイド](./docs/learning-guide-phase-0-to-2.md)** - 完全学習ドキュメント・実装例・ベストプラクティス
+- **[Phase 0-2](./README-phase-1-2.md)** - テスト・監視・認証基盤
+- **[Phase 3-5](./README-phase-3-5.md)** - 会員機能・権限・セキュリティ
 
-#### 実装困難ポイント・学習記録
+### デプロイ・トラブルシューティング
 
-Phase 3-4.5実装で遭遇した困難な問題の解決方法と学んだ教訓をまとめています：
+- **[Vercelデプロイエラー解決](./README-vercel-deploy-errors-phase55.md)** - 21項目の技術問題解決
+- **[認証トラブルシューティング](./README-auth-troubleshooting.md)** - NextAuth.js問題解決
+- **[メール送信設定](./docs/email-auth-cheatsheet.md)** - さくらSMTP・DKIM/SPF/DMARC
 
-- **[Phase別実装困難ポイント詳細](./docs/implementation-challenges.md)** - 認証統合・権限管理・UI分離・マイグレーション等の解決方法 ✨ **新規追加**
-- **[開発で学んだ教訓・ベストプラクティス集](./docs/lessons-learned.md)** - 設計パターン・回避すべき問題・効率的手法 ✨ **新規追加**
-- **[開発振り返り・困難克服記録](./README-development-retrospective.md)** - Phase 0-4.5の実装軌跡・技術成長・達成感記録 ✨ **新規追加**
+### システム設計・品質管理
 
-### DNS・メール認証設定
-
-- **SPF設定**: ✅ `v=spf1 a:www3625.sakura.ne.jp include:_spf.sakura.ne.jp ~all`
-- **DKIM設定**: ✅ 完了・署名検証済み（セレクタ: default）
-- **DMARC設定**: ✅ `v=DMARC1; p=none; rua=mailto:noreply@kab137lab.com`
-- **完全チートシート**: [メール認証設定チートシート](./docs/email-auth-cheatsheet.md)
-
-### プロジェクト状況・デプロイ情報
-
-- **[プロジェクト実装状況レポート](./docs/project-implementation-status.md)** - 全機能の実装状況・進捗・評価
-- **[Phase 5.5 ブランチ統合完了ガイド](./README-phase-5.5-integration.md)** - 全フィーチャーブランチ統合プロセス・依存関係解決・デプロイ準備完了記録 ✅ **2025/08/12新規追加**
-- **[既存Vercelプロジェクト更新ガイド](./README-vercel-deployment-existing.md)** - my-board-app既存デプロイに対するPhase 5.5統合版反映手順・環境変数・動作確認 ✅ **2025/08/12新規追加**
-- **[Vercelデプロイ準備完了チェックリスト](./README-vercel-deploy-checklist.md)** - 技術準備確認・環境変数・OAuth設定・動作確認項目 ✅ **2025/08/12新規追加**
-- **[Phase 5.5 Vercelデプロイエラー完全解決ガイド](./README-vercel-deploy-errors-phase55.md)** - 16項目の技術問題・連鎖的エラー解決・効率的デプロイ戦略・学習ポイント ✅ **2025/08/13新規追加**
-
-### 技術仕様書
-
-- `docs/api-specs.md` - API仕様詳細
-- `docs/database-specs.md` - データベース設計
-- `docs/system-architecture.md` - システム構成
-
-### 会員制システム実装ガイド（Phase別実装完了）
-
-- **[Phase 0 - テスト基盤整備手順](./README-phase-0.md)** - Jest・Playwright・CI/CD構築ガイド
-- **[Phase 0.5 - 監視基盤構築手順](./README-phase-0.5.md)** - Sentry・Analytics・ダッシュボード
-- **[Phase 1-2 - 認証基盤実装手順](./README-phase-1-2.md)** - NextAuth・React Email・メール認証統合
-- **[Phase 3-5 - 会員機能実装手順](./README-phase-3-5.md)** - 権限管理・UI/UX・セキュリティ強化
-- **[Phase 4.5 - 会員制掲示板CRUD拡張手順](./README-board-crud.md)** - タイトル付き投稿・詳細ページ・編集権限・完全実装ガイド ✅ **実装完了**
-- **[Phase 5 - セキュリティ強化実装ガイド](./README-phase-5-security.md)** - XSS対策・CSRF強化・レート制限調整・監査ログ・完全実装手順 🚧 **実装計画策定済み**
-
-### システム設計・戦略ドキュメント
-
-- **[会員制ブランチ戦略](./docs/member-branch-strategy.md)** - 7段階実装のブランチ戦略・依存関係
-- **[テスト・品質保証戦略](./docs/test-quality-strategy.md)** - Phase 0テスト基盤・品質管理
-- **[監視・分析ガイド](./docs/monitoring-guide.md)** - Sentry・パフォーマンス監視・ユーザー分析
-- **[リスク管理・ロールバック戦略](./docs/risk-management.md)** - カナリアリリース・緊急対応手順
-
-### その他のドキュメント
-
-- `docs/` フォルダには詳細な技術仕様書やガイドが格納されています
-- 各機能固有の設定やトラブルは該当するREADMEファイルを確認してください
+- **[ブランチ戦略](./docs/member-branch-strategy.md)** - Git Flow・Phase別統合
+- **[テスト・品質保証](./docs/test-quality-strategy.md)** - Jest・Playwright・監視
+- **[API仕様](./docs/api-specs.md)** - エンドポイント・データ形式

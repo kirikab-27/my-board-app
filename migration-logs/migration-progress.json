@@ -1,0 +1,106 @@
+{
+  "migration_failed": {
+    "status": "error",
+    "timestamp": "2025-08-15T13:50:31.440Z",
+    "details": {
+      "error": "connect ECONNREFUSED ::1:27017, connect ECONNREFUSED 127.0.0.1:27017",
+      "stack": "MongooseServerSelectionError: connect ECONNREFUSED ::1:27017, connect ECONNREFUSED 127.0.0.1:27017\n    at _handleConnectionErrors (C:\\Users\\masas\\Documents\\Projects\\my-board-app\\node_modules\\mongoose\\lib\\connection.js:1165:11)\n    at NativeConnection.openUri (C:\\Users\\masas\\Documents\\Projects\\my-board-app\\node_modules\\mongoose\\lib\\connection.js:1096:11)\n    at async initializeDatabase (C:\\Users\\masas\\Documents\\Projects\\my-board-app\\scripts\\migrate-phase6-sns.js:66:5)\n    at async runMigration (C:\\Users\\masas\\Documents\\Projects\\my-board-app\\scripts\\migrate-phase6-sns.js:724:5)"
+    }
+  },
+  "database_connection": {
+    "status": "completed",
+    "timestamp": "2025-08-15T22:52:22.212Z",
+    "details": {}
+  },
+  "backup": {
+    "status": "completed",
+    "timestamp": "2025-08-15T22:52:22.291Z",
+    "details": {
+      "backupFile": "backups\\phase5.5-backup-2025-08-15T22-52-22-215Z.json"
+    }
+  },
+  "user_migration": {
+    "status": "completed",
+    "timestamp": "2025-08-15T22:52:22.330Z",
+    "details": {
+      "processed": 5,
+      "updated": 0
+    }
+  },
+  "post_migration": {
+    "status": "completed",
+    "timestamp": "2025-08-15T22:52:22.368Z",
+    "details": {
+      "processed": 15,
+      "updated": 0
+    }
+  },
+  "new_collections": {
+    "status": "completed",
+    "timestamp": "2025-08-15T22:52:22.486Z",
+    "details": {
+      "created": 0
+    }
+  },
+  "hashtag_initialization": {
+    "status": "completed",
+    "timestamp": "2025-08-15T22:52:22.541Z",
+    "details": {
+      "created": 0,
+      "analyzed": 1
+    }
+  },
+  "index_creation": {
+    "status": "completed",
+    "timestamp": "2025-08-15T22:52:22.666Z",
+    "details": {
+      "created": 4
+    }
+  },
+  "stats_recalculation": {
+    "status": "completed",
+    "timestamp": "2025-08-15T22:52:22.975Z",
+    "details": {
+      "userStatsUpdated": 5
+    }
+  },
+  "integrity_check": {
+    "status": "completed",
+    "timestamp": "2025-08-15T22:52:23.029Z",
+    "details": {
+      "issues": []
+    }
+  },
+  "cleanup": {
+    "status": "completed",
+    "timestamp": "2025-08-15T22:52:23.034Z",
+    "details": {}
+  },
+  "migration_complete": {
+    "status": "completed",
+    "timestamp": "2025-08-15T22:52:23.038Z",
+    "details": {
+      "duration": 1.51,
+      "summary": {
+        "userResults": {
+          "processed": 5,
+          "updated": 0
+        },
+        "postResults": {
+          "processed": 15,
+          "updated": 0
+        },
+        "newCollections": 0,
+        "hashtagResults": {
+          "created": 0,
+          "analyzed": 1
+        },
+        "indexResults": 4,
+        "statsResults": {
+          "userStatsUpdated": 5
+        },
+        "integrityIssues": []
+      }
+    }
+  }
+}
