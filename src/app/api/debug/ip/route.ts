@@ -18,7 +18,8 @@ export async function GET() {
           const json = JSON.parse(text);
           ipResults.push(json);
         } catch {
-          // JSON以外の場合はそのまま追加
+          // JSON以外の場合はそのまま追加（text変数をcatchブロック内で再取得）
+          const text = await response.value.text();
           ipResults.push({ ip: text.trim() });
         }
       }
