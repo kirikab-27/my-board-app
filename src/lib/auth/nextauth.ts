@@ -77,14 +77,14 @@ export const authOptions: NextAuthOptions = {
             return null;
           }
 
-          // メール認証確認（Phase 2で有効化）
-          if (!user.emailVerified) {
-            console.log('❌ Email not verified:', email);
-            // 未認証は試行回数にカウントしない（正当なユーザーの可能性）
-            throw new Error(
-              'メール認証が完了していません。メールに送信された認証リンクをクリックしてください。'
-            );
-          }
+          // メール認証確認（一時的に無効化 - 緊急修正）
+          // if (!user.emailVerified) {
+          //   console.log('❌ Email not verified:', email);
+          //   // 未認証は試行回数にカウントしない（正当なユーザーの可能性）
+          //   throw new Error(
+          //     'メール認証が完了していません。メールに送信された認証リンクをクリックしてください。'
+          //   );
+          // }
 
           // パスワード確認
           const isPasswordValid = await user.comparePassword(password);
