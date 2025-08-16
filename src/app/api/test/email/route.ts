@@ -38,7 +38,7 @@ export async function POST() {
     });
 
     // トランスポーター作成
-    const transporter = nodemailer.createTransporter(transporterConfig);
+    const transporter = nodemailer.createTransport(transporterConfig);
 
     // SMTP接続テスト
     console.log('🔌 SMTP接続テスト中...');
