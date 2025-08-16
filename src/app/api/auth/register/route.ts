@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import User from '@/models/User';
-// import VerificationToken from '@/models/VerificationToken'; // 一時的に無効化
+import VerificationToken from '@/models/VerificationToken';
 import { registerSchema } from '@/lib/validations/auth';
-// import { sendVerificationEmail } from '@/lib/email/react-email-sender'; // 一時的に無効化
-// import * as Sentry from '@sentry/nextjs'; // 一時的にコメントアウト
+import { sendVerificationEmail } from '@/lib/email/react-email-sender';
+import * as Sentry from '@sentry/nextjs';
 
 export async function POST(req: NextRequest) {
   try {
@@ -41,53 +41,50 @@ export async function POST(req: NextRequest) {
     }
     console.log('✅ No existing user found');
 
-    // ユーザー作成（緊急修正: メール認証を一時的にスキップ）
+    // ユーザー作成（メール認証が必要）
     console.log('👤 Creating new user...');
     const user = new User({
       name,
       email,
       password, // mongooseのpreミドルウェアでハッシュ化される
-      emailVerified: new Date(), // 緊急修正: 一時的に即座に認証済みとして作成
+      emailVerified: null, // メール認証が完了するまでnull
     });
 
     console.log('💾 Saving user to database...');
     await user.save();
     console.log('✅ User saved successfully with ID:', user._id);
 
-    // メール認証関連処理を一時的にスキップ（緊急修正）
-    console.log('📧 Email verification temporarily disabled for emergency fix');
-    
-    // // 既存の認証トークンを削除（重複登録対応）
-    // await VerificationToken.deleteMany({
-    //   identifier: email,
-    //   type: 'email-verification',
-    // });
+    // 既存の認証トークンを削除（重複登録対応）
+    await VerificationToken.deleteMany({
+      identifier: email,
+      type: 'email-verification',
+    });
 
-    // // メール認証トークン生成
-    // console.log('🔑 Creating verification token...');
-    // const verificationToken = await VerificationToken.createEmailVerificationToken(email, 24);
-    // console.log('✅ Verification token created:', verificationToken.token);
+    // メール認証トークン生成
+    console.log('🔑 Creating verification token...');
+    const verificationToken = await VerificationToken.createEmailVerificationToken(email, 24);
+    console.log('✅ Verification token created:', verificationToken.token);
 
-    // // 認証メール送信
-    // console.log('📧 Sending verification email...');
-    // try {
-    //   await sendVerificationEmail(email, name, verificationToken.token);
-    //   console.log('✅ Verification email sent successfully');
-    // } catch (emailError) {
-    //   console.error('❌ Failed to send verification email:', emailError);
-    //   // メール送信失敗でもユーザー作成は成功とする
-    // }
+    // 認証メール送信
+    console.log('📧 Sending verification email...');
+    try {
+      await sendVerificationEmail(email, name, verificationToken.token);
+      console.log('✅ Verification email sent successfully');
+    } catch (emailError) {
+      console.error('❌ Failed to send verification email:', emailError);
+      // メール送信失敗でもユーザー作成は成功とする
+      Sentry.captureException(emailError);
+    }
 
     console.log('✅ User registered successfully:', email);
 
     return NextResponse.json({
-      message:
-        'アカウントを作成しました。すぐにログインできます。',
+      message: 'アカウントを作成しました。メールを確認して認証を完了してください。',
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
-        emailVerified: true,
+        emailVerified: false,
       },
     });
   } catch (error) {
@@ -98,7 +95,7 @@ export async function POST(req: NextRequest) {
       stack: error instanceof Error ? error.stack : undefined,
     });
 
-    // Sentry.captureException(error); // 一時的にコメントアウト
+    Sentry.captureException(error);
 
     return NextResponse.json(
       {
