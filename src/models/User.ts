@@ -12,59 +12,62 @@ export interface IUser extends mongoose.Document {
   role: 'user' | 'moderator' | 'admin';
   createdAt: Date;
   updatedAt: Date;
-  
+
   // メソッド
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
-const UserSchema = new mongoose.Schema<IUser>({
-  name: {
-    type: String,
-    required: [true, '名前は必須です'],
-    trim: true,
-    maxlength: [50, '名前は50文字以内で入力してください'],
+const UserSchema = new mongoose.Schema<IUser>(
+  {
+    name: {
+      type: String,
+      required: [true, '名前は必須です'],
+      trim: true,
+      maxlength: [50, '名前は50文字以内で入力してください'],
+    },
+    email: {
+      type: String,
+      required: [true, 'メールアドレスは必須です'],
+      unique: true,
+      lowercase: true,
+      match: [
+        /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+        '有効なメールアドレスを入力してください',
+      ],
+    },
+    password: {
+      type: String,
+      required: [true, 'パスワードは必須です'],
+      minlength: [8, 'パスワードは8文字以上で入力してください'],
+    },
+    emailVerified: {
+      type: Date,
+      default: null,
+    },
+    image: {
+      type: String,
+      default: null,
+    },
+    bio: {
+      type: String,
+      maxlength: [200, '自己紹介は200文字以内で入力してください'],
+      default: '',
+    },
+    role: {
+      type: String,
+      enum: ['user', 'moderator', 'admin'],
+      default: 'user',
+    },
   },
-  email: {
-    type: String,
-    required: [true, 'メールアドレスは必須です'],
-    unique: true,
-    lowercase: true,
-    match: [
-      /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
-      '有効なメールアドレスを入力してください',
-    ],
-  },
-  password: {
-    type: String,
-    required: [true, 'パスワードは必須です'],
-    minlength: [8, 'パスワードは8文字以上で入力してください'],
-  },
-  emailVerified: {
-    type: Date,
-    default: null,
-  },
-  image: {
-    type: String,
-    default: null,
-  },
-  bio: {
-    type: String,
-    maxlength: [200, '自己紹介は200文字以内で入力してください'],
-    default: '',
-  },
-  role: {
-    type: String,
-    enum: ['user', 'moderator', 'admin'],
-    default: 'user',
-  },
-}, {
-  timestamps: true,
-});
+  {
+    timestamps: true,
+  }
+);
 
 // パスワードハッシュ化（保存前）
 UserSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
-  
+
   try {
     const salt = await bcrypt.genSalt(12);
     this.password = await bcrypt.hash(this.password, salt);

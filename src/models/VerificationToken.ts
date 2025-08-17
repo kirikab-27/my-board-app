@@ -34,7 +34,6 @@ const VerificationTokenSchema = new mongoose.Schema(
     expires: {
       type: Date,
       required: true,
-      index: true,
     },
     type: {
       type: String,
