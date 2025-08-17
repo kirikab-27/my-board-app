@@ -33,7 +33,7 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
-import { FollowButton } from '@/components/follow/FollowButton';
+import FollowButton from '@/components/follow/FollowButton';
 
 // タイムライン投稿の型定義
 interface TimelinePost {
@@ -405,11 +405,24 @@ function PostCard({ post }: { post: TimelinePost }) {
   const handleFollowChange = (isFollowing: boolean) => {
     // タイムライン投稿のフォロー状態を更新
     // 実際のアプリケーションではparent componentに通知する必要がある
-    console.log(`フォロー状態変更: ${post.author.name} - ${isFollowing ? 'フォロー' : 'アンフォロー'}`);
+    console.log(`フォロー状態変更: ${post.author?.name || '不明なユーザー'} - ${isFollowing ? 'フォロー' : 'アンフォロー'}`);
   };
 
   // 自分の投稿かどうかチェック
   const isOwnPost = session?.user?.id === post.userId;
+  
+  // 投稿者情報の安全チェック
+  if (!post.author) {
+    return (
+      <Card sx={{ mb: 2 }}>
+        <CardContent>
+          <Alert severity="error">
+            投稿者情報が見つかりません
+          </Alert>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card sx={{ mb: 2, cursor: 'pointer' }} onClick={handlePostClick}>
@@ -417,18 +430,18 @@ function PostCard({ post }: { post: TimelinePost }) {
         {/* 投稿者情報 */}
         <Box display="flex" alignItems="center" mb={2}>
           <Avatar
-            src={post.author.avatar}
+            src={post.author?.avatar}
             sx={{ width: 48, height: 48, mr: 2 }}
           >
-            {post.author.name[0]}
+            {post.author?.name?.[0] || '?'}
           </Avatar>
           
           <Box flex={1}>
             <Box display="flex" alignItems="center" gap={1}>
               <Typography variant="subtitle1" fontWeight="bold">
-                {post.author.name}
+                {post.author?.name || '不明なユーザー'}
               </Typography>
-              {post.author.isVerified && (
+              {post.author?.isVerified && (
                 <Chip label="認証済み" size="small" color="primary" />
               )}
               {post.isFollowing && (
@@ -444,7 +457,7 @@ function PostCard({ post }: { post: TimelinePost }) {
           </Box>
           
           <Box display="flex" alignItems="center" gap={1}>
-            {!isOwnPost && (
+            {!isOwnPost && post.author && (
               <FollowButton
                 targetUserId={post.userId}
                 targetUserName={post.author.name}
