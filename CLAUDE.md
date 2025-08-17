@@ -84,7 +84,8 @@
 - **Phase 4**: プロフィール管理・認証UI/UX改善・レスポンシブ ✅ **統合完了** ✨ **プロフィール機能・パスワード変更・頭文字アバター**
 - **Phase 4.5**: 会員制掲示板CRUD機能拡張 ✅ **統合完了** ✨ **タイトル付き投稿・編集削除権限・会員限定投稿・権限チェック**
 - **Phase 5**: セキュリティ強化・CSRF・レート制限・XSS対策 ✅ **統合完了** ✨ **エンタープライズ級セキュリティ基盤完成**
-- **Phase 6.0**: SNS機能・MongoDB拡張スキーマ・68インデックス最適化 ✅ **DryRunテスト完了** 🚧 **本番マイグレーション準備完了**
+- **Phase 6.0**: SNS機能・MongoDB拡張スキーマ・68インデックス最適化 ✅ **統合完了** ✨ **SNS基盤実装完了・GitHub統合済み**
+- **Phase 6.1**: フォロー機能・管理者投稿フィルタリング ✅ **管理者投稿非表示機能実装完了・本番稼働中**
 
 ### ✅ Phase 5.5統合完了（2025/08/13）
 
@@ -102,14 +103,24 @@
 
 SNS機能・MongoDB拡張スキーマ・68インデックス最適化。詳細は `README-phase-6-sns-schema.md` 参照。
 
-### 🚧 Phase 6.0本番マイグレーション準備完了（2025/08/15）
+### ✅ Phase 6.0統合完了（2025/08/16）
 
-**DryRunテスト結果**（1.2秒・エラーなし・MongoDB Atlas接続成功）:
+**SNS基盤実装・Git統合結果**:
 
-- **データベース状態**: 21オブジェクト・5ユーザー・15投稿・MongoDB Atlas接続確認済み
-- **バックアップ作成**: `backups/phase5.5-backup-2025-08-15T13-51-46-545Z.json` 自動生成済み
-- **6新規コレクション**: follows・comments・notifications・hashtags・media・analytics 作成準備完了
-- **整合性問題3件検出**: ユーザー名なし（5件）・重複ユーザー名（1件）・投稿タイプ未設定（15件）→ **本番時自動修正**
+- **8モデル拡張スキーマ**: User・Post・Follow・Comment・Notification・Hashtag・Media・Analytics完全実装
+- **68インデックス最適化**: タイムライン・検索・通知高速化（<100ms目標設定）
+- **Git統合**: main・developブランチ統合・GitHub同期完了
+- **ドキュメント**: `README-phase-6-sns-schema.md`実装ガイド完成
+
+### ✅ Phase 6.1管理者投稿フィルタリング完了（2025/08/17）
+
+**管理者投稿非表示機能実装完了・本番稼働中**:
+
+- **投稿一覧API**: `/api/posts` - 管理者投稿フィルタリング実装済み
+- **検索API**: `/api/posts/search` - 管理者投稿フィルタリング新規実装 ✨
+- **セッション管理**: NextAuth.js v4 session.user.role による権限チェック
+- **フィルタロジック**: `searchFilter.authorRole = { $ne: 'admin' }` 適用
+- **本番確認**: https://kab137lab.com で一般ユーザー検索時管理者投稿除外確認済み
 
 ### 📋 Phase 6.1以降計画機能
 
@@ -284,11 +295,14 @@ node scripts/test-security-phase5.js     # XSS・CSRF・NoSQL・レート制限�
 
 # Phase 6.0: SNS機能マイグレーション（DryRunテスト完了・2025/08/15）
 node scripts/migrate-phase6-sns.js --dry-run --verbose  # DryRunテスト実行 ✅ **1.2秒・エラーなし・整合性チェック完了**
-node scripts/migrate-phase6-sns.js --verbose            # 本番マイグレーション実行 🚧 **準備完了**
+node scripts/migrate-phase6-sns.js --verbose            # 本番マイグレーション実行 ✅ **基盤統合完了**
 
-# Phase 5.5: Vercel本番デプロイ（既存プロジェクト更新）
-git checkout main                         # mainブランチ切り替え
-git merge develop --no-ff                 # develop統合版をmainに反映
+# Phase 6.1: 管理者投稿フィルタリング（実装完了・2025/08/17）
+# 管理者投稿を一般ユーザーから非表示にする機能
+# `/api/posts` と `/api/posts/search` 両方でセッション権限チェック実装済み ✅ **本番稼働中**
+
+# Vercel本番デプロイ
+git checkout main && git merge develop --no-ff
 git push origin main                      # 自動デプロイトリガー（https://kab137lab.com）
 ```
 
@@ -355,15 +369,15 @@ SENTRY_SUPPRESS_GLOBAL_ERROR_HANDLER_FILE_WARNING=1
 
 ## API エンドポイント
 
-### 投稿関連（Phase 5 セキュリティ統合完了・XSS/NoSQL対策済み）
+### 投稿関連（Phase 6.1 管理者投稿フィルタリング完了・XSS/NoSQL対策済み）
 
-- `GET /api/posts` - 全投稿の取得（NoSQL対策・入力検証・検索サニタイゼーション）✅ **Phase 5強化完了**
+- `GET /api/posts` - 全投稿の取得（管理者投稿フィルタリング・NoSQL対策・入力検証）✅ **Phase 6.1管理者フィルタ統合**
 - `POST /api/posts` - 新しい投稿の作成（XSS検出・監査ログ記録）✅ **Phase 5強化完了**
 - `GET /api/posts/[id]` - 投稿詳細取得（ObjectID検証強化）✅ **Phase 5強化完了**
 - `PUT /api/posts/[id]` - 投稿の更新（XSS検出・監査ログ・権限チェック）✅ **Phase 5強化完了**
 - `DELETE /api/posts/[id]` - 投稿の削除（権限チェック・監査ログ）✅ **Phase 5強化完了**
 - `POST/GET/DELETE /api/posts/[id]/like` - いいね機能 ✅ **認証/匿名対応・ユーザーID管理**
-- `GET /api/posts/search` - 投稿検索（入力サニタイゼーション・NoSQL対策）✅ **Phase 5強化完了**
+- `GET /api/posts/search` - 投稿検索（管理者投稿フィルタリング・入力サニタイゼーション・NoSQL対策）✅ **Phase 6.1管理者フィルタ新規実装**
 
 ### 認証関連（Phase 2実装完了・メール認証・パスワードリセット対応済み）
 
