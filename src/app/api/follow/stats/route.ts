@@ -31,7 +31,6 @@ export async function GET(request: NextRequest) {
     const [
       followerCount,
       followingCount,
-      mutualFollowsCount,
       relationToTarget
     ] = await Promise.all([
       // フォロワー数
@@ -40,20 +39,33 @@ export async function GET(request: NextRequest) {
       // フォロー中数
       Follow.countDocuments({ follower: targetUserId, isAccepted: true }),
       
-      // 相互フォロー数（現在のユーザーとの相互フォロー）
-      currentUserId ? Follow.countDocuments({
-        $or: [
-          { follower: currentUserId, following: targetUserId, isAccepted: true },
-          { follower: targetUserId, following: currentUserId, isAccepted: true }
-        ]
-      }) : 0,
-      
       // 現在のユーザーとの関係
       currentUserId && currentUserId !== targetUserId ? Follow.findOne({
         follower: currentUserId,
         following: targetUserId
       }) : null
     ]);
+
+    // 相互フォロー数を別途計算（より効率的な方法）
+    let mutualFollowsCount = 0;
+    if (followingCount > 0) {
+      // このユーザーがフォローしている人のIDを取得
+      const followingUsers = await Follow.find({ 
+        follower: targetUserId, 
+        isAccepted: true 
+      }).select('following');
+      
+      const followingIds = followingUsers.map(f => f.following);
+      
+      if (followingIds.length > 0) {
+        // その中で自分をフォローバックしている人の数を計算
+        mutualFollowsCount = await Follow.countDocuments({
+          follower: { $in: followingIds },
+          following: targetUserId,
+          isAccepted: true
+        });
+      }
+    }
 
     // 相互フォロー判定
     const isMutualFollow = currentUserId && currentUserId !== targetUserId ? 
@@ -63,7 +75,7 @@ export async function GET(request: NextRequest) {
     const stats = {
       followerCount,
       followingCount,
-      mutualFollowsCount: isMutualFollow ? 1 : 0,
+      mutualFollowsCount,
       
       // 現在のユーザーとの関係（認証済みの場合のみ）
       relationship: currentUserId && currentUserId !== targetUserId ? {

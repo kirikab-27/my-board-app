@@ -464,10 +464,10 @@ AnalyticsSchema.pre('save', function (next) {
 });
 
 // ミドルウェア：保存前処理
-AnalyticsSchema.pre('save', async function (next) {
+AnalyticsSchema.pre<IAnalytics>('save', async function (next) {
   try {
     // セッション継続時間の計算
-    if (this.sessionInfo.sessionStart && !this.sessionInfo.sessionDuration) {
+    if (this.sessionInfo?.sessionStart && !this.sessionInfo?.sessionDuration) {
       this.sessionInfo.sessionDuration = Math.floor(
         (this.timestamp.getTime() - this.sessionInfo.sessionStart.getTime()) / 1000
       );

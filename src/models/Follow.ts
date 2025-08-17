@@ -293,4 +293,28 @@ FollowSchema.statics.getFollowingCount = async function(userId: string): Promise
   return this.countDocuments({ follower: userId, isAccepted: true });
 };
 
+// 静的メソッド：相互フォロー数取得
+FollowSchema.statics.getMutualFollowCount = async function(userId: string): Promise<number> {
+  // ユーザーがフォローしている人の一覧を取得
+  const followingList = await this.find({ 
+    follower: userId, 
+    isAccepted: true 
+  }).select('following');
+  
+  const followingIds = followingList.map(f => f.following);
+  
+  if (followingIds.length === 0) {
+    return 0;
+  }
+  
+  // その中で自分をフォローバックしている人の数を計算
+  const mutualCount = await this.countDocuments({
+    follower: { $in: followingIds },
+    following: userId,
+    isAccepted: true
+  });
+  
+  return mutualCount;
+};
+
 export default mongoose.models.Follow || mongoose.model<IFollow>('Follow', FollowSchema);

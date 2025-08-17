@@ -12,6 +12,7 @@ import User from '@/models/User';
 import dbConnect from '@/lib/mongodb';
 import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
+import FollowStats from '@/components/follow/FollowStats';
 
 async function getProfile(userId: string) {
   await dbConnect();
@@ -134,6 +135,16 @@ export default async function ProfilePage() {
                 パスワード変更
               </Button>
             </Stack>
+          </Box>
+
+          <Divider sx={{ mb: 3 }} />
+
+          {/* フォロー統計 */}
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h6" gutterBottom>
+              フォロー統計
+            </Typography>
+            <FollowStats userId={profile.id} showRelationship={false} />
           </Box>
 
           <Divider sx={{ mb: 3 }} />
