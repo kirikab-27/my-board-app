@@ -352,7 +352,7 @@ CommentSchema.pre<IComment>('save', async function (next) {
         this.depth = (parentComment.depth || 0) + 1;
       }
     } else if (this.type === 'comment') {
-      this.threadId = this._id;
+      this.threadId = (this._id as any).toString();
       this.depth = 0;
     }
     

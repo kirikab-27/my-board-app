@@ -11,6 +11,11 @@ import User from '@/models/User';
  */
 
 export async function GET(request: NextRequest) {
+  // URL parsing outside of try-catch to access in error handling
+  const { searchParams } = new URL(request.url);
+  const targetUserId = searchParams.get('userId');
+  const type = searchParams.get('type'); // 'followers' | 'following'
+  
   try {
     // 認証チェック
     const session = await getServerSession(authOptions);
@@ -20,10 +25,6 @@ export async function GET(request: NextRequest) {
         { status: 401 }
       );
     }
-
-    const { searchParams } = new URL(request.url);
-    const targetUserId = searchParams.get('userId');
-    const type = searchParams.get('type'); // 'followers' | 'following'
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
 
@@ -146,9 +147,10 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error(`${type}一覧取得エラー:`, error);
+    const errorType = type || 'フォロー';
+    console.error(`${errorType}一覧取得エラー:`, error);
     return NextResponse.json(
-      { error: `${type}一覧の取得に失敗しました` },
+      { error: `${errorType}一覧の取得に失敗しました` },
       { status: 500 }
     );
   }

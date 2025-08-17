@@ -6,7 +6,6 @@ import {
   Paper,
   Typography,
   Box,
-  Grid,
   Card,
   CardContent,
   TextField,
@@ -153,9 +152,15 @@ export default function UsersPage() {
 
           {/* ユーザー一覧 */}
           {!loading && !error && (
-            <Grid container spacing={3}>
+            <Box 
+              sx={{ 
+                display: 'grid', 
+                gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' },
+                gap: 3 
+              }}
+            >
               {filteredUsers.map((user) => (
-                <Grid item xs={12} sm={6} md={4} key={user._id}>
+                <Box key={user._id}>
                   <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                     <CardContent sx={{ flexGrow: 1 }}>
                       {/* ユーザー基本情報 */}
@@ -214,9 +219,9 @@ export default function UsersPage() {
                       />
                     </CardContent>
                   </Card>
-                </Grid>
+                </Box>
               ))}
-            </Grid>
+            </Box>
           )}
 
           {/* 検索結果なし */}

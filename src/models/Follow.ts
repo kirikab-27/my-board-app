@@ -301,7 +301,7 @@ FollowSchema.statics.getMutualFollowCount = async function(userId: string): Prom
     isAccepted: true 
   }).select('following');
   
-  const followingIds = followingList.map(f => f.following);
+  const followingIds = followingList.map((f: any) => f.following);
   
   if (followingIds.length === 0) {
     return 0;
