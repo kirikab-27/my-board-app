@@ -327,7 +327,7 @@ CommentSchema.pre('save', function (next) {
 });
 
 // ミドルウェア：保存前処理
-CommentSchema.pre('save', async function (next) {
+CommentSchema.pre<IComment>('save', async function (next) {
   try {
     // ハッシュタグとメンションを自動抽出
     if (this.isModified('content')) {

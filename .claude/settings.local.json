@@ -30,7 +30,8 @@
       "Bash(npx husky:*)",
       "Bash(npm run type-check:*)",
       "Bash(npm run lint)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(git commit:*)"
     ],
     "deny": []
   }

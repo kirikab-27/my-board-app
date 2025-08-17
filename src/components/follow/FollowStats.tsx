@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Box, 
   Typography, 
@@ -11,6 +11,7 @@ import {
   useMediaQuery 
 } from '@mui/material';
 import { People, PersonAdd, Favorite } from '@mui/icons-material';
+import FollowListModal from './FollowListModal';
 
 interface FollowStatsProps {
   userId: string;
@@ -37,11 +38,15 @@ export default function FollowStats({
 }: FollowStatsProps) {
   const [stats, setStats] = useState<FollowStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalType, setModalType] = useState<'followers' | 'following'>('followers');
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // フォロー統計を取得
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
+    if (!userId) return;
+    
     try {
       setLoading(true);
       const response = await fetch(`/api/follow/stats?userId=${userId}`);
@@ -57,13 +62,21 @@ export default function FollowStats({
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
   useEffect(() => {
-    if (userId) {
-      fetchStats();
-    }
-  }, [userId, fetchStats]);
+    fetchStats();
+  }, [fetchStats]);
+
+  // モーダル表示ハンドラー
+  const handleOpenModal = (type: 'followers' | 'following') => {
+    setModalType(type);
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
 
   // ローディング表示
   if (loading) {
@@ -108,19 +121,25 @@ export default function FollowStats({
       label: 'フォロワー',
       value: formatCount(stats.followerCount),
       icon: <People fontSize="small" />,
-      color: 'primary'
+      color: 'primary',
+      clickable: stats.followerCount > 0,
+      onClick: () => handleOpenModal('followers')
     },
     {
       label: 'フォロー中',
       value: formatCount(stats.followingCount),
       icon: <PersonAdd fontSize="small" />,
-      color: 'secondary'
+      color: 'secondary',
+      clickable: stats.followingCount > 0,
+      onClick: () => handleOpenModal('following')
     },
     {
       label: '相互',
       value: formatCount(stats.mutualFollowsCount),
       icon: <Favorite fontSize="small" />,
-      color: 'error'
+      color: 'error',
+      clickable: false, // 相互フォローはクリック不可（今後実装可能）
+      onClick: () => {}
     }
   ];
 
@@ -138,12 +157,13 @@ export default function FollowStats({
           <Box flex={1} key={index}>
             <Box 
               textAlign="center"
+              onClick={item.clickable ? item.onClick : undefined}
               sx={{
-                cursor: 'pointer',
-                '&:hover': {
+                cursor: item.clickable ? 'pointer' : 'default',
+                '&:hover': item.clickable ? {
                   backgroundColor: 'action.hover',
                   borderRadius: 1,
-                },
+                } : {},
                 p: 0.5,
                 transition: 'background-color 0.2s'
               }}
@@ -223,6 +243,14 @@ export default function FollowStats({
           )}
         </Box>
       )}
+
+      {/* フォロー一覧モーダル */}
+      <FollowListModal
+        open={modalOpen}
+        onClose={handleCloseModal}
+        userId={userId}
+        type={modalType}
+      />
     </Paper>
   );
 }

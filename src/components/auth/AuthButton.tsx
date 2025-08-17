@@ -9,6 +9,7 @@ import {
   Forum as ForumIcon,
   Home as HomeIcon,
   Person as PersonIcon,
+  People as PeopleIcon,
 } from '@mui/icons-material';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -54,6 +55,11 @@ export const AuthButton: React.FC = () => {
   const handleHome = () => {
     handleMenuClose();
     router.push('/dashboard');
+  };
+
+  const handleUsers = () => {
+    handleMenuClose();
+    router.push('/users');
   };
 
   if (status === 'loading') {
@@ -134,6 +140,10 @@ export const AuthButton: React.FC = () => {
         <MenuItem onClick={handleProfile}>
           <PersonIcon sx={{ mr: 1 }} />
           プロフィール
+        </MenuItem>
+        <MenuItem onClick={handleUsers}>
+          <PeopleIcon sx={{ mr: 1 }} />
+          ユーザー一覧
         </MenuItem>
         <MenuItem onClick={handleHome}>
           <HomeIcon sx={{ mr: 1 }} />
