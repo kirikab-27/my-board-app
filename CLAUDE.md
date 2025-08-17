@@ -304,6 +304,12 @@ node scripts/migrate-phase6-sns.js --verbose            # 本番マイグレー�
 # Vercel本番デプロイ
 git checkout main && git merge develop --no-ff
 git push origin main                      # 自動デプロイトリガー（https://kab137lab.com）
+
+# 🚀 品質保証・発表会準備コマンド（Phase 6.1追加）
+npm run pre-deploy                        # デプロイ前チェック（ビルド・型・lint）
+npm run health-check                      # 本番環境ヘルスチェック（6項目・自動）
+npm run pre-demo                          # 発表会前最終確認（完全自動）
+npm run quality-gate                      # 品質ゲート（全チェック実行）
 ```
 
 ## 環境設定
