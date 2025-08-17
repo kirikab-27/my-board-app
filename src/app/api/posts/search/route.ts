@@ -5,7 +5,7 @@ import Post from '@/models/Post';
 export async function GET(request: NextRequest) {
   try {
     await dbConnect();
-    
+
     const { searchParams } = new URL(request.url);
     const query = searchParams.get('q');
     const page = parseInt(searchParams.get('page') || '1');
@@ -14,10 +14,7 @@ export async function GET(request: NextRequest) {
     const sortOrder = searchParams.get('sortOrder') || 'desc';
 
     if (!query || query.trim().length === 0) {
-      return NextResponse.json(
-        { error: '検索クエリを入力してください' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: '検索クエリを入力してください' }, { status: 400 });
     }
 
     if (query.trim().length < 1) {
@@ -29,12 +26,9 @@ export async function GET(request: NextRequest) {
 
     // バリデーション
     if (page < 1) {
-      return NextResponse.json(
-        { error: 'ページ番号は1以上である必要があります' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'ページ番号は1以上である必要があります' }, { status: 400 });
     }
-    
+
     if (limit < 1 || limit > 100) {
       return NextResponse.json(
         { error: '取得件数は1〜100の範囲で指定してください' },
@@ -46,39 +40,40 @@ export async function GET(request: NextRequest) {
     const sortOptions: { [key: string]: 1 | -1 } = {};
     const validSortFields = ['createdAt', 'updatedAt', 'likes'];
     const validSortOrders = ['asc', 'desc'];
-    
+
     if (!validSortFields.includes(sortBy)) {
-      return NextResponse.json(
-        { error: '無効なソートフィールドです' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: '無効なソートフィールドです' }, { status: 400 });
     }
-    
+
     if (!validSortOrders.includes(sortOrder)) {
-      return NextResponse.json(
-        { error: '無効なソート順です' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: '無効なソート順です' }, { status: 400 });
     }
-    
+
     sortOptions[sortBy] = sortOrder === 'desc' ? -1 : 1;
 
     // MongoDB のテキスト検索を使用
     // 部分一致検索のため正規表現を使用
     const searchRegex = new RegExp(query.trim(), 'i'); // 大文字小文字を区別しない
-    const searchFilter = { content: { $regex: searchRegex } };
+    const searchFilter: Record<string, unknown> = { content: { $regex: searchRegex } };
+
+    // 管理者投稿は管理者以外から非表示
+    // セッション情報を取得してユーザーロールをチェック
+    const { getServerSession } = await import('next-auth');
+    const { authOptions } = await import('@/lib/auth/nextauth');
+    const session = await getServerSession(authOptions);
+
+    const userRole = session?.user ? (session.user as { role?: string }).role : null;
+    if (userRole !== 'admin') {
+      searchFilter.authorRole = { $ne: 'admin' };
+    }
 
     // ページネーション計算
     const skip = (page - 1) * limit;
 
     // データ取得
     const [posts, totalCount] = await Promise.all([
-      Post.find(searchFilter)
-        .sort(sortOptions)
-        .skip(skip)
-        .limit(limit)
-        .lean(),
-      Post.countDocuments(searchFilter)
+      Post.find(searchFilter).sort(sortOptions).skip(skip).limit(limit).lean(),
+      Post.countDocuments(searchFilter),
     ]);
 
     // ページネーション情報
@@ -94,16 +89,12 @@ export async function GET(request: NextRequest) {
         totalCount,
         limit,
         hasNextPage,
-        hasPrevPage
+        hasPrevPage,
       },
-      query: query.trim()
+      query: query.trim(),
     });
-
   } catch (error) {
     console.error('Error searching posts:', error);
-    return NextResponse.json(
-      { error: '検索に失敗しました' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '検索に失敗しました' }, { status: 500 });
   }
 }
