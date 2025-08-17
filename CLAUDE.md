@@ -722,6 +722,7 @@ Jest・Playwright・Sentry・Web Vitals監視基盤完備。詳細は `docs/test
 
 ### 主要実装ガイド
 
+- **[Phase 6.1: 品質保証システム](./README-quality-assurance.md)** - 絶対に失敗しない厳格なテスト・検証システム ✨ **新規追加**
 - **[Phase 6.0: SNS機能 MongoDB拡張スキーマ](./README-phase-6-sns-schema.md)** - DryRunテスト完了
 - **[Phase 5: セキュリティ強化](./README-phase-5-security.md)** - エンタープライズ級セキュリティ完全ガイド
 - **[会員制掲示板CRUD機能](./README-board-crud.md)** - タイトル付き投稿・権限管理
@@ -741,6 +742,7 @@ Jest・Playwright・Sentry・Web Vitals監視基盤完備。詳細は `docs/test
 
 ### システム設計・品質管理
 
+- **[品質保証プロトコル](./docs/quality-assurance-protocol.md)** - 発表会前緊急チェック・45分フルプロセス ✨ **新規追加**
 - **[ブランチ戦略](./docs/member-branch-strategy.md)** - Git Flow・Phase別統合
 - **[テスト・品質保証](./docs/test-quality-strategy.md)** - Jest・Playwright・監視
 - **[API仕様](./docs/api-specs.md)** - エンドポイント・データ形式
