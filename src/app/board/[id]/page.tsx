@@ -69,23 +69,52 @@ export default function PostDetailPage() {
   }, [postId]);
 
   const determineBackUrl = () => {
-    // document.referrerから参照元を判断
+    // URLパラメータから判断（最優先）
+    const urlParams = new URLSearchParams(window.location.search);
+    const from = urlParams.get('from');
+
+    // sessionStorageから判断（2番目）
+    const sessionReferrer =
+      typeof window !== 'undefined' ? sessionStorage.getItem('timeline_referrer') : null;
+
+    console.log('🔍 デバッグ情報:');
+    console.log('  - URLパラメータ from:', from);
+    console.log('  - sessionStorage:', sessionReferrer);
+    console.log('  - 現在のURL:', window.location.href);
+    console.log('  - document.referrer:', document.referrer);
+
+    if (from === 'timeline') {
+      console.log('  → URLパラメータでタイムラインに戻る設定');
+      setBackUrl('/timeline');
+      // sessionStorageをクリア
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('timeline_referrer');
+      }
+      return;
+    }
+
+    if (sessionReferrer === 'timeline') {
+      console.log('  → sessionStorageでタイムラインに戻る設定');
+      setBackUrl('/timeline');
+      // sessionStorageをクリア
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('timeline_referrer');
+      }
+      return;
+    }
+
+    // document.referrerから参照元を判断（フォールバック）
     const referrer = document.referrer;
 
     if (referrer.includes('/timeline')) {
+      console.log('  → referrerからタイムライン検出');
       setBackUrl('/timeline');
     } else if (referrer.includes('/board')) {
+      console.log('  → referrerから掲示板検出');
       setBackUrl('/board');
     } else {
-      // URLパラメータから判断（オプション）
-      const urlParams = new URLSearchParams(window.location.search);
-      const from = urlParams.get('from');
-
-      if (from === 'timeline') {
-        setBackUrl('/timeline');
-      } else {
-        setBackUrl('/board');
-      }
+      console.log('  → デフォルトで掲示板に設定');
+      setBackUrl('/board');
     }
   };
 
@@ -229,7 +258,7 @@ export default function PostDetailPage() {
             <ArrowBackIcon />
           </IconButton>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            投稿詳細
+            投稿詳細 (戻り先: {backUrl})
           </Typography>
           <AuthButton />
         </Toolbar>

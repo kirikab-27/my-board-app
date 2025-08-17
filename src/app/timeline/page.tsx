@@ -389,6 +389,10 @@ function PostCard({ post }: { post: TimelinePost }) {
   const { data: session } = useSession();
 
   const handlePostClick = () => {
+    // sessionStorageに参照元を記録
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('timeline_referrer', 'timeline');
+    }
     router.push(`/board/${post._id}?from=timeline`);
   };
 
@@ -509,6 +513,10 @@ function PostCard({ post }: { post: TimelinePost }) {
             }}
             onClick={(e) => {
               e.stopPropagation();
+              // sessionStorageに参照元を記録
+              if (typeof window !== 'undefined') {
+                sessionStorage.setItem('timeline_referrer', 'timeline');
+              }
               router.push(`/board/${post._id}?from=timeline`);
             }}
           >
