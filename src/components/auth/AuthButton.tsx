@@ -10,6 +10,7 @@ import {
   Home as HomeIcon,
   Person as PersonIcon,
   People as PeopleIcon,
+  Timeline as TimelineIcon,
 } from '@mui/icons-material';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -60,6 +61,11 @@ export const AuthButton: React.FC = () => {
   const handleUsers = () => {
     handleMenuClose();
     router.push('/users');
+  };
+
+  const handleTimeline = () => {
+    handleMenuClose();
+    router.push('/timeline');
   };
 
   if (status === 'loading') {
@@ -133,6 +139,10 @@ export const AuthButton: React.FC = () => {
             {session.user?.email}
           </Typography>
         </Box>
+        <MenuItem onClick={handleTimeline}>
+          <TimelineIcon sx={{ mr: 1 }} />
+          タイムライン
+        </MenuItem>
         <MenuItem onClick={handleBoard}>
           <ForumIcon sx={{ mr: 1 }} />
           掲示板

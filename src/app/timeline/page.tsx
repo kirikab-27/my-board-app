@@ -33,6 +33,7 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { FollowButton } from '@/components/follow/FollowButton';
 
 // タイムライン投稿の型定義
 interface TimelinePost {
@@ -86,8 +87,7 @@ interface UpdatesResponse {
 }
 
 export default function TimelinePage() {
-  const { data: session, status } = useSession();
-  // session is used for user context (optional for commented code)
+  const { status } = useSession();
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -396,10 +396,20 @@ export default function TimelinePage() {
 function PostCard({ post }: { post: TimelinePost }) {
   const theme = useTheme();
   const router = useRouter();
+  const { data: session } = useSession();
 
   const handlePostClick = () => {
     router.push(`/board/${post._id}`);
   };
+
+  const handleFollowChange = (isFollowing: boolean) => {
+    // タイムライン投稿のフォロー状態を更新
+    // 実際のアプリケーションではparent componentに通知する必要がある
+    console.log(`フォロー状態変更: ${post.author.name} - ${isFollowing ? 'フォロー' : 'アンフォロー'}`);
+  };
+
+  // 自分の投稿かどうかチェック
+  const isOwnPost = session?.user?.id === post.userId;
 
   return (
     <Card sx={{ mb: 2, cursor: 'pointer' }} onClick={handlePostClick}>
@@ -433,9 +443,21 @@ function PostCard({ post }: { post: TimelinePost }) {
             </Typography>
           </Box>
           
-          <IconButton size="small">
-            <MoreVert />
-          </IconButton>
+          <Box display="flex" alignItems="center" gap={1}>
+            {!isOwnPost && (
+              <FollowButton
+                targetUserId={post.userId}
+                targetUserName={post.author.name}
+                initialIsFollowing={post.isFollowing}
+                size="small"
+                variant="text"
+                onFollowChange={handleFollowChange}
+              />
+            )}
+            <IconButton size="small">
+              <MoreVert />
+            </IconButton>
+          </Box>
         </Box>
 
         {/* 投稿タイトル */}
