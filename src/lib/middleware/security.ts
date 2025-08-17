@@ -59,12 +59,36 @@ class SimpleRateLimit {
       }
     }
   }
+
+  // 開発環境用: 全レート制限をリセット
+  reset() {
+    this.requests.clear();
+  }
+
+  // 開発環境用: 特定IPのレート制限をリセット
+  resetIP(ip: string) {
+    this.requests.delete(ip);
+  }
 }
 
-// グローバルレート制限インスタンス（要件に合わせて調整）
-const globalRateLimit = new SimpleRateLimit(5, 60 * 1000); // 1分間に5回（要件準拠）
-const authRateLimit = new SimpleRateLimit(5, 60 * 1000); // 1分間に5回（認証関連も同様）
-const apiRateLimit = new SimpleRateLimit(10, 60 * 1000); // API用: 1分間に10回（少し緩め）
+// 開発環境では制限を大幅に緩和
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+// グローバルレート制限インスタンス（開発環境で緩和）
+const globalRateLimit = new SimpleRateLimit(
+  isDevelopment ? 200 : 5, // 開発: 200回/分, 本番: 5回/分
+  60 * 1000
+);
+
+const authRateLimit = new SimpleRateLimit(
+  isDevelopment ? 100 : 5, // 開発: 100回/分, 本番: 5回/分
+  60 * 1000
+);
+
+const apiRateLimit = new SimpleRateLimit(
+  isDevelopment ? 300 : 10, // 開発: 300回/分, 本番: 10回/分
+  60 * 1000
+);
 
 /**
  * クライアントIPアドレスを取得
@@ -307,6 +331,30 @@ export const performSecurityChecks = (req: NextRequest): SecurityCheckResult => 
   }
 
   return { allowed: true };
+};
+
+/**
+ * 開発環境用: 全レート制限をリセット
+ */
+export const resetAllRateLimits = () => {
+  if (isDevelopment) {
+    globalRateLimit.reset();
+    authRateLimit.reset();
+    apiRateLimit.reset();
+    console.log('🔄 開発環境: 全レート制限をリセットしました');
+  }
+};
+
+/**
+ * 開発環境用: 特定IPのレート制限をリセット
+ */
+export const resetIPRateLimit = (ip: string) => {
+  if (isDevelopment) {
+    globalRateLimit.resetIP(ip);
+    authRateLimit.resetIP(ip);
+    apiRateLimit.resetIP(ip);
+    console.log(`🔄 開発環境: IP ${ip} のレート制限をリセットしました`);
+  }
 };
 
 /**

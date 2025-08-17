@@ -50,7 +50,26 @@ export default function PostDetailPage() {
   const [liking, setLiking] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [backUrl, setBackUrl] = useState('/board');
+  const [backUrl, setBackUrl] = useState<string>(() => {
+    // 初期状態でURLパラメータをチェック
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const from = urlParams.get('from');
+      const sessionReferrer = sessionStorage.getItem('timeline_referrer');
+
+      if (from === 'timeline') {
+        // sessionStorageもクリア
+        sessionStorage.removeItem('timeline_referrer');
+        return '/timeline';
+      }
+
+      if (sessionReferrer === 'timeline') {
+        sessionStorage.removeItem('timeline_referrer');
+        return '/timeline';
+      }
+    }
+    return '/board';
+  });
 
   const postId = params?.id as string;
   const isInitialMount = useRef(true);
@@ -59,42 +78,21 @@ export default function PostDetailPage() {
     if (postId) {
       fetchPost();
     }
-    // 初回マウント時に参照元を判断
-    if (isInitialMount.current) {
+    // 初回マウント時に参照元を判断（状態初期化で処理されなかった場合のフォールバック）
+    if (isInitialMount.current && backUrl === '/board') {
       determineBackUrl();
       isInitialMount.current = false;
     }
     // fetchPost is recreated on every render, so we don't include it in deps
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [postId]);
+  }, [postId, backUrl]);
 
   const determineBackUrl = () => {
-    // URLパラメータから判断（最優先）
-    const urlParams = new URLSearchParams(window.location.search);
-    const from = urlParams.get('from');
-
-    // sessionStorageから判断（2番目）
+    // sessionStorageから判断
     const sessionReferrer =
       typeof window !== 'undefined' ? sessionStorage.getItem('timeline_referrer') : null;
 
-    console.log('🔍 デバッグ情報:');
-    console.log('  - URLパラメータ from:', from);
-    console.log('  - sessionStorage:', sessionReferrer);
-    console.log('  - 現在のURL:', window.location.href);
-    console.log('  - document.referrer:', document.referrer);
-
-    if (from === 'timeline') {
-      console.log('  → URLパラメータでタイムラインに戻る設定');
-      setBackUrl('/timeline');
-      // sessionStorageをクリア
-      if (typeof window !== 'undefined') {
-        sessionStorage.removeItem('timeline_referrer');
-      }
-      return;
-    }
-
     if (sessionReferrer === 'timeline') {
-      console.log('  → sessionStorageでタイムラインに戻る設定');
       setBackUrl('/timeline');
       // sessionStorageをクリア
       if (typeof window !== 'undefined') {
@@ -107,13 +105,8 @@ export default function PostDetailPage() {
     const referrer = document.referrer;
 
     if (referrer.includes('/timeline')) {
-      console.log('  → referrerからタイムライン検出');
       setBackUrl('/timeline');
-    } else if (referrer.includes('/board')) {
-      console.log('  → referrerから掲示板検出');
-      setBackUrl('/board');
     } else {
-      console.log('  → デフォルトで掲示板に設定');
       setBackUrl('/board');
     }
   };
@@ -258,7 +251,7 @@ export default function PostDetailPage() {
             <ArrowBackIcon />
           </IconButton>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            投稿詳細 (戻り先: {backUrl})
+            投稿詳細
           </Typography>
           <AuthButton />
         </Toolbar>
@@ -352,8 +345,13 @@ export default function PostDetailPage() {
           <Box
             sx={{ display: 'flex', gap: 2, justifyContent: 'space-between', alignItems: 'center' }}
           >
-            <Button component={Link} href="/board" variant="outlined" startIcon={<ArrowBackIcon />}>
-              一覧に戻る
+            <Button
+              component={Link}
+              href={backUrl}
+              variant="outlined"
+              startIcon={<ArrowBackIcon />}
+            >
+              {backUrl === '/timeline' ? 'タイムラインに戻る' : '一覧に戻る'}
             </Button>
 
             {isAuthor && (

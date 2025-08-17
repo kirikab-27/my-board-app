@@ -102,24 +102,27 @@
 
 SNS機能・MongoDB拡張スキーマ・68インデックス最適化。詳細は `README-phase-6-sns-schema.md` 参照。
 
+### ✅ Phase 6.1実装完了機能（タイムライン機能）
+
+フォロー・タイムライン・ナビゲーション統合完成。詳細は `README-phase-6.1-timeline.md` 参照。
+
 ### ✅ Phase 6.0統合完了（2025/08/16）
 
 **SNS基盤実装・Git統合結果**:
+
 - **8モデル拡張スキーマ**: User・Post・Follow・Comment・Notification・Hashtag・Media・Analytics完全実装
 - **68インデックス最適化**: タイムライン・検索・通知高速化（<100ms目標設定）
 - **Git統合**: main・developブランチ統合・GitHub同期完了
 - **ドキュメント**: `README-phase-6-sns-schema.md`実装ガイド完成
 
-### 🚀 Phase 6.1開発中（SNS機能実装）
+### ✅ Phase 6.1統合完了（2025/08/17）
 
-**開発戦略**: 機能別独立ブランチ → develop統合 → ビルド確認 → 次機能へ
+**SNS機能実装・タイムライン基盤完成**:
 
-**実装順序**:
-1. **フォロー機能** `feature/phase6.1-follow-system` 🚧 **開発中**
-2. **タイムライン** `feature/phase6.1-timeline` 📋 計画中
-3. **通知システム** `feature/phase6.1-notifications` 📋 計画中
-4. **コメント機能** `feature/phase6.1-comments` 📋 計画中
-5. **ハッシュタグ** `feature/phase6.1-hashtags` 📋 計画中
+- **フォロー機能**: フォロー・アンフォロー・相互フォロー・フォロワー一覧・統計表示 ✅ **統合完了・develop統合済み**
+- **タイムライン機能**: フォローユーザー投稿表示・無限スクロール・リアルタイム更新・ナビゲーション統合 ✅ **統合完了・develop統合済み**
+
+**次期実装予定**: 3. **通知システム** `feature/phase6.2-notifications` 📋 計画中 4. **コメント機能** `feature/phase6.2-comments` 📋 計画中 5. **ハッシュタグ** `feature/phase6.2-hashtags` 📋 計画中
 
 ## 技術スタック
 
@@ -287,11 +290,14 @@ node scripts/test-security-phase5.js     # XSS・CSRF・NoSQL・レート制限�
 node scripts/migrate-phase6-sns.js --dry-run --verbose  # DryRunテスト実行 ✅ **1.2秒・エラーなし・整合性チェック完了**
 node scripts/migrate-phase6-sns.js --verbose            # 本番マイグレーション実行 ✅ **基盤統合完了**
 
-# Phase 6.1: SNS機能開発（シンプル戦略）
-git checkout develop
-git checkout -b feature/phase6.1-follow-system  # フォロー機能開発
+# Phase 6.1: SNS機能開発（完了・2025/08/17）
+# フォロー機能・タイムライン機能統合完了
+git checkout develop                             # フォロー機能・タイムライン統合済み
 npm run build                                   # ビルド確認
-git checkout develop && git merge feature/phase6.1-follow-system --no-ff
+
+# Phase 6.2: 次期SNS機能開発
+git checkout develop
+git checkout -b feature/phase6.2-notifications  # 通知システム開発（次期実装）
 
 # Vercel本番デプロイ
 git checkout main && git merge develop --no-ff
@@ -386,6 +392,14 @@ SENTRY_SUPPRESS_GLOBAL_ERROR_HANDLER_FILE_WARNING=1
 - `PUT /api/profile` - プロフィール更新（名前・自己紹介）✨ **新規実装**
 - `PUT /api/profile/password` - パスワード変更（現在確認・強度チェック）✨ **新規実装**
 
+### SNS関連（Phase 6.1実装完了）
+
+- `GET /api/follow` - フォロー状況確認・フォロワー統計取得 ✅ **Phase 6.1実装完了**
+- `POST /api/follow` - フォロー実行・相互フォロー対応 ✅ **Phase 6.1実装完了**
+- `DELETE /api/follow` - アンフォロー実行・統計更新 ✅ **Phase 6.1実装完了**
+- `GET /api/users` - ユーザー一覧・フォロー状況表示 ✅ **Phase 6.1実装完了**
+- `GET /api/timeline` - タイムライン投稿取得・無限スクロール対応 ✅ **Phase 6.1実装完了**
+
 ### ページ構成（Vercel本番デプロイ対応・https://kab137lab.com）
 
 - `GET /` - ランディングページ（会員登録促進・機能紹介・認証済み→掲示板自動リダイレクト）✨ **本番対応**
@@ -399,6 +413,8 @@ SENTRY_SUPPRESS_GLOBAL_ERROR_HANDLER_FILE_WARNING=1
 - `GET /profile` - プロフィール表示（アバター・名前・メール・自己紹介・ロール・登録日）✨ **Phase 4新規実装・本番対応**
 - `GET /profile/edit` - プロフィール編集（名前・自己紹介・リアルタイム文字カウント）✨ **Phase 4新規実装・本番対応**
 - `GET /profile/password` - パスワード変更（強度チェック・現在パスワード確認）✨ **Phase 4新規実装・本番対応**
+- `GET /timeline` - タイムラインページ（フォローユーザー投稿・無限スクロール・リアルタイム更新）✅ **Phase 6.1実装完了・本番対応**
+- `GET /users` - ユーザー一覧ページ（フォロー状況・プロフィール・フォローボタン）✅ **Phase 6.1実装完了・本番対応**
 - `GET /members-only` - callbackURL機能確認（AuthGuardImproved使用・自動リダイレクト）
 - `GET /admin/security` - セキュリティ管理ダッシュボード（IP/ユーザー制限統計・レート制限監視・ブロック解除・リアルタイム攻撃状況）✨ **Phase 5実装・2025/08/13アクセス問題解決済み**
 - `GET /auth/verified` - メール認証完了画面・ログイン画面へ誘導
@@ -699,12 +715,14 @@ npm run test         # テスト実行
 ## テスト・品質保証・監視
 
 Jest・Playwright・Sentry・Web Vitals監視基盤完備。詳細は `docs/test-quality-strategy.md` 参照。
+
 ```
 
 ## 参考ドキュメント
 
 ### 主要実装ガイド
 
+- **[Phase 6.1: タイムライン機能](./README-phase-6.1-timeline.md)** - フォロー・タイムライン・ナビゲーション完全ガイド ✨ **最新実装**
 - **[Phase 6.0: SNS機能 MongoDB拡張スキーマ](./README-phase-6-sns-schema.md)** - DryRunテスト完了
 - **[Phase 5: セキュリティ強化](./README-phase-5-security.md)** - エンタープライズ級セキュリティ完全ガイド
 - **[会員制掲示板CRUD機能](./README-board-crud.md)** - タイトル付き投稿・権限管理
@@ -726,3 +744,4 @@ Jest・Playwright・Sentry・Web Vitals監視基盤完備。詳細は `docs/test
 - **[ブランチ戦略](./docs/member-branch-strategy.md)** - Git Flow・Phase別統合
 - **[テスト・品質保証](./docs/test-quality-strategy.md)** - Jest・Playwright・監視
 - **[API仕様](./docs/api-specs.md)** - エンドポイント・データ形式
+```
