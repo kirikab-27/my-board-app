@@ -4,7 +4,6 @@ import { authOptions } from '@/lib/auth/nextauth';
 import mongoose from 'mongoose';
 import Follow from '@/models/Follow';
 import Post from '@/models/Post';
-import User from '@/models/User';
 import * as Sentry from '@sentry/nextjs';
 
 // タイムライン取得API

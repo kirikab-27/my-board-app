@@ -159,7 +159,7 @@ interface PullToRefreshIndicatorProps {
 
 export function PullToRefreshIndicator({
   pullDistance,
-  threshold,
+  threshold: _threshold,
   isRefreshing,
   pullProgress
 }: PullToRefreshIndicatorProps) {

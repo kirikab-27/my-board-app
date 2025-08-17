@@ -478,7 +478,7 @@ AnalyticsSchema.pre<IAnalytics>('save', async function (next) {
       try {
         const urlObj = new URL(this.url);
         this.path = urlObj.pathname;
-      } catch (error) {
+      } catch (_error) {
         this.path = '/';
       }
     }

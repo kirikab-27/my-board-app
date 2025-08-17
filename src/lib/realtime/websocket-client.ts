@@ -120,7 +120,7 @@ export class WebSocketClient extends EventEmitter {
   }
 
   // 接続ハンドラ
-  private handleOpen(event: Event): void {
+  private handleOpen(_event: Event): void {
     this.isConnecting = false;
     this.reconnectAttempts = 0;
     this.clearReconnectTimer();

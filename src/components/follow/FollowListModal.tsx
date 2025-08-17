@@ -117,7 +117,7 @@ export default function FollowListModal({
       setError('');
       setPage(1);
     }
-  }, [open, userId, type]);
+  }, [open, userId, type, fetchUsers]);
 
   // 日付フォーマット
   const formatDate = (dateString: string) => {
@@ -248,7 +248,7 @@ export default function FollowListModal({
                           targetUserName={user.name}
                           size="small"
                           variant="outlined"
-                          onFollowChange={(isFollowing, isPending) =>
+                          onFollowChange={(isFollowing) =>
                             handleFollowChange(user.id, isFollowing)
                           }
                         />

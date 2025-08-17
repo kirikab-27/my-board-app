@@ -32,6 +32,7 @@ interface User {
 
 export default function UsersPage() {
   const { data: session } = useSession();
+  // session is used for authentication context
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -92,16 +93,16 @@ export default function UsersPage() {
     }
   };
 
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case 'admin':
-        return 'error';
-      case 'moderator':
-        return 'warning';
-      default:
-        return 'primary';
-    }
-  };
+  // const getRoleColor = (role: string) => {
+  //   switch (role) {
+  //     case 'admin':
+  //       return 'error';
+  //     case 'moderator':
+  //       return 'warning';
+  //     default:
+  //       return 'primary';
+  //   }
+  // };
 
   return (
     <>

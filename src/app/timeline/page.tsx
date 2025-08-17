@@ -87,6 +87,7 @@ interface UpdatesResponse {
 
 export default function TimelinePage() {
   const { data: session, status } = useSession();
+  // session is used for user context (optional for commented code)
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -253,17 +254,17 @@ export default function TimelinePage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // 相対時間フォーマット
-  const formatRelativeTime = (dateString: string) => {
-    try {
-      return formatDistanceToNow(new Date(dateString), {
-        addSuffix: true,
-        locale: ja
-      });
-    } catch {
-      return '時刻不明';
-    }
-  };
+  // 相対時間フォーマット (未使用 - 将来の機能用)
+  // const formatRelativeTime = (dateString: string) => {
+  //   try {
+  //     return formatDistanceToNow(new Date(dateString), {
+  //       addSuffix: true,
+  //       locale: ja
+  //     });
+  //   } catch {
+  //     return '時刻不明';
+  //   }
+  // };
 
   // 認証中の場合
   if (authLoading || status === 'loading') {
