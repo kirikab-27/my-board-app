@@ -63,7 +63,7 @@ export default function FollowStats({
     if (userId) {
       fetchStats();
     }
-  }, [userId]);
+  }, [userId, fetchStats]);
 
   // ローディング表示
   if (loading) {

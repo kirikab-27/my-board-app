@@ -7,18 +7,14 @@ import {
   ListItem,
   ListItemAvatar,
   ListItemText,
-  Avatar,
   Typography,
-  Button,
   Pagination,
   Skeleton,
   Paper,
   Divider,
-  Chip,
   useTheme,
   useMediaQuery
 } from '@mui/material';
-import { PersonAdd, Schedule } from '@mui/icons-material';
 import FollowButton from './FollowButton';
 import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
 
@@ -94,7 +90,7 @@ export default function FollowList({
   };
 
   // フォロー状態変更ハンドラ
-  const handleFollowChange = (targetUserId: string, isFollowing: boolean) => {
+  const handleFollowChange = () => {
     // リストを再取得して最新状態を反映
     fetchFollowList(page);
   };
@@ -104,7 +100,7 @@ export default function FollowList({
       fetchFollowList(1);
       setPage(1);
     }
-  }, [userId, type]);
+  }, [userId, type, fetchFollowList]);
 
   // ローディング表示
   if (loading) {
@@ -225,7 +221,7 @@ export default function FollowList({
                       targetUserName={user.name}
                       size={isMobile ? 'small' : 'medium'}
                       variant="outlined"
-                      onFollowChange={(isFollowing) => handleFollowChange(user.id, isFollowing)}
+                      onFollowChange={() => handleFollowChange()}
                     />
                   </Box>
                 </ListItem>
