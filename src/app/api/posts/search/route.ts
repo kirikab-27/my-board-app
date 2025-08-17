@@ -66,7 +66,18 @@ export async function GET(request: NextRequest) {
     // MongoDB のテキスト検索を使用
     // 部分一致検索のため正規表現を使用
     const searchRegex = new RegExp(query.trim(), 'i'); // 大文字小文字を区別しない
-    const searchFilter = { content: { $regex: searchRegex } };
+    const searchFilter: Record<string, unknown> = { content: { $regex: searchRegex } };
+
+    // 管理者投稿は管理者以外から非表示
+    // セッション情報を取得してユーザーロールをチェック
+    const { getServerSession } = await import('next-auth');
+    const { authOptions } = await import('@/lib/auth/nextauth');
+    const session = await getServerSession(authOptions);
+    
+    const userRole = session?.user ? (session.user as { role?: string }).role : null;
+    if (userRole !== 'admin') {
+      searchFilter.authorRole = { $ne: 'admin' };
+    }
 
     // ページネーション計算
     const skip = (page - 1) * limit;
