@@ -461,9 +461,9 @@ MediaSchema.pre('save', async function (next) {
     }
     
     // 日別統計は直近30日分のみ保持
-    if (this.stats.dailyViews.length > 30) {
-      this.stats.dailyViews = this.stats.dailyViews
-        .sort((a, b) => b.date.getTime() - a.date.getTime())
+    if ((this.stats as any).dailyViews.length > 30) {
+      (this.stats as any).dailyViews = (this.stats as any).dailyViews
+        .sort((a: any, b: any) => b.date.getTime() - a.date.getTime())
         .slice(0, 30);
     }
     
@@ -486,7 +486,6 @@ MediaSchema.methods.generateThumbnail = async function (): Promise<string> {
   
   // Cloudinaryの変換URLを生成
   const baseUrl = this.cloudinary.secureUrl;
-  const publicId = this.cloudinary.publicId;
   
   let thumbnailUrl = '';
   

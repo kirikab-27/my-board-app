@@ -226,7 +226,7 @@ const HashtagSchema: Schema = new Schema({
   eventEndDate: {
     type: Date,
     validate: {
-      validator: function(v: Date) {
+      validator: function(this: any, v: Date) {
         return !v || !this.eventStartDate || v >= this.eventStartDate;
       },
       message: 'イベント終了日は開始日より後である必要があります'
@@ -264,16 +264,16 @@ HashtagSchema.pre('save', async function (next) {
     }
     
     // 日別統計は直近30日分のみ保持
-    if (this.stats.dailyStats.length > 30) {
-      this.stats.dailyStats = this.stats.dailyStats
-        .sort((a, b) => b.date.getTime() - a.date.getTime())
+    if (this.stats && typeof this.stats === 'object' && 'dailyStats' in this.stats && Array.isArray((this.stats as any).dailyStats) && (this.stats as any).dailyStats.length > 30) {
+      (this.stats as any).dailyStats = (this.stats as any).dailyStats
+        .sort((a: any, b: any) => b.date.getTime() - a.date.getTime())
         .slice(0, 30);
     }
     
     // トレンドスコアを自動計算
-    if (this.isModified('stats')) {
-      this.stats.trendScore = await this.calculateTrendScore();
-      this.isTrending = this.stats.trendScore > 70;
+    if (this.isModified('stats') && this.stats) {
+      (this.stats as any).trendScore = await (this as any).calculateTrendScore();
+      this.isTrending = (this.stats as any).trendScore > 70;
     }
     
     next();
@@ -300,6 +300,9 @@ HashtagSchema.methods.updateStats = async function (): Promise<void> {
         hashtags: this.name,
         isDeleted: { $ne: true }
       });
+      
+      // まずはPostのユニークユーザー数を設定
+      this.stats.uniqueUsers = uniquePostUsers.length;
       
       // 最後の使用日時
       const lastPost = await Post.findOne({
@@ -337,8 +340,14 @@ HashtagSchema.methods.updateStats = async function (): Promise<void> {
         isDeleted: { $ne: true }
       });
       
+      // Postのユニークユーザーとコメントのユニークユーザーをマージ
+      const existingPostUsers = await Post.distinct('userId', {
+        hashtags: this.name,
+        isDeleted: { $ne: true }
+      });
+      
       const allUniqueUsers = new Set([
-        ...uniquePostUsers || [],
+        ...(existingPostUsers || []),
         ...uniqueCommentUsers
       ]);
       this.stats.uniqueUsers = allUniqueUsers.size;
@@ -386,9 +395,9 @@ HashtagSchema.methods.calculateTrendScore = async function (): Promise<number> {
     let score = 0;
     
     // 1. 直近24時間の活動度（40点満点）
-    const recentActivity = this.stats.dailyStats
-      .filter(stat => stat.date >= oneDayAgo)
-      .reduce((sum, stat) => sum + stat.postCount + stat.commentCount, 0);
+    const recentActivity = (this.stats as any).dailyStats
+      .filter((stat: any) => stat.date >= oneDayAgo)
+      .reduce((sum: number, stat: any) => sum + stat.postCount + stat.commentCount, 0);
     score += Math.min(recentActivity * 2, 40);
     
     // 2. 週間成長率（30点満点）
@@ -431,7 +440,7 @@ HashtagSchema.methods.addRelatedTag = async function (tagName: string, correlati
   
   // 関連タグは最大10個まで、相関度が高い順に保持
   this.relatedTags = this.relatedTags
-    .sort((a, b) => b.correlation - a.correlation)
+    .sort((a: any, b: any) => b.correlation - a.correlation)
     .slice(0, 10);
   
   await this.save();

@@ -319,7 +319,7 @@ NotificationSchema.pre('save', async function (next) {
   try {
     // メッセージの自動生成
     if (!this.message || this.isModified('type') || this.isModified('fromUserName')) {
-      this.message = this.generateMessage();
+      this.message = (this as any).generateMessage();
     }
     
     // 配信日時の設定

@@ -467,18 +467,20 @@ AnalyticsSchema.pre('save', function (next) {
 AnalyticsSchema.pre('save', async function (next) {
   try {
     // セッション継続時間の計算
-    if (this.sessionInfo.sessionStart && !this.sessionInfo.sessionDuration) {
-      this.sessionInfo.sessionDuration = Math.floor(
-        (this.timestamp.getTime() - this.sessionInfo.sessionStart.getTime()) / 1000
+    if (this.sessionInfo && typeof this.sessionInfo === 'object' && 
+        'sessionStart' in this.sessionInfo && (this.sessionInfo as any).sessionStart && 
+        !('sessionDuration' in this.sessionInfo && (this.sessionInfo as any).sessionDuration)) {
+      (this.sessionInfo as any).sessionDuration = Math.floor(
+        ((this as any).timestamp.getTime() - (this.sessionInfo as any).sessionStart.getTime()) / 1000
       );
     }
     
     // URLからパスを抽出（パスが設定されていない場合）
-    if (!this.path && this.url) {
+    if (!this.path && this.url && typeof this.url === 'string') {
       try {
         const urlObj = new URL(this.url);
         this.path = urlObj.pathname;
-      } catch (error) {
+      } catch {
         this.path = '/';
       }
     }

@@ -706,7 +706,7 @@ export async function analyzeIndexSizes(): Promise<any[]> {
   for (const collectionName of collections) {
     try {
       const collection = mongoose.connection.collection(collectionName);
-      const collStats = await collection.stats();
+      const collStats = await (collection as any).stats();
       
       analysis.push({
         collection: collectionName,

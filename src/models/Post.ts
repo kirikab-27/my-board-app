@@ -361,12 +361,12 @@ PostSchema.pre('save', async function (next) {
   try {
     // ハッシュタグとメンションを自動抽出
     if (this.isModified('content')) {
-      this.hashtags = this.extractHashtags();
-      this.mentions = this.extractMentions();
+      this.hashtags = (this as any).extractHashtags();
+      this.mentions = (this as any).extractMentions();
     }
     
     // 統計情報を既存フィールドと同期
-    this.likes = this.stats.likes;
+    this.likes = (this.stats as any).likes;
     
     // 編集フラグの設定
     if (this.isModified('content') && !this.isNew) {
