@@ -5,7 +5,6 @@ import {
   Box, 
   Typography, 
   Paper, 
-  Grid, 
   Chip, 
   Skeleton,
   useTheme,
@@ -76,16 +75,14 @@ export default function FollowStats({
           backgroundColor: compact ? 'transparent' : 'background.paper'
         }}
       >
-        <Grid container spacing={compact ? 1 : 2}>
+        <Box display="flex" gap={compact ? 1 : 2}>
           {[...Array(3)].map((_, index) => (
-            <Grid item xs={4} key={index}>
-              <Box textAlign="center">
-                <Skeleton variant="text" width={40} height={24} sx={{ mx: 'auto' }} />
-                <Skeleton variant="text" width={60} height={20} sx={{ mx: 'auto', mt: 0.5 }} />
-              </Box>
-            </Grid>
+            <Box flex={1} textAlign="center" key={index}>
+              <Skeleton variant="text" width={40} height={24} sx={{ mx: 'auto' }} />
+              <Skeleton variant="text" width={60} height={20} sx={{ mx: 'auto', mt: 0.5 }} />
+            </Box>
           ))}
-        </Grid>
+        </Box>
       </Paper>
     );
   }
@@ -136,9 +133,9 @@ export default function FollowStats({
       }}
     >
       {/* 基本統計 */}
-      <Grid container spacing={compact ? 1 : 2}>
+      <Box display="flex" gap={compact ? 1 : 2}>
         {statItems.map((item, index) => (
-          <Grid item xs={4} key={index}>
+          <Box flex={1} key={index}>
             <Box 
               textAlign="center"
               sx={{
@@ -174,9 +171,9 @@ export default function FollowStats({
                 {item.label}
               </Typography>
             </Box>
-          </Grid>
+          </Box>
         ))}
-      </Grid>
+      </Box>
 
       {/* 関係性情報 */}
       {showRelationship && stats.relationship && !compact && (

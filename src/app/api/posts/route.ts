@@ -65,6 +65,17 @@ export async function GET(request: NextRequest) {
       };
     }
     
+    // 管理者投稿は管理者以外から非表示
+    // セッション情報を取得してユーザーロールをチェック
+    const { getServerSession } = await import('next-auth');
+    const { authOptions } = await import('@/lib/auth/nextauth');
+    const session = await getServerSession(authOptions);
+    
+    const userRole = session?.user ? (session.user as any).role : null;
+    if (userRole !== 'admin') {
+      searchFilter.authorRole = { $ne: 'admin' };
+    }
+    
     // ページネーション計算
     const skip = (page - 1) * limit;
     
@@ -176,6 +187,7 @@ export async function POST(request: NextRequest) {
       content: sanitizedContent,
       userId: user.id,
       authorName: user.name || '匿名ユーザー',
+      authorRole: (user as any).role || 'user', // ユーザーの役割を設定
       isPublic: Boolean(isPublic)
     };
 

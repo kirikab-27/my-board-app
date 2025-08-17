@@ -20,7 +20,7 @@ import {
 } from '@mui/material';
 import { PersonAdd, Schedule } from '@mui/icons-material';
 import FollowButton from './FollowButton';
-import ProfileAvatar from '@/components/profile/ProfileAvatar';
+import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
 
 interface FollowListProps {
   userId: string;
@@ -190,7 +190,6 @@ export default function FollowList({
                   <ListItemAvatar>
                     <ProfileAvatar 
                       name={user.name} 
-                      src={user.avatar}
                       size="medium"
                     />
                   </ListItemAvatar>
