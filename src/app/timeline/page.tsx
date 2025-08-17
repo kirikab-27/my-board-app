@@ -389,7 +389,7 @@ function PostCard({ post }: { post: TimelinePost }) {
   const { data: session } = useSession();
 
   const handlePostClick = () => {
-    router.push(`/board/${post._id}`);
+    router.push(`/board/${post._id}?from=timeline`);
   };
 
   const handleFollowChange = (isFollowing: boolean) => {
@@ -509,7 +509,7 @@ function PostCard({ post }: { post: TimelinePost }) {
             }}
             onClick={(e) => {
               e.stopPropagation();
-              router.push(`/board/${post._id}`);
+              router.push(`/board/${post._id}?from=timeline`);
             }}
           >
             続きを読む →

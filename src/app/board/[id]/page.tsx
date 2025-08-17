@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import {
@@ -50,16 +50,44 @@ export default function PostDetailPage() {
   const [liking, setLiking] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [backUrl, setBackUrl] = useState('/board');
 
   const postId = params?.id as string;
+  const isInitialMount = useRef(true);
 
   useEffect(() => {
     if (postId) {
       fetchPost();
     }
+    // 初回マウント時に参照元を判断
+    if (isInitialMount.current) {
+      determineBackUrl();
+      isInitialMount.current = false;
+    }
     // fetchPost is recreated on every render, so we don't include it in deps
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [postId]);
+
+  const determineBackUrl = () => {
+    // document.referrerから参照元を判断
+    const referrer = document.referrer;
+
+    if (referrer.includes('/timeline')) {
+      setBackUrl('/timeline');
+    } else if (referrer.includes('/board')) {
+      setBackUrl('/board');
+    } else {
+      // URLパラメータから判断（オプション）
+      const urlParams = new URLSearchParams(window.location.search);
+      const from = urlParams.get('from');
+
+      if (from === 'timeline') {
+        setBackUrl('/timeline');
+      } else {
+        setBackUrl('/board');
+      }
+    }
+  };
 
   const fetchPost = async () => {
     try {
@@ -123,8 +151,8 @@ export default function PostDetailPage() {
         throw new Error(data.error || '投稿の削除に失敗しました');
       }
 
-      // 削除成功後、掲示板一覧にリダイレクト
-      router.push('/board');
+      // 削除成功後、参照元に応じてリダイレクト
+      router.push(backUrl);
     } catch (err) {
       setError(err instanceof Error ? err.message : '投稿の削除に失敗しました');
     } finally {
@@ -184,8 +212,8 @@ export default function PostDetailPage() {
           <Alert severity="error">
             {error || '投稿が見つかりません'}
             <br />
-            <Button component={Link} href="/board" sx={{ mt: 2 }}>
-              掲示板一覧に戻る
+            <Button component={Link} href={backUrl} sx={{ mt: 2 }}>
+              {backUrl === '/timeline' ? 'タイムラインに戻る' : '掲示板一覧に戻る'}
             </Button>
           </Alert>
         </Container>
@@ -197,7 +225,7 @@ export default function PostDetailPage() {
     <>
       <AppBar position="static">
         <Toolbar>
-          <IconButton component={Link} href="/board" edge="start" color="inherit" sx={{ mr: 2 }}>
+          <IconButton component={Link} href={backUrl} edge="start" color="inherit" sx={{ mr: 2 }}>
             <ArrowBackIcon />
           </IconButton>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
