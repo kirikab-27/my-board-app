@@ -19,7 +19,7 @@ import {
   Paper,
   Divider,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
 } from '@mui/material';
 import {
   Refresh as RefreshIcon,
@@ -28,7 +28,7 @@ import {
   Share,
   MoreVert,
   ArrowUpward,
-  Edit as CreateIcon
+  Edit as CreateIcon,
 } from '@mui/icons-material';
 import { formatDistanceToNow } from 'date-fns';
 import { ja } from 'date-fns/locale';
@@ -91,10 +91,10 @@ export default function TimelinePage() {
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  
+
   // 認証チェック
   const { isLoading: authLoading } = useRequireAuth({
-    redirectTo: '/login?callbackUrl=' + encodeURIComponent('/timeline')
+    redirectTo: '/login?callbackUrl=' + encodeURIComponent('/timeline'),
   });
 
   // 状態管理
@@ -106,77 +106,75 @@ export default function TimelinePage() {
   const [hasNextPage, setHasNextPage] = useState(false);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [metadata, setMetadata] = useState<TimelineResponse['metadata'] | null>(null);
-  
+
   // リアルタイム更新関連
   const [newPostsCount, setNewPostsCount] = useState(0);
   const [showNewPostsBanner, setShowNewPostsBanner] = useState(false);
   const [lastFetchTime, setLastFetchTime] = useState<string>(new Date().toISOString());
-  
+
   // スクロール関連
   const [showScrollTop, setShowScrollTop] = useState(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
   // タイムライン取得関数
-  const fetchTimeline = useCallback(async (
-    page = 1, 
-    cursor: string | null = null, 
-    append = false
-  ) => {
-    try {
-      if (!append) {
-        setLoading(true);
-        setError(null);
-      } else {
-        setLoadingMore(true);
+  const fetchTimeline = useCallback(
+    async (page = 1, cursor: string | null = null, append = false) => {
+      try {
+        if (!append) {
+          setLoading(true);
+          setError(null);
+        } else {
+          setLoadingMore(true);
+        }
+
+        const params = new URLSearchParams();
+        if (page > 1) params.append('page', page.toString());
+        if (cursor) params.append('cursor', cursor);
+        params.append('limit', '20');
+
+        const response = await fetch(`/api/timeline?${params}`);
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'タイムラインの取得に失敗しました');
+        }
+
+        const data: TimelineResponse = await response.json();
+
+        if (append) {
+          setPosts((prev) => [...prev, ...data.posts]);
+        } else {
+          setPosts(data.posts);
+          setLastFetchTime(new Date().toISOString());
+        }
+
+        setHasNextPage(data.pagination.hasNextPage);
+        setNextCursor(data.pagination.nextCursor);
+        setMetadata(data.metadata);
+      } catch (err) {
+        console.error('タイムライン取得エラー:', err);
+        setError(err instanceof Error ? err.message : 'エラーが発生しました');
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+        setRefreshing(false);
       }
-
-      const params = new URLSearchParams();
-      if (page > 1) params.append('page', page.toString());
-      if (cursor) params.append('cursor', cursor);
-      params.append('limit', '20');
-
-      const response = await fetch(`/api/timeline?${params}`);
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'タイムラインの取得に失敗しました');
-      }
-
-      const data: TimelineResponse = await response.json();
-      
-      if (append) {
-        setPosts(prev => [...prev, ...data.posts]);
-      } else {
-        setPosts(data.posts);
-        setLastFetchTime(new Date().toISOString());
-      }
-      
-      setHasNextPage(data.pagination.hasNextPage);
-      setNextCursor(data.pagination.nextCursor);
-      setMetadata(data.metadata);
-
-    } catch (err) {
-      console.error('タイムライン取得エラー:', err);
-      setError(err instanceof Error ? err.message : 'エラーが発生しました');
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-      setRefreshing(false);
-    }
-  }, []);
+    },
+    []
+  );
 
   // 新着チェック関数
   const checkForUpdates = useCallback(async () => {
     try {
       const params = new URLSearchParams();
       params.append('since', lastFetchTime);
-      
+
       const response = await fetch(`/api/timeline/updates?${params}`);
-      
+
       if (response.ok) {
         const data: UpdatesResponse = await response.json();
-        
+
         if (data.hasNewPosts && data.newPostsCount > 0) {
           setNewPostsCount(data.newPostsCount);
           setShowNewPostsBanner(true);
@@ -279,8 +277,8 @@ export default function TimelinePage() {
   if (error) {
     return (
       <Container maxWidth="md" sx={{ py: 3 }}>
-        <Alert 
-          severity="error" 
+        <Alert
+          severity="error"
           action={
             <Button color="inherit" size="small" onClick={() => fetchTimeline()}>
               再試行
@@ -300,30 +298,22 @@ export default function TimelinePage() {
         <Typography variant="h4" component="h1" fontWeight="bold">
           タイムライン
         </Typography>
-        
+
         <Box display="flex" gap={1}>
-          <IconButton 
-            onClick={handleRefresh} 
-            disabled={refreshing}
-            color="primary"
-          >
+          <IconButton onClick={handleRefresh} disabled={refreshing} color="primary">
             <RefreshIcon />
           </IconButton>
-          
+
           {metadata && (
-            <Chip 
-              label={`${metadata.followingCount} フォロー中`} 
-              size="small" 
-              variant="outlined"
-            />
+            <Chip label={`${metadata.followingCount} フォロー中`} size="small" variant="outlined" />
           )}
         </Box>
       </Box>
 
       {/* 新着投稿通知バナー */}
       {showNewPostsBanner && (
-        <Alert 
-          severity="info" 
+        <Alert
+          severity="info"
           sx={{ mb: 2, cursor: 'pointer' }}
           onClick={loadNewPosts}
           action={
@@ -346,7 +336,7 @@ export default function TimelinePage() {
           {posts.map((post) => (
             <PostCard key={post._id} post={post} />
           ))}
-          
+
           {/* 無限スクロール用のトリガー */}
           <div ref={loadMoreRef} style={{ height: '20px' }}>
             {loadingMore && (
@@ -363,10 +353,10 @@ export default function TimelinePage() {
       {/* フローティングアクションボタン */}
       <Fab
         color="primary"
-        sx={{ 
-          position: 'fixed', 
-          bottom: isMobile ? 80 : 16, 
-          right: 16 
+        sx={{
+          position: 'fixed',
+          bottom: isMobile ? 80 : 16,
+          right: 16,
         }}
         onClick={() => router.push('/board/create')}
       >
@@ -378,10 +368,10 @@ export default function TimelinePage() {
         <Fab
           size="small"
           color="secondary"
-          sx={{ 
-            position: 'fixed', 
-            bottom: isMobile ? 140 : 76, 
-            right: 16 
+          sx={{
+            position: 'fixed',
+            bottom: isMobile ? 140 : 76,
+            right: 16,
           }}
           onClick={scrollToTop}
         >
@@ -405,20 +395,20 @@ function PostCard({ post }: { post: TimelinePost }) {
   const handleFollowChange = (isFollowing: boolean) => {
     // タイムライン投稿のフォロー状態を更新
     // 実際のアプリケーションではparent componentに通知する必要がある
-    console.log(`フォロー状態変更: ${post.author?.name || '不明なユーザー'} - ${isFollowing ? 'フォロー' : 'アンフォロー'}`);
+    console.log(
+      `フォロー状態変更: ${post.author?.name || '不明なユーザー'} - ${isFollowing ? 'フォロー' : 'アンフォロー'}`
+    );
   };
 
   // 自分の投稿かどうかチェック
   const isOwnPost = session?.user?.id === post.userId;
-  
+
   // 投稿者情報の安全チェック
   if (!post.author) {
     return (
       <Card sx={{ mb: 2 }}>
         <CardContent>
-          <Alert severity="error">
-            投稿者情報が見つかりません
-          </Alert>
+          <Alert severity="error">投稿者情報が見つかりません</Alert>
         </CardContent>
       </Card>
     );
@@ -429,39 +419,31 @@ function PostCard({ post }: { post: TimelinePost }) {
       <CardContent>
         {/* 投稿者情報 */}
         <Box display="flex" alignItems="center" mb={2}>
-          <Avatar
-            src={post.author?.avatar}
-            sx={{ width: 48, height: 48, mr: 2 }}
-          >
+          <Avatar src={post.author?.avatar} sx={{ width: 48, height: 48, mr: 2 }}>
             {post.author?.name?.[0] || '?'}
           </Avatar>
-          
+
           <Box flex={1}>
             <Box display="flex" alignItems="center" gap={1}>
               <Typography variant="subtitle1" fontWeight="bold">
                 {post.author?.name || '不明なユーザー'}
               </Typography>
-              {post.author?.isVerified && (
-                <Chip label="認証済み" size="small" color="primary" />
-              )}
-              {post.isFollowing && (
-                <Chip label="フォロー中" size="small" variant="outlined" />
-              )}
+              {post.author?.isVerified && <Chip label="認証済み" size="small" color="primary" />}
+              {post.isFollowing && <Chip label="フォロー中" size="small" variant="outlined" />}
             </Box>
             <Typography variant="body2" color="text.secondary">
               {formatDistanceToNow(new Date(post.createdAt), {
                 addSuffix: true,
-                locale: ja
+                locale: ja,
               })}
             </Typography>
           </Box>
-          
+
           <Box display="flex" alignItems="center" gap={1}>
             {!isOwnPost && post.author && (
               <FollowButton
                 targetUserId={post.userId}
                 targetUserName={post.author.name}
-                initialIsFollowing={post.isFollowing}
                 size="small"
                 variant="text"
                 onFollowChange={handleFollowChange}
@@ -497,7 +479,7 @@ function PostCard({ post }: { post: TimelinePost }) {
                     style={{
                       maxWidth: '100%',
                       height: 'auto',
-                      borderRadius: theme.shape.borderRadius
+                      borderRadius: theme.shape.borderRadius,
                     }}
                     loading="lazy"
                   />
@@ -509,7 +491,7 @@ function PostCard({ post }: { post: TimelinePost }) {
                     style={{
                       maxWidth: '100%',
                       height: 'auto',
-                      borderRadius: theme.shape.borderRadius
+                      borderRadius: theme.shape.borderRadius,
                     }}
                   />
                 )}
@@ -529,11 +511,11 @@ function PostCard({ post }: { post: TimelinePost }) {
               </IconButton>
               <Typography variant="body2">{post.likes}</Typography>
             </Box>
-            
+
             <IconButton size="small">
               <ChatBubbleOutline />
             </IconButton>
-            
+
             <IconButton size="small">
               <Share />
             </IconButton>
