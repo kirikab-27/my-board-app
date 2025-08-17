@@ -47,6 +47,7 @@ export interface IPost extends Document {
   // 作成者情報
   userId?: string; // 投稿者のユーザーID（認証ユーザーの場合）
   authorName?: string; // 投稿者名（表示用・匿名対応）
+  authorRole?: string; // 投稿者の役割（'user' | 'moderator' | 'admin'）
   
   // SNS機能
   hashtags: string[]; // ハッシュタグ（#なし）
@@ -133,6 +134,12 @@ const PostSchema: Schema = new Schema({
     required: false,
     maxlength: [100, '作者名は100文字以内で入力してください'],
     trim: true
+  },
+  authorRole: {
+    type: String,
+    enum: ['user', 'moderator', 'admin'],
+    default: 'user',
+    required: false
   },
   
   // SNS機能
@@ -512,6 +519,7 @@ PostSchema.index({ hashtags: 1 }); // ハッシュタグ検索
 PostSchema.index({ 'mentions.userId': 1 }); // メンション検索
 PostSchema.index({ 'stats.likes': -1 }); // 人気投稿
 PostSchema.index({ type: 1, createdAt: -1 }); // 投稿タイプ別
+PostSchema.index({ authorRole: 1, createdAt: -1 }); // 投稿者役割別
 
 // 複合インデックス
 PostSchema.index({ privacy: 1, createdAt: -1 }); // プライバシー設定別

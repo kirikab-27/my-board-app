@@ -57,12 +57,23 @@ export async function GET(request: NextRequest) {
     sortOptions[sortBy] = sortOrder === 'desc' ? -1 : 1;
     
     // 検索条件の構築
-    const searchFilter: any = {};
+    const searchFilter: Record<string, unknown> = {};
     if (sanitizedSearch) {
       searchFilter.content = { 
         $regex: sanitizedSearch, 
         $options: 'i' 
       };
+    }
+    
+    // 管理者投稿は管理者以外から非表示
+    // セッション情報を取得してユーザーロールをチェック
+    const { getServerSession } = await import('next-auth');
+    const { authOptions } = await import('@/lib/auth/nextauth');
+    const session = await getServerSession(authOptions);
+    
+    const userRole = session?.user ? (session.user as { role?: string }).role : null;
+    if (userRole !== 'admin') {
+      searchFilter.authorRole = { $ne: 'admin' };
     }
     
     // ページネーション計算
@@ -172,10 +183,11 @@ export async function POST(request: NextRequest) {
     }
 
     // 認証ユーザー情報付きで投稿作成（サニタイズ済みデータ使用）
-    const postData: any = { 
+    const postData: Record<string, unknown> = { 
       content: sanitizedContent,
       userId: user.id,
       authorName: user.name || '匿名ユーザー',
+      authorRole: (user as { role?: string }).role || 'user', // ユーザーの役割を設定
       isPublic: Boolean(isPublic)
     };
 
