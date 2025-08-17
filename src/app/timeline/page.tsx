@@ -415,11 +415,21 @@ function PostCard({ post }: { post: TimelinePost }) {
   }
 
   return (
-    <Card sx={{ mb: 2, cursor: 'pointer' }} onClick={handlePostClick}>
-      <CardContent>
+    <Card
+      sx={{
+        mb: 2,
+        cursor: 'pointer',
+        transition: 'box-shadow 0.2s',
+        '&:hover': {
+          boxShadow: 3,
+        },
+      }}
+      onClick={handlePostClick}
+    >
+      <CardContent sx={{ pb: 1, '&:last-child': { pb: 1.5 } }}>
         {/* 投稿者情報 */}
-        <Box display="flex" alignItems="center" mb={2}>
-          <Avatar src={post.author?.avatar} sx={{ width: 48, height: 48, mr: 2 }}>
+        <Box display="flex" alignItems="center" mb={1.5}>
+          <Avatar src={post.author?.avatar} sx={{ width: 40, height: 40, mr: 1.5 }}>
             {post.author?.name?.[0] || '?'}
           </Avatar>
 
@@ -457,43 +467,135 @@ function PostCard({ post }: { post: TimelinePost }) {
 
         {/* 投稿タイトル */}
         {post.title && (
-          <Typography variant="h6" gutterBottom>
-            {post.title}
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {post.title.length > 50 ? `${post.title.substring(0, 50)}...` : post.title}
           </Typography>
         )}
 
-        {/* 投稿内容 */}
-        <Typography variant="body1" paragraph>
-          {post.content}
+        {/* 投稿内容（一部表示） */}
+        <Typography
+          variant="body1"
+          paragraph
+          sx={{
+            overflow: 'hidden',
+            display: '-webkit-box',
+            WebkitLineClamp: 3, // 3行まで表示
+            WebkitBoxOrient: 'vertical',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word',
+          }}
+        >
+          {post.content.length > 150 ? `${post.content.substring(0, 150)}...` : post.content}
         </Typography>
 
-        {/* メディア表示 */}
+        {/* 続きを読むリンク */}
+        {post.content.length > 150 && (
+          <Typography
+            variant="body2"
+            color="primary"
+            sx={{
+              cursor: 'pointer',
+              '&:hover': { textDecoration: 'underline' },
+              mb: 1,
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/board/${post._id}`);
+            }}
+          >
+            続きを読む →
+          </Typography>
+        )}
+
+        {/* メディア表示（サムネイル） */}
         {post.media && post.media.length > 0 && (
-          <Box mb={2}>
-            {post.media.map((media, index) => (
-              <Box key={index} mb={1}>
+          <Box
+            mb={2}
+            sx={{
+              display: 'flex',
+              gap: 1,
+              overflowX: 'auto',
+              '&::-webkit-scrollbar': {
+                height: '6px',
+              },
+              '&::-webkit-scrollbar-thumb': {
+                backgroundColor: 'rgba(0,0,0,0.2)',
+                borderRadius: '3px',
+              },
+            }}
+          >
+            {post.media.slice(0, 3).map((media, index) => (
+              <Box
+                key={index}
+                sx={{
+                  flexShrink: 0,
+                  position: 'relative',
+                  width: post.media.length === 1 ? '100%' : '200px',
+                  height: post.media.length === 1 ? 'auto' : '150px',
+                  overflow: 'hidden',
+                  borderRadius: 1,
+                  backgroundColor: 'grey.100',
+                }}
+              >
                 {media.type === 'image' ? (
                   <img
                     src={media.thumbnailUrl || media.url}
                     alt={media.alt || '投稿画像'}
                     style={{
-                      maxWidth: '100%',
-                      height: 'auto',
+                      width: '100%',
+                      height: post.media.length === 1 ? 'auto' : '100%',
+                      maxHeight: post.media.length === 1 ? '300px' : '150px',
+                      objectFit: post.media.length === 1 ? 'contain' : 'cover',
                       borderRadius: theme.shape.borderRadius,
                     }}
                     loading="lazy"
                   />
                 ) : (
-                  <video
-                    src={media.url}
-                    poster={media.thumbnailUrl}
-                    controls
-                    style={{
-                      maxWidth: '100%',
-                      height: 'auto',
-                      borderRadius: theme.shape.borderRadius,
+                  <Box
+                    sx={{
+                      width: '100%',
+                      height: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: 'grey.200',
+                      position: 'relative',
                     }}
-                  />
+                  >
+                    <Typography variant="caption" color="text.secondary">
+                      動画
+                    </Typography>
+                  </Box>
+                )}
+                {/* 画像が3枚以上ある場合の表示 */}
+                {index === 2 && post.media.length > 3 && (
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'white',
+                      fontSize: '1.2rem',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    +{post.media.length - 3}
+                  </Box>
                 )}
               </Box>
             ))}
