@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(mkdir:*)",
+      "Bash(ls:*)",
+      "Bash(npm run dev:*)",
+      "Bash(curl:*)",
+      "Bash(npm run test:*)",
+      "Bash(npx playwright install:*)",
+      "Bash(npm test)",
+      "Bash(pkill:*)",
+      "Bash(mongod:*)",
+      "Bash(npx tsc:*)",
+      "Bash(git push:*)",
+      "Bash(git checkout:*)",
+      "Bash(node:*)",
+      "Bash(ping:*)",
+      "Bash(powershell:*)",
+      "Bash(find:*)",
+      "Bash(npm run doc:check:*)",
+      "Bash(nslookup:*)",
+      "WebFetch(domain:help.sakura.ad.jp)",
+      "WebFetch(domain:www.sakura.ad.jp)",
+      "WebFetch(domain:bone.jp)",
+      "WebFetch(domain:hiro-ebis-freehold.com)",
+      "Bash(git add:*)",
+      "Bash(grep:*)",
+      "Bash(git tag:*)",
+      "Bash(npx husky:*)",
+      "Bash(npm run type-check:*)",
+      "Bash(npm run lint)",
+      "Bash(npm run build:*)"
+    ],
+    "deny": []
+  }
+}
