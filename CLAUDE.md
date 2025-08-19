@@ -12,6 +12,7 @@
 - ❌ **部分的な情報のみで判断・実装** → プロジェクト全体の整合性破綻
 - ❌ **環境変数・URL・ドメインの一貫性確認怠り** → 本番環境での致命的エラー
 - ❌ **ルールの表面的遵守（形だけの更新）** → 実質的なドキュメント管理破綻
+- ❌ **🚨 Issue管理フロー無視（最重要）** → **即座実装禁止・Issue更新→ステータス移動→実装開始厳守**
 
 ### ✅ 必須実行事項（例外なし）
 
@@ -19,6 +20,7 @@
 - ✅ **設定変更時**: プロジェクト全体との整合性チェック（grep検索・ファイル横断確認）
 - ✅ **ドキュメント更新時**: 関連セクション・既存情報との一貫性検証
 - ✅ **疑問発生時**: 推測ではなく確実な情報確認・ユーザーへの確認
+- ✅ **🚨 Issue管理フロー厳守（最重要）**: ユーザー要望→Issue更新→ステータス移動→実装開始（例外なし）
 
 **このルールを軽視した場合、プロジェクトの信頼性と継続性に重大な損害を与える。**
 
@@ -726,34 +728,42 @@ npm run test         # テスト実行
 **プロジェクト**: Week3 SNS Development - 5段階カンバンボード管理
 
 ### ステータス管理（確定版）
+
 - **📋 Backlog**: 未着手タスク
-- **🎯 Today**: 本日作業予定  
+- **🎯 Today**: 本日作業予定
 - **🚧 In Progress**: 作業中
 - **👀 Review**: レビュー（ラベルで種別識別）
 - **✅ Done**: 完了
 
 ### ラベル体系
+
 **レビュー種別:**
+
 - `spec-review` 🟡: 仕様確認（実装前）
 - `test-review` 🔵: 動作確認（実装後）
 
 **Issue種別:**
+
 - `feature` 🟢: 新機能実装
 - `bug` 🔴: バグ修正
 - `improvement` 🟠: 既存機能改善
 - `critical` 🔴: 緊急対応
 
-### ワークフロー（確定版）
-**新機能・改善**: Issue作成→Review(spec)→Backlog→Today→In Progress→Review(test)→Done
-**緊急バグ**: Issue作成→In Progress→Review(test)→Done
-**通常バグ**: Issue作成→Review(spec)→Backlog→Today→In Progress→Review(test)→Done
+### ワークフロー（確定版・コミットルール統合）
+
+**新機能・改善**: Issue作成→Review(spec)→Backlog→Today→In Progress→Review(test)→**ユーザー確認→コミット実行**→Done
+**緊急バグ**: Issue作成→In Progress→Review(test)→**ユーザー確認→コミット実行**→Done  
+**通常バグ**: Issue作成→Review(spec)→Backlog→Today→In Progress→Review(test)→**ユーザー確認→コミット実行**→Done
 
 ### ⚠️ 重要ルール（厳守必須）
+
 - **全問題はIssue作成必須**: 発見→即修正禁止
 - **仕様確認なしの実装禁止**: 緊急バグ以外は必須
 - **適切なラベル付与**: 種別・レビュー段階の明確化
+- **🚨 実装ファーストの癖を矯正**: ユーザー要望受領→手を止める→Issue更新→ステータス移動→実装許可→実装開始
+- **💾 コミットタイミング厳守**: ユーザー動作確認完了→コミット実行→Done移動（確認前コミット禁止）
 
-詳細は `README-github-projects-workflow-final.md` 参照。
+詳細は `README-github-projects-workflow-final.md` 、コミットルールは `README-github-projects-commit-workflow.md` 参照。
 
 ## Git ブランチ戦略
 
@@ -769,7 +779,9 @@ Jest・Playwright・Sentry・Web Vitals監視基盤完備。詳細は `docs/test
 
 ### 主要実装ガイド
 
-- **[GitHub Projects ワークフロー確定版](./README-github-projects-workflow-final.md)** - 5段階カラム・ラベル体系・フロー確定版 ✨ **最新確定版**
+- **[🚨 実装規律強化ガイド](./README-implementation-discipline.md)** - 実装ファースト癖矯正・フロー厳守・信頼回復戦略 ⚠️ **最重要・必読**
+- **[💾 GitHub Projects コミットワークフロー](./README-github-projects-commit-workflow.md)** - ユーザー確認後コミット・品質保証フロー ✨ **最新確定版**
+- **[GitHub Projects ワークフロー確定版](./README-github-projects-workflow-final.md)** - 5段階カラム・ラベル体系・フロー確定版
 - **[GitHub Projects 機能追加フロー厳守ガイド](./README-github-projects-strict-workflow.md)** - 仕様確認必須・勝手実装禁止・厳格フロー ⚠️ **重要・厳守必須**
 - **[GitHub Projects自動化システム（改訂版）](./README-github-projects-automation-revised.md)** - 5段階レビューフロー・ユーザー動作確認統合ガイド
 - **[GitHub Projects自動化システム（初版）](./README-github-projects-automation.md)** - CLI統合・自動Issue管理・進捗追跡完全ガイド

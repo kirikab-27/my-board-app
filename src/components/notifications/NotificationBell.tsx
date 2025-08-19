@@ -1,16 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import {
-  Badge,
-  IconButton,
-  Popover,
-  Box,
-  Typography,
-  Button,
-  Divider,
-  alpha,
-} from '@mui/material';
+import { Badge, IconButton, Popover, Box, Typography, Button, Divider, alpha } from '@mui/material';
 import {
   Notifications as NotificationsIcon,
   NotificationsNone as NotificationsNoneIcon,
@@ -67,9 +58,34 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
     return () => clearInterval(interval);
   }, [session?.user?.id]);
 
+  // 通知を既読にする
+  const markNotificationsAsRead = async () => {
+    if (!session?.user?.id || unreadCount === 0) return;
+
+    try {
+      const response = await fetch('/api/notifications', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'mark_viewed', // ポップオーバーで表示された通知を既読に
+        }),
+      });
+
+      if (response.ok) {
+        setUnreadCount(0); // 未読カウントをリセット
+      }
+    } catch (error) {
+      console.error('通知既読エラー:', error);
+    }
+  };
+
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     if (showPopover) {
       setAnchorEl(event.currentTarget);
+      // ポップオーバーを開いた時に未読通知を既読にする
+      markNotificationsAsRead();
     } else {
       // ポップオーバーを表示しない場合は通知ページに遷移
       window.location.href = '/notifications';
@@ -83,7 +99,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
   const handleNotificationClick = (notification: any) => {
     // ポップオーバーを閉じてから遷移
     handleClose();
-    
+
     // 通知のタイプに応じてページ遷移
     setTimeout(() => {
       if (notification.metadata?.postId) {
@@ -131,11 +147,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
             },
           }}
         >
-          {unreadCount > 0 ? (
-            <NotificationsIcon />
-          ) : (
-            <NotificationsNoneIcon />
-          )}
+          {unreadCount > 0 ? <NotificationsIcon /> : <NotificationsNoneIcon />}
         </Badge>
       </IconButton>
 
@@ -162,7 +174,9 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
           }}
         >
           <Box sx={{ p: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+            <Box
+              sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}
+            >
               <Typography variant="h6">
                 通知
                 {unreadCount > 0 && (
@@ -176,13 +190,8 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                   </Typography>
                 )}
               </Typography>
-              
-              <Button
-                component={Link}
-                href="/notifications"
-                size="small"
-                onClick={handleClose}
-              >
+
+              <Button component={Link} href="/notifications" size="small" onClick={handleClose}>
                 すべて見る
               </Button>
             </Box>
@@ -196,6 +205,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
               filterType="unread"
               showControls={false}
               maxHeight={popoverMaxHeight}
+              onUnreadCountChange={(count) => setUnreadCount(count)}
             />
           </Box>
 

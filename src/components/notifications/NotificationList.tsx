@@ -17,14 +17,11 @@ import {
   Select,
   FormControl,
   InputLabel,
-  Divider,
 } from '@mui/material';
 import {
   MarkEmailRead as MarkReadIcon,
   Delete as DeleteIcon,
-  Visibility as ViewIcon,
   Refresh as RefreshIcon,
-  FilterList as FilterIcon,
 } from '@mui/icons-material';
 import { NotificationItem } from './NotificationItem';
 
@@ -49,6 +46,7 @@ interface NotificationListProps {
   filterType?: string;
   showControls?: boolean;
   maxHeight?: number;
+  onUnreadCountChange?: (count: number) => void;
 }
 
 export const NotificationList: React.FC<NotificationListProps> = ({
@@ -56,6 +54,7 @@ export const NotificationList: React.FC<NotificationListProps> = ({
   filterType = 'all',
   showControls = true,
   maxHeight = 600,
+  onUnreadCountChange,
 }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
@@ -98,13 +97,18 @@ export const NotificationList: React.FC<NotificationListProps> = ({
       setPagination(data.pagination);
       setUnreadCount(data.unreadCount);
       setError(null);
+
+      // 親コンポーネントに未読数の変更を通知
+      if (onUnreadCountChange) {
+        onUnreadCountChange(data.unreadCount);
+      }
     } catch (error) {
       console.error('通知取得エラー:', error);
       setError(error instanceof Error ? error.message : '通知の取得に失敗しました');
     } finally {
       setLoading(false);
     }
-  }, [page, filter, typeFilter]);
+  }, [page, filter, typeFilter, onUnreadCountChange]);
 
   useEffect(() => {
     fetchNotifications();
@@ -131,12 +135,16 @@ export const NotificationList: React.FC<NotificationListProps> = ({
       });
 
       if (response.ok) {
-        setNotifications(prev =>
-          prev.map(n =>
-            n._id === notificationId ? { ...n, isRead: true } : n
-          )
+        setNotifications((prev) =>
+          prev.map((n) => (n._id === notificationId ? { ...n, isRead: true } : n))
         );
-        setUnreadCount(prev => Math.max(0, prev - 1));
+        const newUnreadCount = Math.max(0, unreadCount - 1);
+        setUnreadCount(newUnreadCount);
+
+        // 親コンポーネントに未読数の変更を通知
+        if (onUnreadCountChange) {
+          onUnreadCountChange(newUnreadCount);
+        }
       }
     } catch (error) {
       console.error('既読マークエラー:', error);
@@ -152,10 +160,13 @@ export const NotificationList: React.FC<NotificationListProps> = ({
       });
 
       if (response.ok) {
-        setNotifications(prev =>
-          prev.map(n => ({ ...n, isRead: true }))
-        );
+        setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
         setUnreadCount(0);
+
+        // 親コンポーネントに未読数の変更を通知
+        if (onUnreadCountChange) {
+          onUnreadCountChange(0);
+        }
       }
     } catch (error) {
       console.error('一括既読エラー:', error);
@@ -169,7 +180,7 @@ export const NotificationList: React.FC<NotificationListProps> = ({
       });
 
       if (response.ok) {
-        setNotifications(prev => prev.filter(n => n._id !== notificationId));
+        setNotifications((prev) => prev.filter((n) => n._id !== notificationId));
         fetchNotifications(); // リフレッシュして統計を更新
       }
     } catch (error) {
@@ -187,7 +198,7 @@ export const NotificationList: React.FC<NotificationListProps> = ({
     setSelectedNotificationId(null);
   };
 
-  const selectedNotification = notifications.find(n => n._id === selectedNotificationId);
+  const selectedNotification = notifications.find((n) => n._id === selectedNotificationId);
 
   if (loading && notifications.length === 0) {
     return (
@@ -212,15 +223,10 @@ export const NotificationList: React.FC<NotificationListProps> = ({
               <Typography variant="h6">
                 通知
                 {unreadCount > 0 && (
-                  <Chip
-                    label={unreadCount}
-                    size="small"
-                    color="error"
-                    sx={{ ml: 1 }}
-                  />
+                  <Chip label={unreadCount} size="small" color="error" sx={{ ml: 1 }} />
                 )}
               </Typography>
-              
+
               <Button
                 startIcon={<RefreshIcon />}
                 onClick={fetchNotifications}
@@ -290,10 +296,10 @@ export const NotificationList: React.FC<NotificationListProps> = ({
       )}
 
       {/* 通知リスト */}
-      <Box 
-        sx={{ 
-          flex: 1, 
-          overflow: 'auto', 
+      <Box
+        sx={{
+          flex: 1,
+          overflow: 'auto',
           p: 2,
           maxHeight: showControls ? undefined : maxHeight,
         }}
@@ -324,7 +330,15 @@ export const NotificationList: React.FC<NotificationListProps> = ({
 
       {/* ページネーション */}
       {showControls && pagination.totalPages > 1 && (
-        <Box sx={{ p: 2, display: 'flex', justifyContent: 'center', borderTop: 1, borderColor: 'divider' }}>
+        <Box
+          sx={{
+            p: 2,
+            display: 'flex',
+            justifyContent: 'center',
+            borderTop: 1,
+            borderColor: 'divider',
+          }}
+        >
           <Pagination
             count={pagination.totalPages}
             page={page}
@@ -340,7 +354,7 @@ export const NotificationList: React.FC<NotificationListProps> = ({
         open={Boolean(menuAnchor)}
         onClose={handleMenuClose}
         PaperProps={{
-          sx: { minWidth: 200 }
+          sx: { minWidth: 200 },
         }}
       >
         {selectedNotification && !selectedNotification.isRead && (
@@ -356,7 +370,7 @@ export const NotificationList: React.FC<NotificationListProps> = ({
             <ListItemText>既読にする</ListItemText>
           </MenuItem>
         )}
-        
+
         <MenuItem
           onClick={() => {
             handleDeleteNotification(selectedNotificationId!);
