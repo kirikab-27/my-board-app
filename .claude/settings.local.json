@@ -140,7 +140,8 @@
       "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" api graphql -f query='\n{\n  user(login: \"\"kirikab-27\"\") {\n    projectV2(number: 2) {\n      id\n      title\n      field(name: \"\"Status\"\") {\n        ... on ProjectV2SingleSelectField {\n          id\n          name\n          options {\n            id\n            name\n          }\n        }\n      }\n    }\n  }\n}')",
       "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" project item-edit --id PVTI_lAHOB5DmjM4BAytuzgdvpo8 --field-id PVTSSF_lAHOB5DmjM4BAytuzgzfW84 --project-id PVT_kwHOB5DmjM4BAytu --single-select-option-id 2b158c9c)",
       "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" issue edit 6 --add-label \"test-review\")",
-      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" issue comment 6 --body \"## ✅ ヘッダータイトル修正完了\n\n### 🔧 修正内容\n- ハッシュタグページのヘッダータイトル: プロフィール → **ハッシュタグ**\n- 個別ハッシュタグページのヘッダータイトル: プロフィール → **ハッシュタグ**\n\n### 📝 修正方法\nProfileHeaderコンポーネントの既存titleプロパティを活用してタイトルを動的変更\n\n### ✅ 対応状況\nすべてのハッシュタグページで適切なタイトル「ハッシュタグ」が表示されるようになりました。\n\n**他にも修正が必要な箇所があれば教えてください。**\")"
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" issue comment 6 --body \"## ✅ ヘッダータイトル修正完了\n\n### 🔧 修正内容\n- ハッシュタグページのヘッダータイトル: プロフィール → **ハッシュタグ**\n- 個別ハッシュタグページのヘッダータイトル: プロフィール → **ハッシュタグ**\n\n### 📝 修正方法\nProfileHeaderコンポーネントの既存titleプロパティを活用してタイトルを動的変更\n\n### ✅ 対応状況\nすべてのハッシュタグページで適切なタイトル「ハッシュタグ」が表示されるようになりました。\n\n**他にも修正が必要な箇所があれば教えてください。**\")",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" project item-edit --id PVTI_lAHOB5DmjM4BAytuzgdvpo8 --field-id PVTSSF_lAHOB5DmjM4BAytuzgzfW84 --project-id PVT_kwHOB5DmjM4BAytu --single-select-option-id 98236657)"
     ],
     "deny": [],
     "additionalDirectories": [

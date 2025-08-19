@@ -32,12 +32,10 @@ import {
   ExpandMore,
   ExpandLess,
   AccessTime,
-  Visibility,
-  Forum
+  Visibility
 } from '@mui/icons-material';
 import { formatDistanceToNow } from 'date-fns';
 import { ja } from 'date-fns/locale';
-import Link from 'next/link';
 
 interface TrendingHashtag {
   _id: string;
@@ -97,7 +95,6 @@ export default function TrendingHashtags({
   showStats = true,
   showCategories = false,
   showRefresh = true,
-  variant = 'card',
   autoRefresh,
   onHashtagClick
 }: TrendingHashtagsProps) {

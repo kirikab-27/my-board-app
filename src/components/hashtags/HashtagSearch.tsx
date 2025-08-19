@@ -28,9 +28,7 @@ import {
   TrendingUp,
   Tag as TagIcon,
   Verified,
-  FilterList,
-  ExpandMore,
-  ExpandLess
+  FilterList
 } from '@mui/icons-material';
 
 interface SearchResult {

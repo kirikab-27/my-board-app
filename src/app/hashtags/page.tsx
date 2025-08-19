@@ -5,19 +5,14 @@ import {
   Container,
   Box,
   Typography,
-  Grid,
   Paper,
   Tab,
   Tabs,
-  TextField,
-  InputAdornment,
-  Button,
   Chip,
   Alert,
   CircularProgress
 } from '@mui/material';
 import {
-  Search,
   TrendingUp,
   Tag as TagIcon,
   Whatshot,
@@ -46,7 +41,6 @@ function TabPanel({ children, value, index }: TabPanelProps) {
 }
 
 export default function HashtagsPage() {
-  const { data: session } = useSession();
   const router = useRouter();
   
   const [currentTab, setCurrentTab] = useState(0);

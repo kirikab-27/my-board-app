@@ -8,14 +8,12 @@ import {
   Typography,
   Chip,
   Avatar,
-  Button,
   List,
   ListItem,
   ListItemAvatar,
   ListItemText,
   ListItemSecondaryAction,
   Divider,
-  Grid,
   LinearProgress,
   Tooltip,
   IconButton,
@@ -36,7 +34,6 @@ import {
 } from '@mui/icons-material';
 import { formatDistanceToNow } from 'date-fns';
 import { ja } from 'date-fns/locale';
-import Link from 'next/link';
 
 interface HashtagStats {
   totalPosts: number;

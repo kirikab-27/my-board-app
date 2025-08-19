@@ -10,10 +10,8 @@ import {
   Button,
   Alert,
   CircularProgress,
-  Grid,
   Card,
   CardContent,
-  Divider,
   IconButton,
   Tooltip
 } from '@mui/material';
@@ -24,7 +22,6 @@ import {
   Share,
   Bookmark,
   ArrowBack,
-  Visibility,
   Forum,
   People,
   Whatshot
