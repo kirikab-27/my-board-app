@@ -35,7 +35,7 @@ export interface INotificationMetadata {
   followId?: string;     // 関連フォローID
   imageUrl?: string;     // 通知に表示する画像
   linkUrl?: string;      // 通知クリック時のリンク
-  customData?: any;      // カスタムデータ
+  customData?: unknown;  // カスタムデータ
 }
 
 // バッチ通知用の情報
@@ -326,7 +326,7 @@ NotificationSchema.pre('save', async function (next) {
   try {
     // メッセージの自動生成
     if (!this.message || this.isModified('type') || this.isModified('fromUserName')) {
-      this.message = (this as any).generateMessage();
+      this.message = (this as INotificationDocument).generateMessage();
     }
     
     // 配信日時の設定
@@ -583,5 +583,5 @@ NotificationSchema.statics.cleanupOldNotifications = async function(): Promise<v
   });
 };
 
-export default (mongoose.models.Notification as mongoose.Model<INotification, {}, INotificationMethods, {}, any, INotificationStatics>) || 
-  mongoose.model<INotification, mongoose.Model<INotification, {}, INotificationMethods, {}, any, INotificationStatics>>('Notification', NotificationSchema);
+export default (mongoose.models.Notification as mongoose.Model<INotification, object, INotificationMethods, object, unknown, INotificationStatics>) || 
+  mongoose.model<INotification, mongoose.Model<INotification, object, INotificationMethods, object, unknown, INotificationStatics>>('Notification', NotificationSchema);

@@ -11,10 +11,13 @@ import {
   Person as PersonIcon,
   People as PeopleIcon,
   Timeline as TimelineIcon,
+  Notifications as NotificationsIcon,
 } from '@mui/icons-material';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 export const AuthButton: React.FC = () => {
   const { data: session, status } = useSession();
@@ -68,13 +71,19 @@ export const AuthButton: React.FC = () => {
     router.push('/timeline');
   };
 
+  const handleNotifications = () => {
+    handleMenuClose();
+    router.push('/notifications');
+  };
+
   if (status === 'loading') {
     return <div>Loading...</div>;
   }
 
   if (!session) {
     return (
-      <Box sx={{ display: 'flex', gap: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <ThemeToggle />
         <Button variant="outlined" startIcon={<LoginIcon />} onClick={handleLogin}>
           ログイン
         </Button>
@@ -86,7 +95,9 @@ export const AuthButton: React.FC = () => {
   }
 
   return (
-    <>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <ThemeToggle />
+      <NotificationBell />
       <IconButton
         onClick={handleMenuOpen}
         sx={{ p: 0 }}
@@ -147,6 +158,10 @@ export const AuthButton: React.FC = () => {
           <ForumIcon sx={{ mr: 1 }} />
           掲示板
         </MenuItem>
+        <MenuItem onClick={handleNotifications}>
+          <NotificationsIcon sx={{ mr: 1 }} />
+          通知
+        </MenuItem>
         <MenuItem onClick={handleProfile}>
           <PersonIcon sx={{ mr: 1 }} />
           プロフィール
@@ -164,6 +179,6 @@ export const AuthButton: React.FC = () => {
           ログアウト
         </MenuItem>
       </Menu>
-    </>
+    </Box>
   );
 };

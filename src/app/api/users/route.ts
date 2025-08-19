@@ -23,14 +23,34 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const search = searchParams.get('search') || '';
 
+    // セッションユーザーの権限取得
+    const currentUserRole = (session.user as { role?: string }).role;
+    
     // 検索クエリ構築
     const query: any = {};
     
+    // 管理者の表示制御
+    if (currentUserRole !== 'admin') {
+      // 一般ユーザー：管理者を除外
+      query.role = { $ne: 'admin' };
+    }
+    
     if (search) {
-      query.$or = [
+      const searchConditions = [
         { name: { $regex: search, $options: 'i' } },
         { bio: { $regex: search, $options: 'i' } }
       ];
+      
+      if (query.role) {
+        // 既存の権限フィルターと検索条件を組み合わせ
+        query.$and = [
+          { role: query.role },
+          { $or: searchConditions }
+        ];
+        delete query.role;  // $andに移動したので削除
+      } else {
+        query.$or = searchConditions;
+      }
     }
 
     // ページネーション計算

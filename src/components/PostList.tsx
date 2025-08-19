@@ -56,13 +56,15 @@ export default function PostList({
   const [isDeleting, setIsDeleting] = useState(false);
   const [likingPosts, setLikingPosts] = useState<Set<string>>(new Set());
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
+  const [postLikeCounts, setPostLikeCounts] = useState<Map<string, number>>(new Map());
 
   console.log('PostList レンダリング:', posts.length, '件の投稿');
 
-  // 投稿のいいね状態を取得
+  // 投稿のいいね状態と最新いいね数を取得
   React.useEffect(() => {
     const fetchLikeStates = async () => {
       const likedSet = new Set<string>();
+      const likeCountMap = new Map<string, number>();
 
       for (const post of posts) {
         try {
@@ -72,13 +74,21 @@ export default function PostList({
             if (data.liked) {
               likedSet.add(post._id);
             }
+            // 最新のいいね数を保存
+            likeCountMap.set(post._id, data.likes);
+          } else {
+            // API エラーの場合は初期値を使用
+            likeCountMap.set(post._id, post.likes);
           }
         } catch (error) {
           console.error(`Failed to fetch like state for post ${post._id}:`, error);
+          // エラーの場合は初期値を使用
+          likeCountMap.set(post._id, post.likes);
         }
       }
 
       setLikedPosts(likedSet);
+      setPostLikeCounts(likeCountMap);
     };
 
     if (posts.length > 0) {
@@ -193,6 +203,13 @@ export default function PostList({
           newSet.delete(postId);
         }
         return newSet;
+      });
+
+      // いいね数をリアルタイム更新
+      setPostLikeCounts((prev) => {
+        const newMap = new Map(prev);
+        newMap.set(postId, data.likes);
+        return newMap;
       });
 
       onRefresh(); // 投稿一覧を更新
@@ -335,7 +352,7 @@ export default function PostList({
                     )}
                   </IconButton>
                   <Typography variant="caption" color="text.secondary">
-                    {post.likes}
+                    {postLikeCounts.get(post._id) ?? post.likes}
                   </Typography>
                 </Box>
               </Box>

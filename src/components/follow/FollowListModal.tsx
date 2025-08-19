@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -60,8 +60,8 @@ export default function FollowListModal({
 
   const modalTitle = title || (type === 'followers' ? 'フォロワー' : 'フォロー中');
 
-  // データ取得
-  const fetchUsers = async (currentPage: number = 1) => {
+  // データ取得（useCallbackでメモ化）
+  const fetchUsers = useCallback(async (currentPage: number = 1) => {
     if (!userId) return;
 
     try {
@@ -87,7 +87,7 @@ export default function FollowListModal({
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId, type, modalTitle]);
 
   // ページ変更ハンドラー
   const handlePageChange = (event: React.ChangeEvent<unknown>, newPage: number) => {
@@ -117,7 +117,7 @@ export default function FollowListModal({
       setError('');
       setPage(1);
     }
-  }, [open, userId, type, fetchUsers]);
+  }, [open, fetchUsers]);
 
   // 日付フォーマット
   const formatDate = (dateString: string) => {

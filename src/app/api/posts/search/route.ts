@@ -66,7 +66,49 @@ export async function GET(request: NextRequest) {
     // MongoDB のテキスト検索を使用
     // 部分一致検索のため正規表現を使用
     const searchRegex = new RegExp(query.trim(), 'i'); // 大文字小文字を区別しない
-    const searchFilter = { content: { $regex: searchRegex } };
+    const searchFilter: Record<string, unknown> = { content: { $regex: searchRegex } };
+
+    // セッション情報を取得して権限ベースフィルタリング
+    const { getServerSession } = await import('next-auth');
+    const { authOptions } = await import('@/lib/auth/nextauth');
+    const session = await getServerSession(authOptions);
+    
+    const currentUserId = session?.user?.id;
+    const currentUserRole = session?.user ? (session.user as { role?: string }).role : null;
+    
+    // 管理者投稿の表示制御
+    if (currentUserRole === 'admin') {
+      // 管理者：すべての投稿を検索対象
+      if (currentUserId) {
+        searchFilter.$or = [
+          { isPublic: true },  // 公開投稿
+          { userId: currentUserId }  // 自分の投稿（公開・非公開問わず）
+        ];
+      } else {
+        searchFilter.isPublic = true;
+      }
+    } else {
+      // 一般ユーザー・未認証ユーザー：管理者投稿を除外
+      const baseFilter = { authorRole: { $ne: 'admin' } };  // 管理者投稿除外
+      
+      if (currentUserId) {
+        searchFilter.$and = [
+          baseFilter,
+          {
+            $or: [
+              { isPublic: true },  // 公開投稿（一般ユーザーのみ）
+              { userId: currentUserId }  // 自分の投稿（公開・非公開問わず）
+            ]
+          }
+        ];
+      } else {
+        // 未認証ユーザー：一般ユーザーの公開投稿のみ
+        searchFilter.$and = [
+          baseFilter,
+          { isPublic: true }
+        ];
+      }
+    }
 
     // ページネーション計算
     const skip = (page - 1) * limit;

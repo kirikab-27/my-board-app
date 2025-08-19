@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
     await mongoose.connect(process.env.MONGODB_URI!);
 
     const currentUserId = session.user.id;
+    const currentUserRole = (session.user as { role?: string }).role;
 
     // パフォーマンス最適化: フォロー中のユーザーID一覧を事前取得
     const followedUsers = await Follow.find({
@@ -35,7 +36,18 @@ export async function GET(request: NextRequest) {
     const followedUserIds = followedUsers.map((f) => f.following);
 
     // 自分の投稿も含める
-    const targetUserIds = [currentUserId, ...followedUserIds];
+    let targetUserIds = [currentUserId, ...followedUserIds];
+
+    // 管理者投稿の表示制御
+    if (currentUserRole !== 'admin') {
+      // 一般ユーザー：管理者をフォローしていても除外
+      const User = (await import('@/models/User')).default;
+      const adminUsers = await User.find({ role: 'admin' }).select('_id').lean() as { _id: string }[];
+      const adminUserIds = adminUsers.map(u => u._id.toString());
+      
+      // 管理者IDをtargetUserIdsから除外
+      targetUserIds = targetUserIds.filter(id => !adminUserIds.includes(id));
+    }
 
     // MongoDB集約パイプラインでタイムライン構築
     const aggregationPipeline = [

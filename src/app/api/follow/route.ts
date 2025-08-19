@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth/nextauth';
 import connectDB from '@/lib/mongodb';
 import Follow from '@/models/Follow';
 import User from '@/models/User';
+import Notification from '@/models/Notification';
 
 /**
  * フォロー関係の作成・削除API
@@ -92,6 +93,26 @@ export async function POST(request: NextRequest) {
 
     // ユーザー統計を更新
     await newFollow.updateUserStats();
+
+    // フォロー通知を作成
+    try {
+      const followerUser = await User.findById(session.user.id).select('name').lean() as { name?: string } | null;
+      
+      await (Notification as any).createNotification({
+        type: 'follow',
+        title: 'フォロー通知',
+        userId: targetUserId,
+        fromUserId: session.user.id,
+        fromUserName: followerUser?.name || 'ユーザー',
+        metadata: {
+          followId: newFollow._id.toString(),
+        },
+        priority: 'normal',
+      });
+    } catch (notificationError) {
+      console.error('フォロー通知作成エラー:', notificationError);
+      // 通知作成エラーでもフォロー処理は継続
+    }
 
     return NextResponse.json({
       message: targetUser.isPrivate ? 'フォローリクエストを送信しました' : 'フォローしました',

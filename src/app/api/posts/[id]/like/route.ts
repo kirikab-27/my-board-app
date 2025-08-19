@@ -61,7 +61,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       try {
         const likerUser = await User.findById(session.user.id).select('name').lean() as { name?: string } | null;
         
-        await (Notification as any).createNotification({
+        await (Notification as typeof Notification & { createNotification: Function }).createNotification({
           type: 'like_post',
           title: 'いいね通知',
           userId: post.userId,
