@@ -13,6 +13,7 @@
 - ❌ **環境変数・URL・ドメインの一貫性確認怠り** → 本番環境での致命的エラー
 - ❌ **ルールの表面的遵守（形だけの更新）** → 実質的なドキュメント管理破綻
 - ❌ **🚨 Issue管理フロー無視（最重要）** → **即座実装禁止・Issue更新→ステータス移動→実装開始厳守**
+- ❌ **🚨 言動不一致（信用失墜）** → **「修正した」と報告しながら実際は未実行・確認怠り・同じミス繰り返し**
 
 ### ✅ 必須実行事項（例外なし）
 
@@ -21,8 +22,21 @@
 - ✅ **ドキュメント更新時**: 関連セクション・既存情報との一貫性検証
 - ✅ **疑問発生時**: 推測ではなく確実な情報確認・ユーザーへの確認
 - ✅ **🚨 Issue管理フロー厳守（最重要）**: ユーザー要望→Issue更新→ステータス移動→実装開始（例外なし）
+- ✅ **🚨 言動一致の徹底**: 報告前の実際確認・口約束禁止・実行後検証・ユーザー信頼維持
+- ✅ **🤝 共同作業の基本姿勢**: 完成偽装より正確な現状報告・困った時は助けを求める・助け合いの精神
 
 **このルールを軽視した場合、プロジェクトの信頼性と継続性に重大な損害を与える。**
+
+### 🤝 共同作業における信頼の原則
+
+**「完成した」と嘘をつくより、「ここまでできました。この部分で困っています」と正直に報告する方が100倍信頼できる。**
+
+- **✅ 正確な現状報告**: 良いニュースも悪いニュースも正直に
+- **✅ 困った時の相談**: 一人で抱え込まず助けを求める
+- **✅ 助け合いの姿勢**: 共同作業なので一緒に考える
+- **❌ 完成偽装**: 表面的な「できました」報告は信頼を破壊する
+
+**信頼関係はプロジェクト成功の基盤。技術力より信頼維持が重要。**
 
 ## 📚 ドキュメント管理ルール
 
@@ -767,7 +781,91 @@ npm run test         # テスト実行
 
 ## Git ブランチ戦略
 
-全フィーチャーブランチをdevelopに統合完了。詳細は `README-phase-5.5-integration.md` 参照。
+### 🔄 ブランチ構成（シンプル化・3層構造）
+
+```
+main (本番環境)
+├── develop (統合・テスト環境)
+│   └── feature/phase6.x-xxx (機能開発)
+│   └── hotfix/xxx (緊急修正)
+```
+
+### 📋 ブランチ管理ルール
+
+#### 🚀 main ブランチ
+
+- **目的**: 本番環境デプロイ専用
+- **マージ頻度**: 週1回（金曜日推奨）
+- **品質基準**: develop での全テスト完了・ユーザー確認済み
+- **デプロイ**: 自動デプロイ（Vercel: https://kab137lab.com）
+
+#### 🔧 develop ブランチ
+
+- **目的**: 機能統合・結合テスト
+- **マージ頻度**: Issue完了毎（随時）
+- **品質基準**: 実装完了・単体テスト通過・TypeScript エラーゼロ
+- **環境**: 開発環境テスト・GitHub Projects と連携
+
+#### ⚡ feature/hotfix ブランチ
+
+- **命名**: `feature/phase6.x-機能名` または `hotfix/緊急内容`
+- **作成**: Issue 作成と同時
+- **マージ**: develop → main の順序厳守
+
+### 🏷️ デプロイ管理ラベル（GitHub Projects 連携）
+
+#### 📦 デプロイステータスラベル
+
+- `deployed-dev` - develop ブランチにデプロイ済み（緑色）
+- `deployed-prod` - 本番環境にデプロイ済み（濃緑色）
+- `ready-for-deploy` - デプロイ準備完了（オレンジ色）
+- `hotfix-needed` - 緊急修正が必要（赤色）
+
+#### 🔄 デプロイフロー
+
+```
+Issue完了 → Review確認 → develop マージ → deployed-dev ラベル
+     ↓
+週次まとめ → main マージ → 本番デプロイ → deployed-prod ラベル
+```
+
+### ⚙️ 実際のGitコマンド例
+
+#### 🌟 新機能開発開始
+
+```bash
+git checkout develop
+git pull origin develop
+git checkout -b feature/phase6.x-新機能名
+# 実装作業
+git add -A && git commit -m "🎯 Issue #XX: 新機能実装"
+```
+
+#### 🔗 develop 統合
+
+```bash
+git checkout develop
+git merge feature/phase6.x-新機能名
+git push origin develop
+gh issue edit XX --add-label "deployed-dev"
+```
+
+#### 🚀 本番デプロイ（週次）
+
+```bash
+git checkout main
+git merge develop --no-ff
+git push origin main
+gh issue edit XX --add-label "deployed-prod" --remove-label "deployed-dev"
+```
+
+### 📊 統合状況
+
+- **Phase 6.2統合完了（2025/08/19）**: feature/phase6.2-notifications → develop 統合済み
+- **Issues #9,#10,#14,#15**: deployed-dev ラベル適用済み
+- **次回本番デプロイ**: 週次スケジュールで main 統合予定
+
+詳細なGit Flow は `README-phase-5.5-integration.md` 参照。
 
 ## テスト・品質保証・監視
 

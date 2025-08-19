@@ -51,13 +51,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     });
 
     return NextResponse.json({ notification });
-
   } catch (error) {
     console.error('通知取得エラー:', error);
-    return NextResponse.json(
-      { error: '通知の取得に失敗しました' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '通知の取得に失敗しました' }, { status: 500 });
   }
 }
 
@@ -85,10 +81,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     if (!action) {
-      return NextResponse.json(
-        { error: 'アクションが指定されていません' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'アクションが指定されていません' }, { status: 400 });
     }
 
     // 通知の存在確認と権限チェック
@@ -127,7 +120,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
           isClicked: true,
           clickedAt: new Date(),
           isRead: true, // クリックしたら自動的に既読
-          readAt: notification.readAt || new Date(),
+          readAt: (notification as any).readAt || new Date(),
         };
         message = '通知をクリック済みにしました';
         break;
@@ -140,30 +133,21 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         break;
 
       default:
-        return NextResponse.json(
-          { error: '無効なアクションです' },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: '無効なアクションです' }, { status: 400 });
     }
 
-    const updatedNotification = await Notification.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true }
-    ).lean();
+    const updatedNotification = await Notification.findByIdAndUpdate(id, updateData, {
+      new: true,
+    }).lean();
 
     return NextResponse.json({
       success: true,
       message,
       notification: updatedNotification,
     });
-
   } catch (error) {
     console.error('通知更新エラー:', error);
-    return NextResponse.json(
-      { error: '通知の更新に失敗しました' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '通知の更新に失敗しました' }, { status: 500 });
   }
 }
 
@@ -206,12 +190,8 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       success: true,
       message: '通知を削除しました',
     });
-
   } catch (error) {
     console.error('通知削除エラー:', error);
-    return NextResponse.json(
-      { error: '通知の削除に失敗しました' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '通知の削除に失敗しました' }, { status: 500 });
   }
 }

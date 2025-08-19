@@ -26,6 +26,7 @@ import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import { AuthButton } from '@/components/auth/AuthButton';
 import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
 import { SafePostContent } from '@/components/SafeContent';
+import CommentList from '@/components/comments/CommentList';
 import Link from 'next/link';
 
 interface Post {
@@ -381,6 +382,11 @@ export default function PostDetailPage() {
               </Box>
             )}
           </Box>
+        </Paper>
+
+        {/* コメント欄 */}
+        <Paper sx={{ p: 4, mt: 3 }}>
+          <CommentList postId={post._id} />
         </Paper>
       </Container>
     </>

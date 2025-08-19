@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Badge, IconButton, Popover, Box, Typography, Button, Divider, alpha } from '@mui/material';
 import {
   Notifications as NotificationsIcon,
@@ -25,7 +25,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
   const [loading, setLoading] = useState(false);
 
   // 未読通知数の取得
-  const fetchUnreadCount = async () => {
+  const fetchUnreadCount = useCallback(async () => {
     if (!session?.user?.id) return;
 
     try {
@@ -41,7 +41,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [session?.user?.id]);
 
   // 初回読み込み
   useEffect(() => {
@@ -96,7 +96,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
     setAnchorEl(null);
   };
 
-  const handleNotificationClick = (notification: any) => {
+  const handleNotificationClick = useCallback((notification: any) => {
     // ポップオーバーを閉じてから遷移
     handleClose();
 
@@ -110,7 +110,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
         window.location.href = `/users/${notification.fromUserId}`;
       }
     }, 100);
-  };
+  }, []);
 
   const open = Boolean(anchorEl);
 
@@ -205,7 +205,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
               filterType="unread"
               showControls={false}
               maxHeight={popoverMaxHeight}
-              onUnreadCountChange={(count) => setUnreadCount(count)}
+              onUnreadCountChange={setUnreadCount}
             />
           </Box>
 

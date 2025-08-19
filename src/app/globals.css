@@ -19,6 +19,59 @@
   }
 }
 
+/* コメント機能：右シフト問題の確実な解決 */
+/* 階層別インデント制御（累積防止） */
+.comment-level-0,
+.comment-level-1,
+.comment-level-2,
+.comment-level-3,
+.comment-level-4,
+.comment-level-5 { 
+  margin-left: 0 !important; 
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* 🚨 css-g4ujcq クラスの累積ネスト問題を根本解決 */
+/* Material-UIの動的クラス生成による累積インデントを完全防止 */
+[class*="css-g4ujcq"] {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+}
+
+/* ネストしたcss-g4ujcqクラスのmargin累積を強制リセット */
+[class*="css-g4ujcq"] [class*="css-g4ujcq"] {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+}
+
+/* 3階層以上のネストも完全にリセット */
+[class*="css-g4ujcq"] [class*="css-g4ujcq"] [class*="css-g4ujcq"] {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+}
+
+/* 任意のMaterial-UI生成クラスの累積防止（バックアップ） */
+.MuiBox-root[class*="css-"] {
+  box-sizing: border-box !important;
+}
+
+/* 🚨 コメント機能：Material-UI完全無効化 */
+/* すべてのMaterial-UI動的クラスをリセット */
+.comment-level-0 [class*="css-"],
+.comment-level-1 [class*="css-"] {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+}
+
+/* コメント機能専用：素のHTMLスタイル強制 */
+.comment-level-0 > div,
+.comment-level-1 > div {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
