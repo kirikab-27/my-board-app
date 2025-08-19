@@ -20,6 +20,8 @@ import {
   Divider,
   useTheme,
   useMediaQuery,
+  AppBar,
+  Toolbar,
 } from '@mui/material';
 import {
   Refresh as RefreshIcon,
@@ -34,6 +36,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import FollowButton from '@/components/follow/FollowButton';
+import { AuthButton } from '@/components/auth/AuthButton';
 
 // タイムライン投稿の型定義
 interface TimelinePost {
@@ -292,23 +295,33 @@ export default function TimelinePage() {
   }
 
   return (
-    <Container maxWidth="md" sx={{ py: 2, position: 'relative' }}>
-      {/* ヘッダー */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" component="h1" fontWeight="bold">
-          タイムライン
-        </Typography>
+    <>
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            タイムライン
+          </Typography>
+          <AuthButton />
+        </Toolbar>
+      </AppBar>
 
-        <Box display="flex" gap={1}>
-          <IconButton onClick={handleRefresh} disabled={refreshing} color="primary">
-            <RefreshIcon />
-          </IconButton>
+      <Container maxWidth="md" sx={{ py: 2, position: 'relative' }}>
+        {/* ページヘッダー */}
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+          <Typography variant="h4" component="h1" fontWeight="bold">
+            タイムライン
+          </Typography>
 
-          {metadata && (
-            <Chip label={`${metadata.followingCount} フォロー中`} size="small" variant="outlined" />
-          )}
+          <Box display="flex" gap={1}>
+            <IconButton onClick={handleRefresh} disabled={refreshing} color="primary">
+              <RefreshIcon />
+            </IconButton>
+
+            {metadata && (
+              <Chip label={`${metadata.followingCount} フォロー中`} size="small" variant="outlined" />
+            )}
+          </Box>
         </Box>
-      </Box>
 
       {/* 新着投稿通知バナー */}
       {showNewPostsBanner && (
@@ -378,7 +391,8 @@ export default function TimelinePage() {
           <ArrowUpward />
         </Fab>
       )}
-    </Container>
+      </Container>
+    </>
   );
 }
 
@@ -525,7 +539,7 @@ function PostCard({ post }: { post: TimelinePost }) {
         )}
 
         {/* メディア表示（サムネイル） */}
-        {post.media && post.media.length > 0 && (
+        {post.media && post.media?.length > 0 && (
           <Box
             mb={2}
             sx={{
@@ -547,8 +561,8 @@ function PostCard({ post }: { post: TimelinePost }) {
                 sx={{
                   flexShrink: 0,
                   position: 'relative',
-                  width: post.media.length === 1 ? '100%' : '200px',
-                  height: post.media.length === 1 ? 'auto' : '150px',
+                  width: post.media?.length === 1 ? '100%' : '200px',
+                  height: post.media?.length === 1 ? 'auto' : '150px',
                   overflow: 'hidden',
                   borderRadius: 1,
                   backgroundColor: 'grey.100',
@@ -560,9 +574,9 @@ function PostCard({ post }: { post: TimelinePost }) {
                     alt={media.alt || '投稿画像'}
                     style={{
                       width: '100%',
-                      height: post.media.length === 1 ? 'auto' : '100%',
-                      maxHeight: post.media.length === 1 ? '300px' : '150px',
-                      objectFit: post.media.length === 1 ? 'contain' : 'cover',
+                      height: post.media?.length === 1 ? 'auto' : '100%',
+                      maxHeight: post.media?.length === 1 ? '300px' : '150px',
+                      objectFit: post.media?.length === 1 ? 'contain' : 'cover',
                       borderRadius: theme.shape.borderRadius,
                     }}
                     loading="lazy"
@@ -585,7 +599,7 @@ function PostCard({ post }: { post: TimelinePost }) {
                   </Box>
                 )}
                 {/* 画像が3枚以上ある場合の表示 */}
-                {index === 2 && post.media.length > 3 && (
+                {index === 2 && (post.media?.length ?? 0) > 3 && (
                   <Box
                     sx={{
                       position: 'absolute',
@@ -602,7 +616,7 @@ function PostCard({ post }: { post: TimelinePost }) {
                       fontWeight: 'bold',
                     }}
                   >
-                    +{post.media.length - 3}
+                    +{(post.media?.length ?? 0) - 3}
                   </Box>
                 )}
               </Box>
