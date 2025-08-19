@@ -12,6 +12,7 @@ import {
   People as PeopleIcon,
   Timeline as TimelineIcon,
   Notifications as NotificationsIcon,
+  Tag as TagIcon,
 } from '@mui/icons-material';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -74,6 +75,11 @@ export const AuthButton: React.FC = () => {
   const handleNotifications = () => {
     handleMenuClose();
     router.push('/notifications');
+  };
+
+  const handleHashtags = () => {
+    handleMenuClose();
+    router.push('/hashtags');
   };
 
   if (status === 'loading') {
@@ -157,6 +163,10 @@ export const AuthButton: React.FC = () => {
         <MenuItem onClick={handleBoard}>
           <ForumIcon sx={{ mr: 1 }} />
           掲示板
+        </MenuItem>
+        <MenuItem onClick={handleHashtags}>
+          <TagIcon sx={{ mr: 1 }} />
+          ハッシュタグ
         </MenuItem>
         <MenuItem onClick={handleNotifications}>
           <NotificationsIcon sx={{ mr: 1 }} />

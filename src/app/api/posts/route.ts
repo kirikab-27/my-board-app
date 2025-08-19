@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Post from '@/models/Post';
+import Hashtag from '@/models/Hashtag';
 import { requireApiAuth, createUnauthorizedResponse, createServerErrorResponse } from '@/lib/auth/server';
 import { sanitizePlainText, detectXSSAttempt } from '@/utils/security/sanitizer';
 import { logXSSAttempt } from '@/lib/security/audit-logger';
@@ -9,6 +10,76 @@ import {
   validateSortParam, 
   sanitizeSearchQuery 
 } from '@/lib/security/input-validation';
+
+// ハッシュタグ処理関数
+async function processHashtags(hashtags: string[], userId: string, userName: string) {
+  try {
+    for (const tagName of hashtags) {
+      let hashtag = await Hashtag.findOne({ name: tagName });
+      
+      if (!hashtag) {
+        // 新規ハッシュタグ作成
+        hashtag = new Hashtag({
+          name: tagName,
+          displayName: tagName,
+          category: 'general',
+          createdBy: userId,
+          creatorName: userName,
+          stats: {
+            totalPosts: 1,
+            totalComments: 0,
+            uniqueUsers: 1,
+            weeklyGrowth: 0,
+            monthlyGrowth: 0,
+            trendScore: 0,
+            lastUsed: new Date(),
+            dailyStats: [{
+              date: new Date(),
+              postCount: 1,
+              commentCount: 0,
+              uniqueUsers: 1,
+              engagementScore: 0
+            }]
+          }
+        });
+      } else {
+        // 既存ハッシュタグの統計更新
+        hashtag.stats.totalPosts += 1;
+        hashtag.stats.lastUsed = new Date();
+        
+        // 日別統計更新
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const todayStatIndex = hashtag.stats.dailyStats.findIndex(
+          (stat: any) => stat.date.getTime() === today.getTime()
+        );
+        
+        if (todayStatIndex >= 0) {
+          hashtag.stats.dailyStats[todayStatIndex].postCount += 1;
+        } else {
+          hashtag.stats.dailyStats.push({
+            date: today,
+            postCount: 1,
+            commentCount: 0,
+            uniqueUsers: 1,
+            engagementScore: 0
+          });
+        }
+        
+        // 古い統計データ削除（30日間のみ保持）
+        hashtag.stats.dailyStats = hashtag.stats.dailyStats
+          .sort((a: any, b: any) => b.date.getTime() - a.date.getTime())
+          .slice(0, 30);
+      }
+      
+      await hashtag.save();
+    }
+  } catch (error) {
+    console.error('ハッシュタグ処理エラー:', error);
+    // ハッシュタグ処理の失敗は投稿の作成を妨げない
+  }
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -154,7 +225,7 @@ export async function POST(request: NextRequest) {
     
     await dbConnect();
     const body = await request.json();
-    const { title, content, isPublic = true } = body;
+    const { title, content, hashtags = [], isPublic = true } = body;
 
     if (!content || content.trim().length === 0) {
       return NextResponse.json(
@@ -198,6 +269,32 @@ export async function POST(request: NextRequest) {
     // 入力のサニタイゼーション
     const sanitizedTitle = title ? sanitizePlainText(title.trim()) : undefined;
     const sanitizedContent = sanitizePlainText(content.trim());
+    
+    // ハッシュタグのバリデーションとサニタイゼーション
+    let processedHashtags: string[] = [];
+    if (hashtags && Array.isArray(hashtags)) {
+      processedHashtags = hashtags
+        .filter(tag => typeof tag === 'string')
+        .map(tag => tag.toLowerCase().replace(/^#/, '').trim())
+        .filter(tag => /^[a-zA-Z0-9_\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]+$/.test(tag))
+        .filter(tag => tag.length >= 1 && tag.length <= 50)
+        .slice(0, 10); // 最大10個
+    }
+
+    // コンテンツとタイトルからもハッシュタグを自動抽出
+    const text = `${sanitizedTitle || ''} ${sanitizedContent}`;
+    const hashtagRegex = /#([a-zA-Z0-9_\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]+)/g;
+    const extractedHashtags = [];
+    let match;
+    while ((match = hashtagRegex.exec(text)) !== null) {
+      const tag = match[1].toLowerCase();
+      if (tag.length >= 1 && tag.length <= 50 && !processedHashtags.includes(tag)) {
+        extractedHashtags.push(tag);
+      }
+    }
+    
+    // 手動入力 + 自動抽出を統合（重複排除）
+    const finalHashtags = [...new Set([...processedHashtags, ...extractedHashtags])].slice(0, 10);
 
     // 認証ユーザーの重複投稿チェック（ユーザー別・5分以内）
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
@@ -227,16 +324,27 @@ export async function POST(request: NextRequest) {
     if (sanitizedTitle && sanitizedTitle.length > 0) {
       postData.title = sanitizedTitle;
     }
+    
+    // ハッシュタグを追加
+    if (finalHashtags.length > 0) {
+      postData.hashtags = finalHashtags;
+    }
 
     const post = new Post(postData);
     await post.save();
+
+    // ハッシュタグモデルの作成・更新
+    if (finalHashtags.length > 0) {
+      await processHashtags(finalHashtags, user.id, user.name || '匿名ユーザー');
+    }
 
     console.log('✅ 投稿作成成功:', { 
       postId: post._id, 
       title: post.title || '(タイトルなし)',
       userId: user.id, 
       authorName: user.name,
-      isPublic: isPublic 
+      isPublic: isPublic,
+      hashtags: finalHashtags
     });
 
     return NextResponse.json(post, { status: 201 });

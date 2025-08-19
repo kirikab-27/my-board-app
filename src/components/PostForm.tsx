@@ -1,31 +1,71 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Box, TextField, Button, Typography, Paper, Alert } from '@mui/material';
+import { Box, TextField, Button, Typography, Paper, Alert, Divider, Chip } from '@mui/material';
+import HashtagInput from './hashtags/HashtagInput';
 
 interface PostFormProps {
   onPostCreated: () => void;
   editingPost?: {
     _id: string;
     content: string;
+    title?: string;
+    hashtags?: string[];
   } | null;
   onEditCancel?: () => void;
+  showHashtags?: boolean;
+  showTitle?: boolean;
+  maxHashtags?: number;
 }
 
-export default function PostForm({ onPostCreated, editingPost, onEditCancel }: PostFormProps) {
+export default function PostForm({ 
+  onPostCreated, 
+  editingPost, 
+  onEditCancel,
+  showHashtags = true,
+  showTitle = false,
+  maxHashtags = 10
+}: PostFormProps) {
   const [content, setContent] = useState(editingPost?.content || '');
+  const [title, setTitle] = useState(editingPost?.title || '');
+  const [hashtags, setHashtags] = useState<string[]>(editingPost?.hashtags || []);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [lastSubmitTime, setLastSubmitTime] = useState<number>(0);
   const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
+  const [extractedHashtags, setExtractedHashtags] = useState<string[]>([]);
 
   useEffect(() => {
     if (editingPost) {
       setContent(editingPost.content);
+      setTitle(editingPost.title || '');
+      setHashtags(editingPost.hashtags || []);
     } else {
       setContent('');
+      setTitle('');
+      setHashtags([]);
     }
   }, [editingPost]);
+
+  // コンテンツからハッシュタグを自動抽出
+  useEffect(() => {
+    if (!showHashtags) return;
+    
+    const text = `${title} ${content}`;
+    const hashtagRegex = /#([a-zA-Z0-9_\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]+)/g;
+    const matches = text.match(hashtagRegex);
+    
+    if (matches) {
+      const extracted = matches
+        .map(tag => tag.replace('#', '').toLowerCase())
+        .filter((tag, index, arr) => arr.indexOf(tag) === index) // 重複除去
+        .slice(0, maxHashtags);
+      
+      setExtractedHashtags(extracted);
+    } else {
+      setExtractedHashtags([]);
+    }
+  }, [content, title, showHashtags, maxHashtags]);
 
   // クールダウンタイマー
   useEffect(() => {
@@ -45,8 +85,13 @@ export default function PostForm({ onPostCreated, editingPost, onEditCancel }: P
       return;
     }
 
-    if (content.length > 200) {
-      setError('投稿は200文字以内で入力してください');
+    if (content.length > 1000) {
+      setError('投稿は1000文字以内で入力してください');
+      return;
+    }
+
+    if (showTitle && title && title.length > 100) {
+      setError('タイトルは100文字以内で入力してください');
       return;
     }
 
@@ -72,12 +117,23 @@ export default function PostForm({ onPostCreated, editingPost, onEditCancel }: P
 
       const method = editingPost ? 'PUT' : 'POST';
 
+      // 最終的なハッシュタグ配列（手動入力 + 自動抽出）
+      const finalHashtags = [...new Set([...hashtags, ...extractedHashtags])].slice(0, maxHashtags);
+
+      const requestBody: any = { content };
+      if (showTitle && title.trim()) {
+        requestBody.title = title.trim();
+      }
+      if (showHashtags && finalHashtags.length > 0) {
+        requestBody.hashtags = finalHashtags;
+      }
+
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ content }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -86,6 +142,9 @@ export default function PostForm({ onPostCreated, editingPost, onEditCancel }: P
       }
 
       setContent('');
+      setTitle('');
+      setHashtags([]);
+      setExtractedHashtags([]);
       // 新規投稿の場合のみ最終投稿時刻を更新
       if (!editingPost) {
         setLastSubmitTime(Date.now());
@@ -103,9 +162,19 @@ export default function PostForm({ onPostCreated, editingPost, onEditCancel }: P
 
   const handleCancel = () => {
     setContent('');
+    setTitle('');
+    setHashtags([]);
+    setExtractedHashtags([]);
     setError('');
     if (onEditCancel) {
       onEditCancel();
+    }
+  };
+
+  // 自動抽出されたハッシュタグをマニュアルリストに追加
+  const addExtractedHashtag = (tag: string) => {
+    if (!hashtags.includes(tag) && hashtags.length < maxHashtags) {
+      setHashtags([...hashtags, tag]);
     }
   };
 
@@ -116,16 +185,33 @@ export default function PostForm({ onPostCreated, editingPost, onEditCancel }: P
       </Typography>
 
       <Box component="form" onSubmit={handleSubmit}>
+        {/* タイトル入力（オプション） */}
+        {showTitle && (
+          <TextField
+            fullWidth
+            variant="outlined"
+            label="タイトル（任意）"
+            placeholder="投稿のタイトルを入力してください"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            error={title.length > 100}
+            helperText={`${title.length}/100文字`}
+            sx={{ mb: 2 }}
+          />
+        )}
+
+        {/* コンテンツ入力 */}
         <TextField
           fullWidth
           multiline
           rows={4}
           variant="outlined"
-          placeholder="投稿内容を入力してください（200文字以内）"
+          label="投稿内容"
+          placeholder="投稿内容を入力してください（1000文字以内）"
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          error={content.length > 200}
-          helperText={`${content.length}/200文字`}
+          error={content.length > 1000}
+          helperText={`${content.length}/1000文字`}
           sx={{
             mb: 2,
             '& .MuiInputBase-input': {
@@ -135,6 +221,51 @@ export default function PostForm({ onPostCreated, editingPost, onEditCancel }: P
             },
           }}
         />
+
+        {/* ハッシュタグ機能 */}
+        {showHashtags && (
+          <>
+            <Divider sx={{ my: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                ハッシュタグ
+              </Typography>
+            </Divider>
+
+            {/* 自動抽出されたハッシュタグ */}
+            {extractedHashtags.length > 0 && (
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  📝 自動検出されたハッシュタグ:
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                  {extractedHashtags.map((tag, index) => (
+                    <Chip
+                      key={index}
+                      label={`#${tag}`}
+                      size="small"
+                      color={hashtags.includes(tag) ? 'primary' : 'default'}
+                      clickable
+                      onClick={() => addExtractedHashtag(tag)}
+                      disabled={hashtags.includes(tag)}
+                    />
+                  ))}
+                </Box>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                  💡 クリックして手動リストに追加
+                </Typography>
+              </Box>
+            )}
+
+            {/* ハッシュタグ入力コンポーネント */}
+            <HashtagInput
+              value={hashtags}
+              onChange={setHashtags}
+              maxTags={maxHashtags}
+              placeholder="追加のハッシュタグを入力..."
+              size="small"
+            />
+          </>
+        )}
 
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
@@ -146,7 +277,7 @@ export default function PostForm({ onPostCreated, editingPost, onEditCancel }: P
           <Button
             type="submit"
             variant="contained"
-            disabled={isSubmitting || content.length > 200 || cooldownRemaining > 0}
+            disabled={isSubmitting || content.length > 1000 || (showTitle && title.length > 100) || cooldownRemaining > 0}
           >
             {isSubmitting
               ? '投稿中...'
