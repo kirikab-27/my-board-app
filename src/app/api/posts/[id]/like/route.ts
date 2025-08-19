@@ -59,9 +59,15 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     // 認証ユーザーの場合は投稿者に通知を送信
     if (isAuthenticated && post.userId && post.userId !== session.user.id) {
       try {
-        const likerUser = await User.findById(session.user.id).select('name').lean() as { name?: string } | null;
-        
-        await (Notification as typeof Notification & { createNotification: Function }).createNotification({
+        const likerUser = (await User.findById(session.user.id).select('name').lean()) as {
+          name?: string;
+        } | null;
+
+        await (
+          Notification as typeof Notification & {
+            createNotification: (data: any) => Promise<any>;
+          }
+        ).createNotification({
           type: 'like_post',
           title: 'いいね通知',
           userId: post.userId,
@@ -81,6 +87,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({
       message: 'いいねしました',
       likes: post!.likes,
+      likedBy: post!.likedBy,
       liked: true,
     });
   } catch (error) {
@@ -179,6 +186,7 @@ export async function DELETE(
     return NextResponse.json({
       message: 'いいねを取り消しました',
       likes: updatedPost!.likes,
+      likedBy: updatedPost!.likedBy,
       liked: false,
     });
   } catch (error) {

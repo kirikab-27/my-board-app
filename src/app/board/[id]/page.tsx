@@ -134,8 +134,10 @@ export default function PostDetailPage() {
     setLiking(true);
 
     try {
+      // いいね状態に応じてPOSTまたはDELETEを選択
+      const method = isLiked ? 'DELETE' : 'POST';
       const response = await fetch(`/api/posts/${post._id}/like`, {
-        method: 'POST',
+        method,
       });
 
       const data = await response.json();
@@ -193,7 +195,7 @@ export default function PostDetailPage() {
   };
 
   const isAuthor = session?.user?.id === post?.userId;
-  const isLiked = post?.likedBy.includes(session?.user?.id || '');
+  const isLiked = post?.likedBy?.includes(session?.user?.id || '') || false;
 
   if (loading) {
     return (
