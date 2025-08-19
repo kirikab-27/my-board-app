@@ -46,7 +46,24 @@ export interface INotificationBatch {
   lastActivity: Date;    // 最後の活動日時
 }
 
-export interface INotification extends Document {
+export interface INotificationMethods {
+  markAsRead(): Promise<void>;
+  markAsViewed(): Promise<void>;
+  markAsClicked(): Promise<void>;
+  hide(): Promise<void>;
+  softDelete(): Promise<void>;
+  canUserView(userId: string): boolean;
+  generateMessage(): string;
+  shouldBatch(): boolean;
+}
+
+export interface INotificationStatics {
+  getUnreadCount(userId: string): Promise<number>;
+  createNotification(data: Partial<INotification>): Promise<INotification>;
+  cleanupOldNotifications(): Promise<void>;
+}
+
+export interface INotification extends Document, INotificationMethods {
   // 基本情報
   type: NotificationType;
   title: string;         // 通知タイトル
@@ -87,16 +104,6 @@ export interface INotification extends Document {
   updatedAt: Date;
   readAt?: Date;         // 既読日時
   clickedAt?: Date;      // クリック日時
-  
-  // メソッド
-  markAsRead(): Promise<void>;
-  markAsViewed(): Promise<void>;
-  markAsClicked(): Promise<void>;
-  hide(): Promise<void>;
-  softDelete(): Promise<void>;
-  canUserView(userId: string): boolean;
-  generateMessage(): string;
-  shouldBatch(): boolean;
 }
 
 const NotificationSchema: Schema = new Schema({
@@ -469,6 +476,58 @@ NotificationSchema.statics.getUnreadCount = async function(userId: string): Prom
 
 // 静的メソッド：通知作成（バッチ処理対応）
 NotificationSchema.statics.createNotification = async function(data: Partial<INotification>): Promise<INotification> {
+  // メッセージの自動生成（バリデーションエラー回避）
+  if (!data.message && data.type && data.fromUserName) {
+    const fromName = data.fromUserName || 'ユーザー';
+    
+    switch (data.type) {
+      case 'follow':
+        data.message = `${fromName}さんがあなたをフォローしました`;
+        break;
+      case 'follow_accept':
+        data.message = `${fromName}さんがフォローリクエストを承認しました`;
+        break;
+      case 'like_post':
+        data.message = `${fromName}さんがあなたの投稿にいいねしました`;
+        break;
+      case 'like_comment':
+        data.message = `${fromName}さんがあなたのコメントにいいねしました`;
+        break;
+      case 'comment':
+        data.message = `${fromName}さんがあなたの投稿にコメントしました`;
+        break;
+      case 'reply':
+        data.message = `${fromName}さんがあなたのコメントに返信しました`;
+        break;
+      case 'mention_post':
+        data.message = `${fromName}さんが投稿であなたをメンションしました`;
+        break;
+      case 'mention_comment':
+        data.message = `${fromName}さんがコメントであなたをメンションしました`;
+        break;
+      case 'repost':
+        data.message = `${fromName}さんがあなたの投稿をリポストしました`;
+        break;
+      case 'quote':
+        data.message = `${fromName}さんがあなたの投稿を引用しました`;
+        break;
+      case 'system':
+        data.message = 'システムからのお知らせがあります';
+        break;
+      case 'announcement':
+        data.message = '新しいお知らせがあります';
+        break;
+      case 'security':
+        data.message = 'セキュリティに関する重要な通知があります';
+        break;
+      case 'milestone':
+        data.message = 'おめでとうございます！マイルストーンを達成しました';
+        break;
+      default:
+        data.message = '新しい通知があります';
+    }
+  }
+
   // バッチ通知の対象かチェック
   if (data.type && ['like_post', 'like_comment', 'follow'].includes(data.type)) {
     const batchId = `${data.type}_${data.userId}_${data.metadata?.postId || data.metadata?.commentId || 'general'}`;
@@ -524,4 +583,5 @@ NotificationSchema.statics.cleanupOldNotifications = async function(): Promise<v
   });
 };
 
-export default mongoose.models.Notification || mongoose.model<INotification>('Notification', NotificationSchema);
+export default (mongoose.models.Notification as mongoose.Model<INotification, {}, INotificationMethods, {}, any, INotificationStatics>) || 
+  mongoose.model<INotification, mongoose.Model<INotification, {}, INotificationMethods, {}, any, INotificationStatics>>('Notification', NotificationSchema);
