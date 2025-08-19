@@ -122,7 +122,14 @@ SNS機能・MongoDB拡張スキーマ・68インデックス最適化。詳細�
 - **フォロー機能**: フォロー・アンフォロー・相互フォロー・フォロワー一覧・統計表示 ✅ **統合完了・develop統合済み**
 - **タイムライン機能**: フォローユーザー投稿表示・無限スクロール・リアルタイム更新・ナビゲーション統合 ✅ **統合完了・develop統合済み**
 
-**次期実装予定**: 3. **通知システム** `feature/phase6.2-notifications` 📋 計画中 4. **コメント機能** `feature/phase6.2-comments` 📋 計画中 5. **ハッシュタグ** `feature/phase6.2-hashtags` 📋 計画中
+### ✅ Phase 6.2統合完了（2025/08/18）
+
+**通知システム・GitHub Projects自動化完成**:
+
+- **通知システム**: リアルタイム通知・14種類通知タイプ・バッチ処理・TTL自動削除 ✅ **統合完了**
+- **GitHub Projects自動化**: CLI統合・自動Issue作成・カラム管理・進捗追跡・Issues #5-10管理 ✅ **統合完了・稼働開始**
+
+**次期実装予定**: 4. **コメント機能** `feature/phase6.3-comments` 📋 GitHub Issue #7 5. **ハッシュタグ** `feature/phase6.3-hashtags` 📋 GitHub Issue #5 6. **メディアアップロード** `feature/phase6.4-media` 📋 GitHub Issue #6
 
 ## 技術スタック
 
@@ -392,13 +399,19 @@ SENTRY_SUPPRESS_GLOBAL_ERROR_HANDLER_FILE_WARNING=1
 - `PUT /api/profile` - プロフィール更新（名前・自己紹介）✨ **新規実装**
 - `PUT /api/profile/password` - パスワード変更（現在確認・強度チェック）✨ **新規実装**
 
-### SNS関連（Phase 6.1実装完了）
+### SNS関連（Phase 6.2実装完了）
 
 - `GET /api/follow` - フォロー状況確認・フォロワー統計取得 ✅ **Phase 6.1実装完了**
 - `POST /api/follow` - フォロー実行・相互フォロー対応 ✅ **Phase 6.1実装完了**
 - `DELETE /api/follow` - アンフォロー実行・統計更新 ✅ **Phase 6.1実装完了**
 - `GET /api/users` - ユーザー一覧・フォロー状況表示 ✅ **Phase 6.1実装完了**
 - `GET /api/timeline` - タイムライン投稿取得・無限スクロール対応 ✅ **Phase 6.1実装完了**
+
+### 通知関連（Phase 6.2実装完了）
+
+- `GET /api/notifications` - 通知一覧取得・フィルタリング・ページネーション ✅ **Phase 6.2実装完了**
+- `POST /api/notifications` - 通知作成・バッチ処理・優先度設定 ✅ **Phase 6.2実装完了**
+- `PATCH /api/notifications` - 通知状態更新・既読・非表示・削除 ✅ **Phase 6.2実装完了**
 
 ### ページ構成（Vercel本番デプロイ対応・https://kab137lab.com）
 
@@ -708,6 +721,40 @@ npm run lint         # コード品質チェック
 npm run test         # テスト実行
 ```
 
+## GitHub Projects タスク管理（Week3 SNS Development）
+
+**プロジェクト**: Week3 SNS Development - 5段階カンバンボード管理
+
+### ステータス管理（確定版）
+- **📋 Backlog**: 未着手タスク
+- **🎯 Today**: 本日作業予定  
+- **🚧 In Progress**: 作業中
+- **👀 Review**: レビュー（ラベルで種別識別）
+- **✅ Done**: 完了
+
+### ラベル体系
+**レビュー種別:**
+- `spec-review` 🟡: 仕様確認（実装前）
+- `test-review` 🔵: 動作確認（実装後）
+
+**Issue種別:**
+- `feature` 🟢: 新機能実装
+- `bug` 🔴: バグ修正
+- `improvement` 🟠: 既存機能改善
+- `critical` 🔴: 緊急対応
+
+### ワークフロー（確定版）
+**新機能・改善**: Issue作成→Review(spec)→Backlog→Today→In Progress→Review(test)→Done
+**緊急バグ**: Issue作成→In Progress→Review(test)→Done
+**通常バグ**: Issue作成→Review(spec)→Backlog→Today→In Progress→Review(test)→Done
+
+### ⚠️ 重要ルール（厳守必須）
+- **全問題はIssue作成必須**: 発見→即修正禁止
+- **仕様確認なしの実装禁止**: 緊急バグ以外は必須
+- **適切なラベル付与**: 種別・レビュー段階の明確化
+
+詳細は `README-github-projects-workflow-final.md` 参照。
+
 ## Git ブランチ戦略
 
 全フィーチャーブランチをdevelopに統合完了。詳細は `README-phase-5.5-integration.md` 参照。
@@ -722,7 +769,11 @@ Jest・Playwright・Sentry・Web Vitals監視基盤完備。詳細は `docs/test
 
 ### 主要実装ガイド
 
-- **[Phase 6.1: タイムライン機能](./README-phase-6.1-timeline.md)** - フォロー・タイムライン・ナビゲーション完全ガイド ✨ **最新実装**
+- **[GitHub Projects ワークフロー確定版](./README-github-projects-workflow-final.md)** - 5段階カラム・ラベル体系・フロー確定版 ✨ **最新確定版**
+- **[GitHub Projects 機能追加フロー厳守ガイド](./README-github-projects-strict-workflow.md)** - 仕様確認必須・勝手実装禁止・厳格フロー ⚠️ **重要・厳守必須**
+- **[GitHub Projects自動化システム（改訂版）](./README-github-projects-automation-revised.md)** - 5段階レビューフロー・ユーザー動作確認統合ガイド
+- **[GitHub Projects自動化システム（初版）](./README-github-projects-automation.md)** - CLI統合・自動Issue管理・進捗追跡完全ガイド
+- **[Phase 6.1: タイムライン機能](./README-phase-6.1-timeline.md)** - フォロー・タイムライン・ナビゲーション完全ガイド
 - **[Phase 6.0: SNS機能 MongoDB拡張スキーマ](./README-phase-6-sns-schema.md)** - DryRunテスト完了
 - **[Phase 5: セキュリティ強化](./README-phase-5-security.md)** - エンタープライズ級セキュリティ完全ガイド
 - **[会員制掲示板CRUD機能](./README-board-crud.md)** - タイトル付き投稿・権限管理
