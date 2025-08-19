@@ -304,7 +304,12 @@ UserSchema.methods.updateStats = async function (): Promise<void> {
       this.stats.commentsReceived = await Comment.countDocuments({ postUserId: this._id });
     }
     
-    await this.save();
+    // 統計情報のみの部分更新（バリデーションを回避）
+    await mongoose.model('User').updateOne(
+      { _id: this._id },
+      { $set: { stats: this.stats } },
+      { runValidators: false }
+    );
   } catch (error) {
     console.error('統計情報の更新に失敗しました:', error);
   }
