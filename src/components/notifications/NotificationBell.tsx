@@ -5,6 +5,7 @@ import { Badge, IconButton, Popover, Box, Typography, Button, Divider, alpha } f
 import {
   Notifications as NotificationsIcon,
   NotificationsNone as NotificationsNoneIcon,
+  DoneAll as DoneAllIcon,
 } from '@mui/icons-material';
 import { useSession } from 'next-auth/react';
 import { NotificationList } from './NotificationList';
@@ -23,6 +24,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
   const [unreadCount, setUnreadCount] = useState(0);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [loading, setLoading] = useState(false);
+  const [markingAllRead, setMarkingAllRead] = useState(false);
 
   // 未読通知数の取得
   const fetchUnreadCount = useCallback(async () => {
@@ -78,6 +80,36 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
       }
     } catch (error) {
       console.error('通知既読エラー:', error);
+    }
+  };
+
+  // 全通知を既読にする（一括既読）
+  const markAllNotificationsAsRead = async () => {
+    if (!session?.user?.id || unreadCount === 0 || markingAllRead) return;
+
+    try {
+      setMarkingAllRead(true);
+      const response = await fetch('/api/notifications', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'mark_all_read', // 全ての未読通知を既読に
+        }),
+      });
+
+      if (response.ok) {
+        setUnreadCount(0); // 未読カウントをリセット
+        // 通知リストの更新を通知
+        window.dispatchEvent(new CustomEvent('notification-update'));
+      } else {
+        console.error('一括既読に失敗しました');
+      }
+    } catch (error) {
+      console.error('一括既読エラー:', error);
+    } finally {
+      setMarkingAllRead(false);
     }
   };
 
@@ -191,9 +223,22 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                 )}
               </Typography>
 
-              <Button component={Link} href="/notifications" size="small" onClick={handleClose}>
-                すべて見る
-              </Button>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                {unreadCount > 0 && (
+                  <Button
+                    size="small"
+                    startIcon={<DoneAllIcon />}
+                    onClick={markAllNotificationsAsRead}
+                    disabled={markingAllRead}
+                    sx={{ minWidth: 'auto' }}
+                  >
+                    {markingAllRead ? '処理中...' : '一括既読'}
+                  </Button>
+                )}
+                <Button component={Link} href="/notifications" size="small" onClick={handleClose}>
+                  すべて見る
+                </Button>
+              </Box>
             </Box>
           </Box>
 

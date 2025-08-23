@@ -10,7 +10,6 @@ import {
 import {
   LightMode as LightModeIcon,
   DarkMode as DarkModeIcon,
-  SettingsBrightness as SystemIcon,
 } from '@mui/icons-material';
 import { useTheme } from '@/providers/ThemeProvider';
 
@@ -18,32 +17,14 @@ export function ThemeToggle() {
   const { theme, toggleTheme, isDark } = useTheme();
   const muiTheme = useMUITheme();
 
-  // テーマアイコンの取得
+  // テーマアイコンの取得（ライト・ダークのみ）
   const getThemeIcon = () => {
-    switch (theme) {
-      case 'light':
-        return <LightModeIcon />;
-      case 'dark':
-        return <DarkModeIcon />;
-      case 'system':
-        return <SystemIcon />;
-      default:
-        return <LightModeIcon />;
-    }
+    return isDark ? <DarkModeIcon /> : <LightModeIcon />;
   };
 
-  // ツールチップテキストの取得
+  // ツールチップテキストの取得（ライト・ダークのみ）
   const getTooltipText = () => {
-    switch (theme) {
-      case 'light':
-        return 'ライトモード → ダークモード';
-      case 'dark':
-        return 'ダークモード → システム設定';
-      case 'system':
-        return 'システム設定 → ライトモード';
-      default:
-        return 'テーマ切り替え';
-    }
+    return isDark ? 'ダークモード → ライトモード' : 'ライトモード → ダークモード';
   };
 
   return (

@@ -10,8 +10,8 @@ import { getTheme } from '@/theme/theme';
 interface ThemeContextType {
   isDark: boolean;
   toggleTheme: () => void;
-  setTheme: (theme: 'light' | 'dark' | 'system') => void;
-  theme: 'light' | 'dark' | 'system';
+  setTheme: (theme: 'light' | 'dark') => void;
+  theme: 'light' | 'dark';
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -31,7 +31,7 @@ interface ThemeProviderProps {
 
 export function CustomThemeProvider({ children }: ThemeProviderProps) {
   const [mounted, setMounted] = useState(false);
-  const [currentTheme, setCurrentTheme] = useState<'light' | 'dark' | 'system'>('system');
+  const [currentTheme, setCurrentTheme] = useState<'light' | 'dark'>('light');
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
 
   // マウント後の初期化
@@ -39,54 +39,30 @@ export function CustomThemeProvider({ children }: ThemeProviderProps) {
     setMounted(true);
     
     // localStorage からテーマ設定を取得
-    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | 'system' | null;
-    if (savedTheme) {
+    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
+    if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
       setCurrentTheme(savedTheme);
+      setResolvedTheme(savedTheme);
+    } else {
+      // デフォルトはライトテーマ
+      setCurrentTheme('light');
+      setResolvedTheme('light');
     }
-    
-    // システムテーマの検出
-    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    setResolvedTheme(savedTheme === 'system' || !savedTheme ? systemTheme : (savedTheme as 'light' | 'dark'));
   }, []);
-
-  // システムテーマ変更の監視
-  useEffect(() => {
-    if (!mounted) return;
-
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (e: MediaQueryListEvent) => {
-      if (currentTheme === 'system') {
-        setResolvedTheme(e.matches ? 'dark' : 'light');
-      }
-    };
-
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, [currentTheme, mounted]);
 
   // テーマ変更時の処理
   useEffect(() => {
     if (!mounted) return;
-
-    if (currentTheme === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      setResolvedTheme(systemTheme);
-    } else {
-      setResolvedTheme(currentTheme as 'light' | 'dark');
-    }
     
+    setResolvedTheme(currentTheme);
     localStorage.setItem('theme', currentTheme);
   }, [currentTheme, mounted]);
 
   const toggleTheme = () => {
-    setCurrentTheme(prev => {
-      if (prev === 'light') return 'dark';
-      if (prev === 'dark') return 'system';
-      return 'light';
-    });
+    setCurrentTheme(prev => prev === 'light' ? 'dark' : 'light');
   };
 
-  const setTheme = (theme: 'light' | 'dark' | 'system') => {
+  const setTheme = (theme: 'light' | 'dark') => {
     setCurrentTheme(theme);
   };
 
@@ -105,7 +81,7 @@ export function CustomThemeProvider({ children }: ThemeProviderProps) {
       <NextThemesProvider
         attribute="data-theme"
         defaultTheme="light"
-        enableSystem
+        enableSystem={false}
         disableTransitionOnChange={false}
         storageKey="theme"
         forcedTheme={!mounted ? 'light' : undefined}
