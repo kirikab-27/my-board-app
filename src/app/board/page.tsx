@@ -1,16 +1,16 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   Container,
   Typography,
   Box,
-  CircularProgress,
   Alert,
   AppBar,
   Toolbar,
   Button,
   Fab,
+  Paper,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { useRouter } from 'next/navigation';
@@ -18,313 +18,196 @@ import Link from 'next/link';
 import PostList from '@/components/PostList';
 import SearchBar from '@/components/SearchBar';
 import SortSelector, { SortOption } from '@/components/SortSelector';
-import Pagination from '@/components/Pagination';
 import { AuthButton } from '@/components/auth/AuthButton';
 import { AuthGuard } from '@/components/auth/AuthGuardImproved';
-import { convertSortOption } from '@/utils/sortUtils';
-
-interface Post {
-  _id: string;
-  title?: string;
-  content: string;
-  likes: number;
-  likedBy: string[];
-  userId?: string;
-  authorName?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface PaginationInfo {
-  currentPage: number;
-  totalPages: number;
-  totalCount: number;
-  limit: number;
-  hasNextPage: boolean;
-  hasPrevPage: boolean;
-}
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import { InfiniteScrollContainer } from '@/components/InfiniteScrollContainer';
 
 export default function BoardPage() {
   const router = useRouter();
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchLoading, setSearchLoading] = useState(false);
-  const [searchResults, setSearchResults] = useState<Post[]>([]);
-  const [isSearchMode, setIsSearchMode] = useState(false);
-  const [sortOption, setSortOption] = useState<SortOption>('createdAt_desc');
-  const [pagination, setPagination] = useState<PaginationInfo>({
-    currentPage: 1,
-    totalPages: 1,
-    totalCount: 0,
-    limit: 10,
-    hasNextPage: false,
-    hasPrevPage: false,
-  });
-  const [searchPagination, setSearchPagination] = useState<PaginationInfo>({
-    currentPage: 1,
-    totalPages: 1,
-    totalCount: 0,
-    limit: 10,
-    hasNextPage: false,
-    hasPrevPage: false,
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState<SortOption>('createdAt_desc');
+  
+  // 無限スクロールフックを使用
+  const {
+    posts,
+    loading,
+    error,
+    hasNextPage,
+    loadMore,
+    refresh,
+    newPostsCount,
+    showNewPosts,
+    totalCount,
+    shouldUseVirtualization
+  } = useInfiniteScroll({
+    type: 'board',
+    limit: 20,
+    pollingInterval: 5000, // 5秒ごとに新着投稿をチェック
+    sortBy // ソート条件を渡す
   });
 
-  const fetchPosts = useCallback(
-    async (page: number = 1, limit: number = 10) => {
-      try {
-        setError('');
-        const { sortBy, sortOrder } = convertSortOption(sortOption);
-        const params = new URLSearchParams({
-          page: page.toString(),
-          limit: limit.toString(),
-          sortBy,
-          sortOrder,
-        });
+  // 投稿削除時のコールバック
+  const handlePostDeleted = useCallback((deletedPostId: string) => {
+    // 削除後にリフレッシュ
+    refresh();
+  }, [refresh]);
 
-        const response = await fetch(`/api/posts?${params}`);
+  // 投稿更新時のコールバック
+  const handlePostUpdated = useCallback((updatedPost: any) => {
+    // 更新後にリフレッシュ
+    refresh();
+  }, [refresh]);
 
-        if (!response.ok) {
-          throw new Error('投稿の取得に失敗しました');
-        }
-
-        const data = await response.json();
-        setPosts(data.posts);
-        setPagination(data.pagination);
-      } catch (error) {
-        setError(error instanceof Error ? error.message : '投稿の取得に失敗しました');
-      } finally {
-        setLoading(false);
-      }
-    },
-    [sortOption]
-  );
-
-  useEffect(() => {
-    fetchPosts(1, pagination.limit);
-  }, [fetchPosts, pagination.limit]);
-
-  const handlePostCreated = useCallback(() => {
-    // 新しい投稿が作成されたら、最初のページに戻る
-    if (isSearchMode) {
-      setIsSearchMode(false);
-      setSearchQuery('');
-    }
-    fetchPosts(1, pagination.limit);
-  }, [isSearchMode, pagination.limit, fetchPosts]);
-
-  const handleSearch = useCallback(
-    async (query: string, page: number = 1, limit: number = 10) => {
-      setSearchQuery(query);
-      setSearchLoading(true);
-      setError('');
-
-      try {
-        const { sortBy, sortOrder } = convertSortOption(sortOption);
-        const params = new URLSearchParams({
-          q: query,
-          page: page.toString(),
-          limit: limit.toString(),
-          sortBy,
-          sortOrder,
-        });
-
-        const response = await fetch(`/api/posts/search?${params}`);
-
-        if (!response.ok) {
-          throw new Error('検索に失敗しました');
-        }
-
-        const data = await response.json();
-        setSearchResults(data.posts);
-        setSearchPagination(data.pagination);
-        setIsSearchMode(true);
-      } catch (error) {
-        setError(error instanceof Error ? error.message : '検索に失敗しました');
-        setSearchResults([]);
-      } finally {
-        setSearchLoading(false);
-      }
-    },
-    [sortOption]
-  );
-
-  const handleClearSearch = useCallback(() => {
-    setSearchQuery('');
-    setSearchResults([]);
-    setIsSearchMode(false);
-    setError('');
+  // いいね更新時のコールバック
+  const handleLikeUpdate = useCallback((postId: string, newLikes: number, newLikedBy: string[]) => {
+    // いいね更新後にリフレッシュ（必要に応じて）
+    // 今回はローカル更新で対応可能なのでリフレッシュしない
   }, []);
 
-  const handleSortChange = useCallback(
-    (newSortOption: SortOption) => {
-      setSortOption(newSortOption);
-      // ソート方法が変更されたら、現在のページを1に戻して再取得
-      if (isSearchMode && searchQuery) {
-        handleSearch(searchQuery, 1, searchPagination.limit);
-      } else {
-        fetchPosts(1, pagination.limit);
-      }
-    },
-    [isSearchMode, searchQuery, searchPagination.limit, pagination.limit, handleSearch, fetchPosts]
-  );
+  // 投稿クリック時のコールバック
+  const handlePostClick = useCallback((post: any) => {
+    router.push(`/board/${post._id}`);
+  }, [router]);
 
-  const handlePageChange = useCallback(
-    (page: number) => {
-      if (isSearchMode && searchQuery) {
-        handleSearch(searchQuery, page, searchPagination.limit);
-      } else {
-        fetchPosts(page, pagination.limit);
-      }
-    },
-    [isSearchMode, searchQuery, searchPagination.limit, pagination.limit, handleSearch, fetchPosts]
-  );
+  // ソート変更時のコールバック
+  const handleSortChange = useCallback((newSortBy: SortOption) => {
+    setSortBy(newSortBy);
+    // ソート変更後にリフレッシュして新しい順序で投稿を取得
+    refresh();
+  }, [refresh]);
 
-  const handleLimitChange = useCallback(
-    (limit: number) => {
-      if (isSearchMode && searchQuery) {
-        setSearchPagination((prev) => ({ ...prev, limit }));
-        handleSearch(searchQuery, 1, limit);
-      } else {
-        setPagination((prev) => ({ ...prev, limit }));
-        fetchPosts(1, limit);
-      }
-    },
-    [isSearchMode, searchQuery, handleSearch, fetchPosts]
-  );
+  // 検索フィルタリング
+  const filteredPosts = searchTerm
+    ? posts.filter(post =>
+        post.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (post.title && post.title.toLowerCase().includes(searchTerm.toLowerCase()))
+      )
+    : posts;
 
-  // SearchBarコンポーネント用のラッパー関数
-  const handleSearchQuery = useCallback(
-    (query: string) => {
-      handleSearch(query, 1, searchPagination.limit);
-    },
-    [handleSearch, searchPagination.limit]
-  );
-
-  // 投稿クリック時のナビゲーション処理
-  const handlePostClick = useCallback(
-    (post: Post) => {
-      router.push(`/board/${post._id}`);
-    },
-    [router]
-  );
-
-  // 投稿編集時のナビゲーション処理
-  const handleEditPost = useCallback(
-    (post: Post) => {
-      router.push(`/board/${post._id}/edit`);
-    },
-    [router]
-  );
+  // 仮想スクロール用の投稿レンダリング関数
+  const renderPost = useCallback((index: number, post: any) => (
+    <Box key={post._id} sx={{ mb: 2 }}>
+      <PostList
+        posts={[post]}
+        onPostDeleted={handlePostDeleted}
+        onPostUpdated={handlePostUpdated}
+        onLikeUpdate={handleLikeUpdate}
+        searchTerm={searchTerm}
+        sessionUserId={null}
+      />
+    </Box>
+  ), [handlePostDeleted, handlePostUpdated, handleLikeUpdate, searchTerm]);
 
   return (
     <AuthGuard>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            会員掲示板
-          </Typography>
-          <AuthButton />
-        </Toolbar>
-      </AppBar>
+      <Box sx={{ flexGrow: 1 }}>
+        <AppBar position="static" sx={{ mb: 3 }}>
+          <Toolbar>
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+              掲示板
+            </Typography>
+            <AuthButton />
+          </Toolbar>
+        </AppBar>
 
-      <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
-        <SearchBar
-          onSearch={handleSearchQuery}
-          onClear={handleClearSearch}
-          loading={searchLoading}
-          resultCount={isSearchMode ? searchPagination.totalCount : undefined}
-        />
-
-        {/* ヘッダーセクション：タイトル・新規投稿ボタン・並び替え・ページネーション */}
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexDirection: { xs: 'column', sm: 'row' },
-            gap: { xs: 2, sm: 0 },
-            mb: 2,
-          }}
-        >
-          {/* 左側：タイトルと新規投稿ボタン */}
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 2,
-              order: { xs: 1, sm: 1 },
-              width: { xs: '100%', sm: 'auto' },
-              justifyContent: { xs: 'space-between', sm: 'flex-start' },
-            }}
-          >
-            <Typography variant="h5">{isSearchMode ? '検索結果' : '投稿一覧'}</Typography>
-            <Button
-              component={Link}
-              href="/board/create"
-              variant="contained"
-              startIcon={<AddIcon />}
-              sx={{ whiteSpace: 'nowrap' }}
-            >
-              新規投稿
-            </Button>
+        <Container maxWidth="md">
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h4" component="h1" gutterBottom>
+              みんなの投稿
+              {totalCount !== null && (
+                <Typography component="span" variant="h6" color="text.secondary" sx={{ ml: 2 }}>
+                  （{totalCount}件）
+                </Typography>
+              )}
+            </Typography>
           </Box>
 
-          {/* 右側：並び替えとページネーション */}
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 2,
-              order: { xs: 2, sm: 2 },
-              flexDirection: { xs: 'column', sm: 'row' },
-              width: { xs: '100%', sm: 'auto' },
-              justifyContent: { xs: 'flex-start', sm: 'flex-end' },
-            }}
-          >
-            <SortSelector value={sortOption} onChange={handleSortChange} />
-            <Pagination
-              pagination={isSearchMode ? searchPagination : pagination}
-              onPageChange={handlePageChange}
-              onLimitChange={handleLimitChange}
+          {/* 検索バー */}
+          <Box sx={{ mb: 3 }}>
+            <SearchBar 
+              onSearch={setSearchTerm} 
+              onClear={() => setSearchTerm('')}
+              placeholder="投稿を検索..."
             />
           </Box>
-        </Box>
 
-        {loading ? (
-          <Box display="flex" justifyContent="center" my={4}>
-            <CircularProgress />
-          </Box>
-        ) : error ? (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        ) : (
-          <PostList
-            posts={isSearchMode ? searchResults : posts}
-            onRefresh={handlePostCreated}
-            onEditPost={handleEditPost}
-            onPostClick={handlePostClick}
-            searchQuery={isSearchMode ? searchQuery : undefined}
-          />
-        )}
+          {/* ソート機能 */}
+          <Paper sx={{ p: 2, mb: 3, borderRadius: 2, boxShadow: 1 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: 2 
+            }}>
+              <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                並び順
+              </Typography>
+              <SortSelector
+                value={sortBy}
+                onChange={handleSortChange}
+                disabled={loading}
+                size="small"
+              />
+            </Box>
+          </Paper>
 
-        {/* フローティング新規投稿ボタン（モバイル用） */}
-        <Fab
-          component={Link}
-          href="/board/create"
-          color="primary"
-          sx={{
-            position: 'fixed',
-            bottom: 16,
-            right: 16,
-            display: { xs: 'flex', sm: 'none' }, // モバイルのみ表示
-          }}
-        >
-          <AddIcon />
-        </Fab>
-      </Container>
+          {/* 無限スクロールコンテナ */}
+          <InfiniteScrollContainer
+            posts={filteredPosts}
+            renderPost={renderPost}
+            loading={loading}
+            error={error}
+            hasNextPage={hasNextPage}
+            onLoadMore={loadMore}
+            onRefresh={refresh}
+            newItemsCount={newPostsCount}
+            onShowNewItems={showNewPosts}
+            endMessage="すべての投稿を読み込みました"
+            threshold={300}
+            showSkeleton={true}
+            skeletonCount={3}
+            useVirtualization={shouldUseVirtualization}
+          >
+            {filteredPosts.length > 0 ? (
+              <PostList
+                posts={filteredPosts}
+                onPostDeleted={handlePostDeleted}
+                onPostUpdated={handlePostUpdated}
+                onLikeUpdate={handleLikeUpdate}
+                onPostClick={handlePostClick}
+                searchTerm={searchTerm}
+                sessionUserId={null}
+              />
+            ) : (
+              !loading && (
+                <Alert severity="info" sx={{ mt: 2 }}>
+                  {searchTerm
+                    ? '検索結果が見つかりませんでした。'
+                    : 'まだ投稿がありません。最初の投稿を作成してみましょう！'}
+                </Alert>
+              )
+            )}
+          </InfiniteScrollContainer>
+
+          {/* 投稿作成ボタン（固定） */}
+          <Fab
+            color="primary"
+            aria-label="add"
+            component={Link}
+            href="/board/create"
+            sx={{
+              position: 'fixed',
+              bottom: 16,
+              right: 16,
+              zIndex: 1000,
+            }}
+          >
+            <AddIcon />
+          </Fab>
+        </Container>
+      </Box>
     </AuthGuard>
   );
 }

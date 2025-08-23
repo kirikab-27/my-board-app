@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import {
@@ -15,7 +15,6 @@ import {
   Chip,
   Alert,
   Fab,
-  Skeleton,
   Paper,
   Divider,
   useTheme,
@@ -26,6 +25,7 @@ import {
 import {
   Refresh as RefreshIcon,
   FavoriteOutlined,
+  FavoriteBorder,
   ChatBubbleOutline,
   Share,
   MoreVert,
@@ -36,267 +36,85 @@ import { formatDistanceToNow } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import FollowButton from '@/components/follow/FollowButton';
+import SortSelector, { SortOption } from '@/components/SortSelector';
 import { AuthButton } from '@/components/auth/AuthButton';
-
-// タイムライン投稿の型定義
-interface TimelinePost {
-  _id: string;
-  title?: string;
-  content: string;
-  likes: number;
-  createdAt: string;
-  userId: string;
-  author: {
-    _id: string;
-    name: string;
-    username?: string;
-    avatar?: string;
-    isVerified?: boolean;
-  };
-  isFollowing: boolean;
-  mediaIds?: string[];
-  media?: Array<{
-    type: 'image' | 'video';
-    url: string;
-    thumbnailUrl?: string;
-    alt?: string;
-    width?: number;
-    height?: number;
-  }>;
-}
-
-// タイムラインAPIレスポンス型
-interface TimelineResponse {
-  posts: TimelinePost[];
-  pagination: {
-    currentPage: number;
-    hasNextPage: boolean;
-    nextCursor: string | null;
-    totalLoaded: number;
-  };
-  metadata: {
-    followingCount: number;
-    followerCount: number;
-    queryTime: string;
-    targetUsers: number;
-  };
-}
-
-// 新着チェックレスポンス型
-interface UpdatesResponse {
-  hasNewPosts: boolean;
-  newPostsCount: number;
-  lastChecked: string;
-}
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import { InfiniteScrollContainer } from '@/components/InfiniteScrollContainer';
+import Link from 'next/link';
 
 export default function TimelinePage() {
-  const { status } = useSession();
+  const { data: session } = useSession();
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
-  // 認証チェック
-  const { isLoading: authLoading } = useRequireAuth({
-    redirectTo: '/login?callbackUrl=' + encodeURIComponent('/timeline'),
+  const [sortBy, setSortBy] = useState<SortOption>('createdAt_desc');
+  
+  // 認証必須
+  useRequireAuth({ redirectTo: '/login' });
+  
+  // 無限スクロールフックを使用
+  const {
+    posts,
+    loading,
+    error,
+    hasNextPage,
+    loadMore,
+    refresh,
+    newPostsCount,
+    showNewPosts,
+    totalCount,
+    shouldUseVirtualization
+  } = useInfiniteScroll({
+    type: 'timeline',
+    limit: 20,
+    pollingInterval: 5000, // 5秒ごとに新着投稿をチェック
+    sortBy // ソート条件を渡す
   });
 
-  // 状態管理
-  const [posts, setPosts] = useState<TimelinePost[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [hasNextPage, setHasNextPage] = useState(false);
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
-  const [metadata, setMetadata] = useState<TimelineResponse['metadata'] | null>(null);
-
-  // リアルタイム更新関連
-  const [newPostsCount, setNewPostsCount] = useState(0);
-  const [showNewPostsBanner, setShowNewPostsBanner] = useState(false);
-  const [lastFetchTime, setLastFetchTime] = useState<string>(new Date().toISOString());
-
-  // スクロール関連
-  const [showScrollTop, setShowScrollTop] = useState(false);
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const loadMoreRef = useRef<HTMLDivElement>(null);
-
-  // タイムライン取得関数
-  const fetchTimeline = useCallback(
-    async (page = 1, cursor: string | null = null, append = false) => {
-      try {
-        if (!append) {
-          setLoading(true);
-          setError(null);
-        } else {
-          setLoadingMore(true);
-        }
-
-        const params = new URLSearchParams();
-        if (page > 1) params.append('page', page.toString());
-        if (cursor) params.append('cursor', cursor);
-        params.append('limit', '20');
-
-        const response = await fetch(`/api/timeline?${params}`);
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'タイムラインの取得に失敗しました');
-        }
-
-        const data: TimelineResponse = await response.json();
-
-        if (append) {
-          setPosts((prev) => [...prev, ...data.posts]);
-        } else {
-          setPosts(data.posts);
-          setLastFetchTime(new Date().toISOString());
-        }
-
-        setHasNextPage(data.pagination.hasNextPage);
-        setNextCursor(data.pagination.nextCursor);
-        setMetadata(data.metadata);
-      } catch (err) {
-        console.error('タイムライン取得エラー:', err);
-        setError(err instanceof Error ? err.message : 'エラーが発生しました');
-      } finally {
-        setLoading(false);
-        setLoadingMore(false);
-        setRefreshing(false);
-      }
-    },
-    []
-  );
-
-  // 新着チェック関数
-  const checkForUpdates = useCallback(async () => {
+  // いいね処理
+  const handleLike = useCallback(async (postId: string, isLiked: boolean) => {
+    if (!session?.user?.id) return;
+    
     try {
-      const params = new URLSearchParams();
-      params.append('since', lastFetchTime);
-
-      const response = await fetch(`/api/timeline/updates?${params}`);
-
+      const method = isLiked ? 'DELETE' : 'POST';
+      const response = await fetch(`/api/posts/${postId}/like`, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
       if (response.ok) {
-        const data: UpdatesResponse = await response.json();
-
-        if (data.hasNewPosts && data.newPostsCount > 0) {
-          setNewPostsCount(data.newPostsCount);
-          setShowNewPostsBanner(true);
-        }
+        // ローカル更新（必要に応じて）
+        // 今回はリフレッシュで対応
+        refresh();
       }
-    } catch (err) {
-      console.error('新着チェックエラー:', err);
+    } catch (error) {
+      console.error('いいねエラー:', error);
     }
-  }, [lastFetchTime]);
+  }, [session, refresh]);
 
-  // 無限スクロール設定
-  useEffect(() => {
-    if (!loadMoreRef.current) return;
+  // 投稿クリック処理
+  const handlePostClick = useCallback((post: any) => {
+    sessionStorage.setItem('returnPath', '/timeline');
+    router.push(`/board/${post._id}`);
+  }, [router]);
 
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !loadingMore) {
-          fetchTimeline(0, nextCursor, true);
-        }
-      },
-      { threshold: 0.1 }
-    );
+  // ソート変更時のコールバック
+  const handleSortChange = useCallback((newSortBy: SortOption) => {
+    setSortBy(newSortBy);
+    // ソート変更後にリフレッシュして新しい順序で投稿を取得
+    refresh();
+  }, [refresh]);
 
-    observerRef.current.observe(loadMoreRef.current);
-
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  }, [hasNextPage, loadingMore, nextCursor, fetchTimeline]);
-
-  // スクロール位置監視
-  useEffect(() => {
-    const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 400);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+  // トップへスクロール
+  const scrollToTop = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
-  // 初回読み込み
-  useEffect(() => {
-    if (status === 'authenticated') {
-      fetchTimeline();
-    }
-  }, [status, fetchTimeline]);
-
-  // 30秒ごとの新着チェック
-  useEffect(() => {
-    if (status === 'authenticated') {
-      const interval = setInterval(checkForUpdates, 30000);
-      return () => clearInterval(interval);
-    }
-  }, [status, checkForUpdates]);
-
-  // プルトゥリフレッシュ
-  const handleRefresh = () => {
-    setRefreshing(true);
-    setShowNewPostsBanner(false);
-    setNewPostsCount(0);
-    fetchTimeline();
-  };
-
-  // 新着投稿を読み込み
-  const loadNewPosts = () => {
-    setShowNewPostsBanner(false);
-    setNewPostsCount(0);
-    handleRefresh();
-  };
-
-  // トップにスクロール
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  // 相対時間フォーマット (未使用 - 将来の機能用)
-  // const formatRelativeTime = (dateString: string) => {
-  //   try {
-  //     return formatDistanceToNow(new Date(dateString), {
-  //       addSuffix: true,
-  //       locale: ja
-  //     });
-  //   } catch {
-  //     return '時刻不明';
-  //   }
-  // };
-
-  // 認証中の場合
-  if (authLoading || status === 'loading') {
-    return (
-      <Container maxWidth="md" sx={{ py: 3 }}>
-        <TimelineSkeleton />
-      </Container>
-    );
-  }
-
-  // エラー状態
-  if (error) {
-    return (
-      <Container maxWidth="md" sx={{ py: 3 }}>
-        <Alert
-          severity="error"
-          action={
-            <Button color="inherit" size="small" onClick={() => fetchTimeline()}>
-              再試行
-            </Button>
-          }
-        >
-          {error}
-        </Alert>
-      </Container>
-    );
-  }
-
   return (
-    <>
-      <AppBar position="static">
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+      <AppBar position="sticky" sx={{ mb: 3 }}>
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             タイムライン
@@ -305,395 +123,254 @@ export default function TimelinePage() {
         </Toolbar>
       </AppBar>
 
-      <Container maxWidth="md" sx={{ py: 2, position: 'relative' }}>
-        {/* ページヘッダー */}
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-          <Typography variant="h4" component="h1" fontWeight="bold">
-            タイムライン
+      <Container maxWidth="md">
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h4" component="h1" gutterBottom>
+            フォロー中のユーザーの投稿
+            {totalCount !== null && totalCount > 0 && (
+              <Typography component="span" variant="h6" color="text.secondary" sx={{ ml: 2 }}>
+                （{totalCount}件）
+              </Typography>
+            )}
           </Typography>
+        </Box>
 
-          <Box display="flex" gap={1}>
-            <IconButton onClick={handleRefresh} disabled={refreshing} color="primary">
-              <RefreshIcon />
-            </IconButton>
-
-            {metadata && (
-              <Chip label={`${metadata.followingCount} フォロー中`} size="small" variant="outlined" />
-            )}
+        {/* ソート機能 */}
+        <Paper sx={{ p: 2, mb: 3, borderRadius: 2, boxShadow: 1 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: 2 
+          }}>
+            <Typography variant="body2" color="text.secondary" fontWeight={500}>
+              並び順
+            </Typography>
+            <SortSelector
+              value={sortBy}
+              onChange={handleSortChange}
+              disabled={loading}
+              size="small"
+            />
           </Box>
-        </Box>
+        </Paper>
 
-      {/* 新着投稿通知バナー */}
-      {showNewPostsBanner && (
-        <Alert
-          severity="info"
-          sx={{ mb: 2, cursor: 'pointer' }}
-          onClick={loadNewPosts}
-          action={
-            <Button color="inherit" size="small">
-              読み込む
-            </Button>
-          }
+        {/* 無限スクロールコンテナ */}
+        <InfiniteScrollContainer
+          loading={loading}
+          error={error}
+          hasNextPage={hasNextPage}
+          onLoadMore={loadMore}
+          onRefresh={refresh}
+          newItemsCount={newPostsCount}
+          onShowNewItems={showNewPosts}
+          endMessage="すべての投稿を読み込みました"
+          threshold={300}
+          showSkeleton={true}
+          skeletonCount={3}
         >
-          {newPostsCount}件の新しい投稿があります
-        </Alert>
-      )}
+          {posts.length > 0 ? (
+            posts.map((post) => {
+              const isLiked = post.likedBy?.includes(session?.user?.id || '');
+              
+              return (
+                <Card
+                  key={post._id}
+                  sx={{
+                    mb: 2,
+                    cursor: 'pointer',
+                    '&:hover': {
+                      boxShadow: 3,
+                    },
+                  }}
+                  onClick={() => handlePostClick(post)}
+                >
+                  <CardContent>
+                    {/* ユーザー情報 */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <Avatar
+                        src={post.userId?.avatar}
+                        alt={post.userId?.name}
+                        sx={{ mr: 2 }}
+                      >
+                        {post.userId?.name?.charAt(0)}
+                      </Avatar>
+                      <Box sx={{ flexGrow: 1 }}>
+                        <Typography variant="subtitle1" fontWeight="bold">
+                          {post.userId?.displayName || post.userId?.name || '名無しさん'}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          @{post.userId?.username || 'unknown'} ・{' '}
+                          {formatDistanceToNow(new Date(post.createdAt), {
+                            addSuffix: true,
+                            locale: ja,
+                          })}
+                        </Typography>
+                      </Box>
+                      {post.userId?._id !== session?.user?.id && (
+                        <div onClick={(e) => e.stopPropagation()}>
+                          <FollowButton
+                            targetUserId={post.userId?._id || ''}
+                            size="small"
+                          />
+                        </div>
+                      )}
+                    </Box>
 
-      {/* メイン投稿リスト */}
-      {loading ? (
-        <TimelineSkeleton />
-      ) : posts.length === 0 ? (
-        <EmptyTimeline onRefresh={handleRefresh} />
-      ) : (
-        <Box>
-          {posts.map((post) => (
-            <PostCard key={post._id} post={post} />
-          ))}
+                    {/* 投稿内容 */}
+                    {post.title && (
+                      <Typography variant="h6" gutterBottom>
+                        {post.title}
+                      </Typography>
+                    )}
+                    <Typography variant="body1" sx={{ mb: 2, whiteSpace: 'pre-wrap' }}>
+                      {post.content}
+                    </Typography>
 
-          {/* 無限スクロール用のトリガー */}
-          <div ref={loadMoreRef} style={{ height: '20px' }}>
-            {loadingMore && (
-              <Box display="flex" justifyContent="center" py={2}>
-                <Typography variant="body2" color="text.secondary">
-                  読み込み中...
+                    {/* ハッシュタグ */}
+                    {post.hashtags && post.hashtags.length > 0 && (
+                      <Box sx={{ mb: 2 }}>
+                        {post.hashtags.map((tag) => (
+                          <Chip
+                            key={tag._id}
+                            label={`#${tag.name}`}
+                            size="small"
+                            sx={{ mr: 1, mb: 1 }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`/hashtags/${tag.name}`);
+                            }}
+                          />
+                        ))}
+                      </Box>
+                    )}
+
+                    {/* メディア表示 */}
+                    {post.media && post.media.length > 0 && (
+                      <Box sx={{ mb: 2, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                        {post.media.map((media, index) => (
+                          <Box
+                            key={index}
+                            sx={{
+                              width: post.media!.length === 1 ? '100%' : 'calc(50% - 4px)',
+                              aspectRatio: '16/9',
+                              borderRadius: 2,
+                              overflow: 'hidden',
+                              bgcolor: 'grey.100',
+                            }}
+                          >
+                            {media.type.startsWith('image') ? (
+                              <img
+                                src={media.url}
+                                alt=""
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  objectFit: 'cover',
+                                }}
+                              />
+                            ) : (
+                              <video
+                                src={media.url}
+                                controls
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  objectFit: 'cover',
+                                }}
+                              />
+                            )}
+                          </Box>
+                        ))}
+                      </Box>
+                    )}
+
+                    <Divider sx={{ my: 1 }} />
+
+                    {/* アクションボタン */}
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleLike(post._id, isLiked);
+                        }}
+                        color={isLiked ? 'error' : 'default'}
+                      >
+                        {isLiked ? <FavoriteOutlined /> : <FavoriteBorder />}
+                        <Typography variant="caption" sx={{ ml: 0.5 }}>
+                          {post.likes}
+                        </Typography>
+                      </IconButton>
+                      
+                      <IconButton size="small">
+                        <ChatBubbleOutline />
+                      </IconButton>
+                      
+                      <IconButton size="small">
+                        <Share />
+                      </IconButton>
+                      
+                      <IconButton size="small">
+                        <MoreVert />
+                      </IconButton>
+                    </Box>
+                  </CardContent>
+                </Card>
+              );
+            })
+          ) : (
+            !loading && (
+              <Paper sx={{ p: 4, textAlign: 'center' }}>
+                <Typography variant="h6" gutterBottom>
+                  タイムラインに投稿がありません
                 </Typography>
-              </Box>
-            )}
-          </div>
-        </Box>
-      )}
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  他のユーザーをフォローして、タイムラインを充実させましょう！
+                </Typography>
+                <Button
+                  variant="contained"
+                  onClick={() => router.push('/users')}
+                >
+                  ユーザーを探す
+                </Button>
+              </Paper>
+            )
+          )}
+        </InfiniteScrollContainer>
 
-      {/* フローティングアクションボタン */}
-      <Fab
-        color="primary"
-        sx={{
-          position: 'fixed',
-          bottom: isMobile ? 80 : 16,
-          right: 16,
-        }}
-        onClick={() => router.push('/board/create')}
-      >
-        <CreateIcon />
-      </Fab>
+        {/* スクロールトップボタン */}
+        {posts.length > 5 && (
+          <Fab
+            color="secondary"
+            size="small"
+            onClick={scrollToTop}
+            sx={{
+              position: 'fixed',
+              bottom: 80,
+              right: 16,
+              zIndex: 999,
+            }}
+          >
+            <ArrowUpward />
+          </Fab>
+        )}
 
-      {/* トップに戻るボタン */}
-      {showScrollTop && (
+        {/* 投稿作成ボタン */}
         <Fab
-          size="small"
-          color="secondary"
+          color="primary"
+          onClick={() => router.push('/board/create')}
           sx={{
             position: 'fixed',
-            bottom: isMobile ? 140 : 76,
+            bottom: 16,
             right: 16,
+            zIndex: 1000,
           }}
-          onClick={scrollToTop}
         >
-          <ArrowUpward />
+          <CreateIcon />
         </Fab>
-      )}
       </Container>
-    </>
-  );
-}
-
-// 投稿カードコンポーネント
-function PostCard({ post }: { post: TimelinePost }) {
-  const theme = useTheme();
-  const router = useRouter();
-  const { data: session } = useSession();
-
-  const handlePostClick = () => {
-    // sessionStorageに参照元を記録
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem('timeline_referrer', 'timeline');
-    }
-    router.push(`/board/${post._id}?from=timeline`);
-  };
-
-  const handleFollowChange = (isFollowing: boolean) => {
-    // タイムライン投稿のフォロー状態を更新
-    // 実際のアプリケーションではparent componentに通知する必要がある
-    console.log(
-      `フォロー状態変更: ${post.author?.name || '不明なユーザー'} - ${isFollowing ? 'フォロー' : 'アンフォロー'}`
-    );
-  };
-
-  // 自分の投稿かどうかチェック
-  const isOwnPost = session?.user?.id === post.userId;
-
-  // 投稿者情報の安全チェック
-  if (!post.author) {
-    return (
-      <Card sx={{ mb: 2 }}>
-        <CardContent>
-          <Alert severity="error">投稿者情報が見つかりません</Alert>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card
-      sx={{
-        mb: 2,
-        cursor: 'pointer',
-        transition: 'box-shadow 0.2s',
-        '&:hover': {
-          boxShadow: 3,
-        },
-      }}
-      onClick={handlePostClick}
-    >
-      <CardContent sx={{ pb: 1, '&:last-child': { pb: 1.5 } }}>
-        {/* 投稿者情報 */}
-        <Box display="flex" alignItems="center" mb={1.5}>
-          <Avatar src={post.author?.avatar} sx={{ width: 40, height: 40, mr: 1.5 }}>
-            {post.author?.name?.[0] || '?'}
-          </Avatar>
-
-          <Box flex={1}>
-            <Box display="flex" alignItems="center" gap={1}>
-              <Typography variant="subtitle1" fontWeight="bold">
-                {post.author?.name || '不明なユーザー'}
-              </Typography>
-              {post.author?.isVerified && <Chip label="認証済み" size="small" color="primary" />}
-              {post.isFollowing && <Chip label="フォロー中" size="small" variant="outlined" />}
-            </Box>
-            <Typography variant="body2" color="text.secondary">
-              {formatDistanceToNow(new Date(post.createdAt), {
-                addSuffix: true,
-                locale: ja,
-              })}
-            </Typography>
-          </Box>
-
-          <Box display="flex" alignItems="center" gap={1}>
-            {!isOwnPost && post.author && (
-              <FollowButton
-                targetUserId={post.userId}
-                targetUserName={post.author.name}
-                size="small"
-                variant="text"
-                onFollowChange={handleFollowChange}
-              />
-            )}
-            <IconButton size="small">
-              <MoreVert />
-            </IconButton>
-          </Box>
-        </Box>
-
-        {/* 投稿タイトル */}
-        {post.title && (
-          <Typography
-            variant="h6"
-            gutterBottom
-            sx={{
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {post.title.length > 50 ? `${post.title.substring(0, 50)}...` : post.title}
-          </Typography>
-        )}
-
-        {/* 投稿内容（一部表示） */}
-        <Typography
-          variant="body1"
-          paragraph
-          sx={{
-            overflow: 'hidden',
-            display: '-webkit-box',
-            WebkitLineClamp: 3, // 3行まで表示
-            WebkitBoxOrient: 'vertical',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'pre-wrap',
-            wordBreak: 'break-word',
-          }}
-        >
-          {post.content.length > 150 ? `${post.content.substring(0, 150)}...` : post.content}
-        </Typography>
-
-        {/* 続きを読むリンク */}
-        {post.content.length > 150 && (
-          <Typography
-            variant="body2"
-            color="primary"
-            sx={{
-              cursor: 'pointer',
-              '&:hover': { textDecoration: 'underline' },
-              mb: 1,
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-              // sessionStorageに参照元を記録
-              if (typeof window !== 'undefined') {
-                sessionStorage.setItem('timeline_referrer', 'timeline');
-              }
-              router.push(`/board/${post._id}?from=timeline`);
-            }}
-          >
-            続きを読む →
-          </Typography>
-        )}
-
-        {/* メディア表示（サムネイル） */}
-        {post.media && post.media?.length > 0 && (
-          <Box
-            mb={2}
-            sx={{
-              display: 'flex',
-              gap: 1,
-              overflowX: 'auto',
-              '&::-webkit-scrollbar': {
-                height: '6px',
-              },
-              '&::-webkit-scrollbar-thumb': {
-                backgroundColor: 'rgba(0,0,0,0.2)',
-                borderRadius: '3px',
-              },
-            }}
-          >
-            {post.media.slice(0, 3).map((media, index) => (
-              <Box
-                key={index}
-                sx={{
-                  flexShrink: 0,
-                  position: 'relative',
-                  width: post.media?.length === 1 ? '100%' : '200px',
-                  height: post.media?.length === 1 ? 'auto' : '150px',
-                  overflow: 'hidden',
-                  borderRadius: 1,
-                  backgroundColor: 'grey.100',
-                }}
-              >
-                {media.type === 'image' ? (
-                  <img
-                    src={media.thumbnailUrl || media.url}
-                    alt={media.alt || '投稿画像'}
-                    style={{
-                      width: '100%',
-                      height: post.media?.length === 1 ? 'auto' : '100%',
-                      maxHeight: post.media?.length === 1 ? '300px' : '150px',
-                      objectFit: post.media?.length === 1 ? 'contain' : 'cover',
-                      borderRadius: theme.shape.borderRadius,
-                    }}
-                    loading="lazy"
-                  />
-                ) : (
-                  <Box
-                    sx={{
-                      width: '100%',
-                      height: '100%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: 'grey.200',
-                      position: 'relative',
-                    }}
-                  >
-                    <Typography variant="caption" color="text.secondary">
-                      動画
-                    </Typography>
-                  </Box>
-                )}
-                {/* 画像が3枚以上ある場合の表示 */}
-                {index === 2 && (post.media?.length ?? 0) > 3 && (
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: 'white',
-                      fontSize: '1.2rem',
-                      fontWeight: 'bold',
-                    }}
-                  >
-                    +{(post.media?.length ?? 0) - 3}
-                  </Box>
-                )}
-              </Box>
-            ))}
-          </Box>
-        )}
-
-        <Divider sx={{ my: 1 }} />
-
-        {/* アクションボタン */}
-        <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Box display="flex" gap={2}>
-            <Box display="flex" alignItems="center" gap={0.5}>
-              <IconButton size="small" color="primary">
-                <FavoriteOutlined />
-              </IconButton>
-              <Typography variant="body2">{post.likes}</Typography>
-            </Box>
-
-            <IconButton size="small">
-              <ChatBubbleOutline />
-            </IconButton>
-
-            <IconButton size="small">
-              <Share />
-            </IconButton>
-          </Box>
-        </Box>
-      </CardContent>
-    </Card>
-  );
-}
-
-// スケルトンローディング
-function TimelineSkeleton() {
-  return (
-    <Box>
-      {[...Array(5)].map((_, index) => (
-        <Card key={index} sx={{ mb: 2 }}>
-          <CardContent>
-            <Box display="flex" alignItems="center" mb={2}>
-              <Skeleton variant="circular" width={48} height={48} sx={{ mr: 2 }} />
-              <Box flex={1}>
-                <Skeleton variant="text" width="30%" />
-                <Skeleton variant="text" width="20%" />
-              </Box>
-            </Box>
-            <Skeleton variant="text" width="80%" />
-            <Skeleton variant="text" width="60%" />
-            <Skeleton variant="rectangular" width="100%" height={200} sx={{ mt: 1 }} />
-          </CardContent>
-        </Card>
-      ))}
     </Box>
-  );
-}
-
-// 空のタイムライン
-function EmptyTimeline({ onRefresh }: { onRefresh: () => void }) {
-  const router = useRouter();
-
-  return (
-    <Paper sx={{ p: 4, textAlign: 'center' }}>
-      <Typography variant="h6" gutterBottom>
-        タイムラインが空です
-      </Typography>
-      <Typography variant="body2" color="text.secondary" paragraph>
-        フォローしている人がまだ投稿をしていないか、フォローしている人がいません
-      </Typography>
-      <Box display="flex" gap={2} justifyContent="center" mt={2}>
-        <Button variant="outlined" onClick={onRefresh}>
-          更新
-        </Button>
-        <Button variant="contained" onClick={() => router.push('/board')}>
-          投稿を探す
-        </Button>
-      </Box>
-    </Paper>
   );
 }

@@ -26,22 +26,42 @@ interface Post {
   content: string;
   likes: number;
   likedBy: string[];
-  userId?: string;
+  userId?: {
+    _id: string;
+    name: string;
+    email: string;
+    avatar?: string;
+    username?: string;
+    displayName?: string;
+  };
   authorName?: string;
+  isPublic: boolean;
+  hashtags?: Array<{ _id: string; name: string; count: number }>;
+  media?: Array<{ url: string; type: string; publicId: string }>;
   createdAt: string;
   updatedAt: string;
 }
 
 interface PostListProps {
   posts: Post[];
-  onRefresh: () => void;
-  onEditPost: (post: Post) => void;
-  onPostClick?: (post: Post) => void; // 投稿クリック時のハンドラー
-  searchQuery?: string; // 検索クエリ（ハイライト用）
+  onPostDeleted?: (postId: string) => void;
+  onPostUpdated?: (post: Post) => void;
+  onLikeUpdate?: (postId: string, newLikes: number, newLikedBy: string[]) => void;
+  searchTerm?: string;
+  sessionUserId?: string | null;
+  onRefresh?: () => void;
+  onEditPost?: (post: Post) => void;
+  onPostClick?: (post: Post) => void;
+  searchQuery?: string;
 }
 
 export default function PostList({
   posts,
+  onPostDeleted,
+  onPostUpdated,
+  onLikeUpdate,
+  searchTerm,
+  sessionUserId,
   onRefresh,
   onEditPost,
   onPostClick,
@@ -111,7 +131,7 @@ export default function PostList({
   const handleEdit = () => {
     console.log('編集がクリックされました:', selectedPost?._id);
     if (selectedPost) {
-      onEditPost(selectedPost);
+      onEditPost?.(selectedPost);
     }
     handleMenuClose();
   };
@@ -150,8 +170,9 @@ export default function PostList({
       const result = await response.json();
       console.log('削除成功:', result);
 
-      onRefresh();
-      console.log('投稿一覧を更新中...');
+      onPostDeleted?.(postToDelete._id);
+      onRefresh?.();
+      console.log('投稿削除処理完了');
     } catch (error) {
       console.error('削除処理エラー:', error);
       setError(error instanceof Error ? error.message : '削除に失敗しました');
@@ -212,7 +233,9 @@ export default function PostList({
         return newMap;
       });
 
-      onRefresh(); // 投稿一覧を更新
+      // コールバック関数を呼び出し
+      onLikeUpdate?.(postId, data.likes, data.likedBy || []);
+      onRefresh?.(); // 投稿一覧を更新
     } catch (error) {
       console.error('いいねエラー:', error);
       setError(error instanceof Error ? error.message : 'いいね操作に失敗しました');
@@ -359,7 +382,7 @@ export default function PostList({
             </Box>
 
             {/* 本人の投稿の場合のみメニューボタンを表示 */}
-            {session?.user?.id === post.userId && (
+            {session?.user?.id === post.userId?._id && (
               <IconButton
                 size="small"
                 onClick={(e) => {
