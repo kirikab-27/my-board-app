@@ -48,6 +48,7 @@ export async function POST(req: NextRequest) {
       email,
       password, // mongooseのpreミドルウェアでハッシュ化される
       emailVerified: null, // Phase 2: メール認証完了まで null
+      // usernameはpreミドルウェアで自動生成される
     });
 
     console.log('💾 Saving user to database...');

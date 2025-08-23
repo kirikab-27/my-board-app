@@ -87,7 +87,7 @@ const UserSchema = new mongoose.Schema<IUser>({
   },
   username: {
     type: String,
-    required: [true, 'ユーザー名は必須です'],
+    required: [false, 'ユーザー名は必須です'], // preミドルウェアで自動生成されるため
     unique: true,
     trim: true,
     lowercase: true,
@@ -106,7 +106,7 @@ const UserSchema = new mongoose.Schema<IUser>({
     unique: true,
     lowercase: true,
     match: [
-      /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
       '有効なメールアドレスを入力してください',
     ],
   },

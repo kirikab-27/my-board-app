@@ -186,7 +186,7 @@ export async function POST(request: NextRequest) {
                   height: result.height,
                   duration: result.duration,
                   dominantColors: result.colors?.map((c: any[]) => c[0]) || [],
-                  hash: hash || undefined // 元ファイルハッシュを保存
+                  hash: hash && hash.trim() ? hash.trim() : undefined // 元ファイルハッシュを保存
                 },
                 cloudinary: {
                   publicId: result.public_id,
@@ -244,8 +244,8 @@ export async function POST(request: NextRequest) {
     });
 
     try {
-      const uploadResult: any = await uploadPromise;
-      const { result, media } = uploadResult;
+      const uploadResult = await uploadPromise;
+      const { media } = uploadResult;
       
       // サムネイル生成
       await media.generateThumbnail();

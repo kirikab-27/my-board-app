@@ -13,6 +13,7 @@ import {
   Timeline as TimelineIcon,
   Notifications as NotificationsIcon,
   Tag as TagIcon,
+  Search as SearchIcon,
 } from '@mui/icons-material';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -80,6 +81,11 @@ export const AuthButton: React.FC = () => {
   const handleHashtags = () => {
     handleMenuClose();
     router.push('/hashtags');
+  };
+
+  const handleUserSearch = () => {
+    handleMenuClose();
+    router.push('/users/search');
   };
 
   if (status === 'loading') {
@@ -179,6 +185,10 @@ export const AuthButton: React.FC = () => {
         <MenuItem onClick={handleUsers}>
           <PeopleIcon sx={{ mr: 1 }} />
           ユーザー一覧
+        </MenuItem>
+        <MenuItem onClick={handleUserSearch}>
+          <SearchIcon sx={{ mr: 1 }} />
+          ユーザー検索
         </MenuItem>
         <MenuItem onClick={handleHome}>
           <HomeIcon sx={{ mr: 1 }} />

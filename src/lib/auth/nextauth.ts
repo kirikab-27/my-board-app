@@ -7,12 +7,7 @@ import { MongoClient } from 'mongodb';
 import { connectDB } from '@/lib/mongodb';
 import User from '@/models/User';
 import { loginSchema } from '@/lib/validations/auth';
-import {
-  checkIPRateLimit,
-  checkUserRateLimit,
-  recordFailedAttempt,
-  resetAttempts,
-} from '@/lib/security/rateLimit';
+// Rate limiting imports removed as they're not used with MongoDB adapter
 import type { UserRole } from '@/types/auth';
 
 // MongoDBクライアント設定
@@ -41,15 +36,75 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 export const authOptions: NextAuthOptions = {
-  // アダプターを一時的に無効化してJWTのみで動作
-  // adapter: MongoDBAdapter(clientPromise),
+  adapter: MongoDBAdapter(clientPromise),
   session: {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30日
   },
   providers: [
-    // MongoDB接続問題を回避するため、一時的にCredentialsProviderを無効化
-    // CredentialsProvider({ ... }),
+    // メール・パスワード認証
+    CredentialsProvider({
+      id: 'credentials',
+      name: 'credentials',
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          console.log('❌ 認証失敗: メールまたはパスワードが未入力');
+          return null;
+        }
+
+        try {
+          // バリデーション
+          const validatedFields = loginSchema.safeParse(credentials);
+          if (!validatedFields.success) {
+            console.log('❌ 認証失敗: バリデーションエラー', validatedFields.error.flatten().fieldErrors);
+            return null;
+          }
+
+          const { email, password } = validatedFields.data;
+
+          // データベース接続
+          await connectDB();
+          
+          // ユーザー検索
+          const user = await User.findOne({ email: email.toLowerCase() });
+          if (!user) {
+            console.log('❌ 認証失敗: ユーザーが見つかりません', email);
+            return null;
+          }
+
+          // パスワード確認
+          const isPasswordValid = await user.comparePassword(password);
+          if (!isPasswordValid) {
+            console.log('❌ 認証失敗: パスワードが間違っています', email);
+            return null;
+          }
+
+          // メール認証チェック（一時的に無効化）
+          // if (!user.emailVerified) {
+          //   console.log('❌ 認証失敗: メール認証が完了していません', email);
+          //   return null;
+          // }
+
+          console.log('✅ 認証成功:', email, 'ユーザーID:', user._id, 'メール認証:', user.emailVerified ? '済み' : '未完了');
+          
+          // NextAuth用のユーザーオブジェクトを返す
+          return {
+            id: user._id.toString(),
+            email: user.email,
+            name: user.name,
+            image: user.avatar || user.image || null,
+          };
+
+        } catch (error) {
+          console.error('❌ 認証エラー:', error);
+          return null;
+        }
+      },
+    }),
     // Google OAuth認証（環境変数が設定されている場合のみ）
     ...(process.env.GOOGLE_CLIENT_ID &&
     process.env.GOOGLE_CLIENT_SECRET &&

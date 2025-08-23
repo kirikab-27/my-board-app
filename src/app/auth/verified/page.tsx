@@ -21,26 +21,29 @@ export default function VerifiedPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  // メールパラメータの初期化
   useEffect(() => {
     const emailParam = searchParams.get('email');
     if (emailParam) {
       setEmail(decodeURIComponent(emailParam));
     }
+  }, [searchParams]);
 
-    // 5秒後に自動でログインページへリダイレクト
+  // カウントダウンタイマー
+  useEffect(() => {
     const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          router.push('/login');
-          return 0;
-        }
-        return prev - 1;
-      });
+      setCountdown((prev) => prev - 1);
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [router, searchParams]);
+  }, []);
+
+  // カウントダウン完了時のリダイレクト
+  useEffect(() => {
+    if (countdown <= 0) {
+      router.push('/login');
+    }
+  }, [countdown, router]);
 
   const handleLoginNow = () => {
     router.push('/login');

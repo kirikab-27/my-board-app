@@ -11,9 +11,13 @@ import {
   TextField,
   InputAdornment,
   CircularProgress,
-  Alert
+  Alert,
+  Button,
+  Chip
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import ManageSearchIcon from '@mui/icons-material/ManageSearch';
+import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
@@ -30,7 +34,7 @@ interface User {
 }
 
 export default function UsersPage() {
-  const { data: session } = useSession();
+  useSession();
   // session is used for authentication context
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -119,21 +123,66 @@ export default function UsersPage() {
             </Typography>
           </Box>
 
-          {/* 検索バー */}
+          {/* 検索バー & 高度な検索へのリンク */}
           <Box sx={{ mb: 4 }}>
-            <TextField
-              fullWidth
-              placeholder="ユーザー名や自己紹介で検索..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-              }}
-            />
+            <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+              <TextField
+                fullWidth
+                placeholder="ユーザー名や自己紹介で検索..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+              <Button
+                component={Link}
+                href="/users/search"
+                variant="outlined"
+                startIcon={<ManageSearchIcon />}
+                sx={{ whiteSpace: 'nowrap' }}
+              >
+                高度な検索
+              </Button>
+            </Box>
+            
+            {/* クイック検索提案 */}
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+              <Typography variant="caption" color="text.secondary" sx={{ mr: 1 }}>
+                クイック検索:
+              </Typography>
+              <Chip 
+                label="@で検索" 
+                size="small" 
+                clickable 
+                onClick={() => setSearchTerm('@')}
+              />
+              <Chip 
+                label="認証済みユーザー" 
+                size="small" 
+                clickable 
+                component={Link}
+                href="/users/search?filter=verified"
+              />
+              <Chip 
+                label="オンライン" 
+                size="small" 
+                clickable 
+                component={Link}
+                href="/users/search?filter=online"
+              />
+              <Chip 
+                label="人気ユーザー" 
+                size="small" 
+                clickable 
+                component={Link}
+                href="/users/search?sortBy=followers"
+              />
+            </Box>
           </Box>
 
           {/* エラー表示 */}
