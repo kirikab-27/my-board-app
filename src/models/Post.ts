@@ -6,13 +6,18 @@ export type PostPrivacy = 'public' | 'followers' | 'friends' | 'private';
 export type MediaType = 'image' | 'video' | 'gif';
 
 export interface IPostMedia {
+  mediaId: string; // メディアID
   type: MediaType;
   url: string; // Cloudinary URL
   thumbnailUrl?: string; // サムネイル（動画用）
+  publicId?: string; // Cloudinary公開ID
+  title?: string; // ファイルタイトル
   alt?: string; // 代替テキスト
   width?: number;
   height?: number;
   size?: number; // ファイルサイズ（bytes）
+  mimeType?: string; // MIMEタイプ
+  hash?: string; // SHA-256 ハッシュ値（重複防止用）
 }
 
 export interface IPostLocation {

@@ -325,6 +325,15 @@ git checkout -b feature/phase6.2-notifications  # 通知システム開発（次
 # Vercel本番デプロイ
 git checkout main && git merge develop --no-ff
 git push origin main                      # 自動デプロイトリガー（https://kab137lab.com）
+
+# GitHub Projects 管理・トラブルシューティング
+gh project item-list 2 --owner kirikab-27 --limit 30  # プロジェクトアイテム一覧確認
+gh project item-add 2 --owner kirikab-27 --url URL     # Issue追加（サイレント失敗の可能性あり）
+
+# GitHub Projects GraphQL診断（推奨・確実）
+gh api graphql -f query='{ node(id:"PROJECT_ITEM_ID") { ... } }'  # アイテム存在確認
+gh api graphql -f query='mutation { addProjectV2ItemById(...) }'  # 確実な追加
+gh project item-edit --id ITEM_ID --field-id FIELD_ID --single-select-option-id OPTION_ID  # ステータス設定
 ```
 
 ## 環境設定
@@ -718,6 +727,46 @@ interface User {
 - レスポンシブ対応を維持（xs: 100%, md: 50%）
 - TypeScript型安全性を確保
 - Material-UI v7完全対応
+
+### GitHub Projects V2 API 反映遅延問題
+
+- **問題**: GraphQL Mutation成功後、GitHub Projects UIに即座反映されない
+- **原因**: GitHub Projects V2 APIのキャッシュクリア時間（5-10分）
+- **解決策**: API成功後、5-10分待機してから確認
+- **診断コマンド**: 
+
+```bash
+# 1. 個別アイテム存在確認
+gh api graphql -f query='
+{
+  node(id: "PROJECT_ITEM_ID") {
+    ... on ProjectV2Item {
+      id
+      content { ... on Issue { number title } }
+      fieldValues(first:10) { nodes { 
+        ... on ProjectV2ItemFieldSingleSelectValue { name }
+      }}
+    }
+  }
+}'
+
+# 2. プロジェクト全体確認
+gh api graphql -f query='
+{
+  node(id: "PROJECT_ID") {
+    ... on ProjectV2 {
+      items(first:100) { totalCount nodes { 
+        content { ... on Issue { number title } }
+      }}
+    }
+  }
+}'
+
+# 3. GitHub CLI確認
+gh project item-list PROJECT_NUMBER --owner OWNER --limit 30
+```
+
+**重要**: API成功レスポンスを信頼し、UI反映は時間を置いて確認すること
 
 ### Vercelデプロイ問題解決済み
 

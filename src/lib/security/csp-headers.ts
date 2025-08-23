@@ -25,7 +25,8 @@ const productionCSP = `
     https://api.github.com 
     https://accounts.google.com 
     https://oauth2.googleapis.com
-    https://www.googleapis.com;
+    https://www.googleapis.com
+    https://res.cloudinary.com;
 `
   .replace(/\n/g, ' ')
   .replace(/\s+/g, ' ')
@@ -53,7 +54,8 @@ const developmentCSP = `
     https://api.github.com 
     https://accounts.google.com 
     https://oauth2.googleapis.com
-    https://www.googleapis.com;
+    https://www.googleapis.com
+    https://res.cloudinary.com;
 `
   .replace(/\n/g, ' ')
   .replace(/\s+/g, ' ')

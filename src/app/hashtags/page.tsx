@@ -18,7 +18,6 @@ import {
   Whatshot,
   FilterList
 } from '@mui/icons-material';
-import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import HashtagList from '@/components/hashtags/HashtagList';
 import TrendingHashtags from '@/components/hashtags/TrendingHashtags';

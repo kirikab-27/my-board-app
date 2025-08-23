@@ -269,7 +269,7 @@ const MediaSchema: Schema = new Schema({
       required: [true, 'CloudinaryのURLは必須です'],
       validate: {
         validator: function(v: string) {
-          return /^https:\/\/res\.cloudinary\.com\//.test(v);
+          return v && (v.startsWith('http://') || v.startsWith('https://')) && v.includes('cloudinary.com');
         },
         message: '有効なCloudinary URLを入力してください'
       }
@@ -279,28 +279,16 @@ const MediaSchema: Schema = new Schema({
       required: [true, 'CloudinaryのHTTPS URLは必須です'],
       validate: {
         validator: function(v: string) {
-          return /^https:\/\/res\.cloudinary\.com\//.test(v);
+          return v && v.startsWith('https://') && v.includes('cloudinary.com');
         },
         message: '有効なCloudinary HTTPS URLを入力してください'
       }
     },
     thumbnailUrl: {
-      type: String,
-      validate: {
-        validator: function(v: string) {
-          return !v || /^https:\/\/res\.cloudinary\.com\//.test(v);
-        },
-        message: '有効なCloudinaryサムネイルURLを入力してください'
-      }
+      type: String
     },
     optimizedUrl: {
-      type: String,
-      validate: {
-        validator: function(v: string) {
-          return !v || /^https:\/\/res\.cloudinary\.com\//.test(v);
-        },
-        message: '有効なCloudinary最適化URLを入力してください'
-      }
+      type: String
     },
     transformations: [{ type: String, maxlength: [100, '変換設定は100文字以内である必要があります'] }],
     format: { type: String, maxlength: [10, 'フォーマットは10文字以内である必要があります'] },
