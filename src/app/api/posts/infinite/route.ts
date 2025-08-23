@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import Post from '@/models/Post';
+import Comment from '@/models/Comment';
 import User from '@/models/User';
 import Follow from '@/models/Follow';
 import { getServerSession } from 'next-auth';
@@ -145,26 +146,32 @@ export async function GET(request: NextRequest) {
       totalCount = await Post.countDocuments(countQuery);
     }
 
-    // レスポンスの整形
-    const formattedPosts = resultPosts.map((post: any) => {
-      const userId = post.userId && post.userId._id ? {
-        _id: post.userId._id.toString(),
-        name: post.userId.name || '',
-        email: post.userId.email || '',
-        avatar: post.userId.avatar,
-        username: post.userId.username,
-        displayName: post.userId.displayName
-      } : undefined;
+    // コメント件数を含めた投稿の整形
+    const formattedPosts = await Promise.all(
+      resultPosts.map(async (post: any) => {
+        const userId = post.userId && post.userId._id ? {
+          _id: post.userId._id.toString(),
+          name: post.userId.name || '',
+          email: post.userId.email || '',
+          avatar: post.userId.avatar,
+          username: post.userId.username,
+          displayName: post.userId.displayName
+        } : undefined;
 
-      return {
-        ...post,
-        _id: post._id.toString(),
-        userId,
-        hashtags: post.hashtags || [],
-        createdAt: post.createdAt.toISOString(),
-        updatedAt: post.updatedAt.toISOString()
-      };
-    });
+        // コメント件数を取得
+        const commentCount = await Comment.countDocuments({ postId: post._id });
+
+        return {
+          ...post,
+          _id: post._id.toString(),
+          userId,
+          hashtags: post.hashtags || [],
+          commentsCount: commentCount,
+          createdAt: post.createdAt.toISOString(),
+          updatedAt: post.updatedAt.toISOString()
+        };
+      })
+    );
 
     return NextResponse.json({
       posts: formattedPosts,

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Post from '@/models/Post';
+import Comment from '@/models/Comment';
 import Hashtag from '@/models/Hashtag';
 import { requireApiAuth, createUnauthorizedResponse, createServerErrorResponse } from '@/lib/auth/server';
 import { sanitizePlainText, detectXSSAttempt } from '@/utils/security/sanitizer';
@@ -191,6 +192,17 @@ export async function GET(request: NextRequest) {
         .lean(),
       Post.countDocuments(searchFilter)
     ]);
+
+    // 各投稿のコメント件数を取得
+    const postsWithCommentCounts = await Promise.all(
+      posts.map(async (post: any) => {
+        const commentCount = await Comment.countDocuments({ postId: post._id });
+        return {
+          ...post,
+          commentsCount: commentCount
+        };
+      })
+    );
     
     // ページネーション情報
     const totalPages = Math.ceil(totalCount / limit);
@@ -198,7 +210,7 @@ export async function GET(request: NextRequest) {
     const hasPrevPage = page > 1;
     
     return NextResponse.json({
-      posts,
+      posts: postsWithCommentCounts,
       pagination: {
         currentPage: page,
         totalPages,

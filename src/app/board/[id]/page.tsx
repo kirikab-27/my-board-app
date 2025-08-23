@@ -63,6 +63,10 @@ export default function PostDetailPage() {
   const [liking, setLiking] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // スクロール用のref
+  const mediaRef = useRef<HTMLDivElement>(null);
+  const commentsRef = useRef<HTMLDivElement>(null);
   const [backUrl, setBackUrl] = useState<string>(() => {
     // 初期状態でURLパラメータをチェック
     if (typeof window !== 'undefined') {
@@ -99,6 +103,32 @@ export default function PostDetailPage() {
     // fetchPost is recreated on every render, so we don't include it in deps
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [postId, backUrl]);
+
+  // スクロール機能：sessionStorageの値に基づいてスクロール
+  useEffect(() => {
+    if (!loading && post) {
+      const scrollToComments = sessionStorage.getItem('scrollToComments');
+      const scrollToMedia = sessionStorage.getItem('scrollToMedia');
+      
+      if (scrollToComments === 'true' && commentsRef.current) {
+        sessionStorage.removeItem('scrollToComments');
+        setTimeout(() => {
+          commentsRef.current?.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }, 100);
+      } else if (scrollToMedia === 'true' && mediaRef.current) {
+        sessionStorage.removeItem('scrollToMedia');
+        setTimeout(() => {
+          mediaRef.current?.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }, 100);
+      }
+    }
+  }, [loading, post]);
 
   const determineBackUrl = () => {
     // sessionStorageから判断
@@ -347,7 +377,7 @@ export default function PostDetailPage() {
 
           {/* メディア表示 - Instagram風 */}
           {post.media && post.media.length > 0 && (
-            <Box sx={{ mb: 4 }}>
+            <Box ref={mediaRef} sx={{ mb: 4 }}>
               <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
                 添付メディア
               </Typography>
@@ -528,7 +558,7 @@ export default function PostDetailPage() {
         </Paper>
 
         {/* コメント欄 */}
-        <Paper sx={{ p: 4, mt: 3 }}>
+        <Paper ref={commentsRef} sx={{ p: 4, mt: 3 }}>
           <CommentList postId={post._id} />
         </Paper>
       </Container>

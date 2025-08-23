@@ -21,6 +21,7 @@ export interface Post {
   isPublic: boolean;
   hashtags?: Array<{ _id: string; name: string; count: number }>;
   media?: Array<{ url: string; type: string; publicId: string }>;
+  commentsCount?: number; // コメント件数
   createdAt: string;
   updatedAt: string;
 }

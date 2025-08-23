@@ -16,7 +16,17 @@ import {
   DialogActions,
   Button,
 } from '@mui/material';
-import { MoreVert, Edit, Delete, ThumbUp, ThumbUpOutlined } from '@mui/icons-material';
+import { 
+  MoreVert, 
+  Edit, 
+  Delete, 
+  Favorite, 
+  FavoriteBorder,
+  Forum,
+  Photo,
+  Videocam,
+  PermMedia
+} from '@mui/icons-material';
 import { highlightText } from '@/utils/highlightText';
 import { SafePostContent } from '@/components/SafeContent';
 
@@ -38,6 +48,7 @@ interface Post {
   isPublic: boolean;
   hashtags?: Array<{ _id: string; name: string; count: number }>;
   media?: Array<{ url: string; type: string; publicId: string }>;
+  commentsCount?: number; // コメント件数
   createdAt: string;
   updatedAt: string;
 }
@@ -253,6 +264,53 @@ export default function PostList({
     return date.toLocaleString('ja-JP');
   };
 
+  // メディアの種類と枚数を判定する関数
+  const getMediaInfo = (media?: Array<{ url: string; type: string; publicId: string }>) => {
+    if (!media || media.length === 0) return null;
+    
+    const images = media.filter(m => m.type === 'image');
+    const videos = media.filter(m => m.type === 'video');
+    const totalCount = media.length;
+    
+    if (videos.length > 0 && images.length > 0) {
+      // 混在の場合
+      return {
+        icon: <PermMedia fontSize="small" />,
+        count: totalCount,
+        label: `メディア ${totalCount}件`
+      };
+    } else if (videos.length > 0) {
+      // 動画のみ
+      return {
+        icon: <Videocam fontSize="small" />,
+        count: videos.length,
+        label: `動画 ${videos.length}件`
+      };
+    } else {
+      // 画像のみ
+      return {
+        icon: <Photo fontSize="small" />,
+        count: images.length,
+        label: `画像 ${images.length}件`
+      };
+    }
+  };
+
+  // コメント・メディアアイコンのクリックハンドラー
+  const handleStatsClick = (event: React.MouseEvent, post: Post, type: 'comments' | 'media') => {
+    event.stopPropagation(); // 投稿詳細ページへの遷移を防ぐ
+    
+    if (onPostClick) {
+      // 詳細ページに遷移して該当セクションにスクロールする情報をsessionStorageに保存
+      if (type === 'comments') {
+        sessionStorage.setItem('scrollToComments', 'true');
+      } else if (type === 'media') {
+        sessionStorage.setItem('scrollToMedia', 'true');
+      }
+      onPostClick(post);
+    }
+  };
+
   if (posts.length === 0) {
     return (
       <Typography variant="body1" color="text.secondary" textAlign="center">
@@ -361,22 +419,63 @@ export default function PostList({
                   {post.updatedAt !== post.createdAt && <> (更新: {formatDate(post.updatedAt)})</>}
                 </Typography>
 
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <IconButton
-                    size="small"
-                    onClick={(event) => handleLike(event, post._id)}
-                    disabled={likingPosts.has(post._id)}
-                    color={likedPosts.has(post._id) ? 'primary' : 'default'}
-                  >
-                    {likedPosts.has(post._id) ? (
-                      <ThumbUp fontSize="small" />
-                    ) : (
-                      <ThumbUpOutlined fontSize="small" />
-                    )}
-                  </IconButton>
-                  <Typography variant="caption" color="text.secondary">
-                    {postLikeCounts.get(post._id) ?? post.likes}
-                  </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  {/* いいねボタン */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <IconButton
+                      size="small"
+                      onClick={(event) => handleLike(event, post._id)}
+                      disabled={likingPosts.has(post._id)}
+                      color={likedPosts.has(post._id) ? 'error' : 'default'}
+                      title="いいね"
+                    >
+                      {likedPosts.has(post._id) ? (
+                        <Favorite fontSize="small" />
+                      ) : (
+                        <FavoriteBorder fontSize="small" />
+                      )}
+                    </IconButton>
+                    <Typography variant="caption" color="text.secondary">
+                      {postLikeCounts.get(post._id) ?? post.likes}
+                    </Typography>
+                  </Box>
+
+                  {/* コメント件数 */}
+                  {post.commentsCount !== undefined && post.commentsCount > 0 && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <IconButton
+                        size="small"
+                        onClick={(event) => handleStatsClick(event, post, 'comments')}
+                        color="default"
+                        title={`コメント ${post.commentsCount}件`}
+                      >
+                        <Forum fontSize="small" />
+                      </IconButton>
+                      <Typography variant="caption" color="text.secondary">
+                        {post.commentsCount}
+                      </Typography>
+                    </Box>
+                  )}
+
+                  {/* メディア情報 */}
+                  {(() => {
+                    const mediaInfo = getMediaInfo(post.media);
+                    return mediaInfo ? (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <IconButton
+                          size="small"
+                          onClick={(event) => handleStatsClick(event, post, 'media')}
+                          color="default"
+                          title={mediaInfo.label}
+                        >
+                          {mediaInfo.icon}
+                        </IconButton>
+                        <Typography variant="caption" color="text.secondary">
+                          {mediaInfo.count}
+                        </Typography>
+                      </Box>
+                    ) : null;
+                  })()}
                 </Box>
               </Box>
             </Box>
