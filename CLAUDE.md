@@ -243,6 +243,50 @@ SNS機能・MongoDB拡張スキーマ・68インデックス最適化。詳細�
 
 **Issue #24無限スクロール機能は全Phase完成・本番リリース可能状態**
 
+### ✅ Issue #21実装完了（2025/08/23完了）
+
+**投稿一覧エンゲージメント表示・Instagram/Twitter風UI実装完成**:
+
+#### 🎯 実装完了機能
+- **ハートアイコン変更**: ThumbUp/ThumbUpOutlined → Favorite/FavoriteBorder（Material-UI統合） ✅ **実装完了**
+- **いいね状態表示**: いいね済み（赤色ハート・error色）・未いいね（グレーハート・default色） ✅ **実装完了**
+- **コメント件数表示**: Forumアイコン + 件数表示・0件時非表示・クリック詳細ページ遷移 ✅ **実装完了**
+- **メディア表示機能**: 画像（Photo）・動画（Videocam）・混合（PermMedia）アイコン + 件数表示 ✅ **実装完了**
+
+#### 💎 UX機能完了
+- **スクロール連携**: sessionStorage活用・詳細ページの該当セクションに直接移動 ✅ **実装完了**
+- **エンゲージメント可視化**: Instagram/Twitter風統計表示（いいね・コメント・メディア） ✅ **実装完了**
+- **レスポンシブ対応**: モバイル・デスクトップ両デバイス最適化・Material-UI v7統合 ✅ **実装完了**
+
+#### 🔧 技術実装完了
+- **API拡張**: `/api/posts`・`/api/posts/infinite`にComment.countDocuments統合 ✅ **実装完了**
+- **UIコンポーネント**: PostList.tsx Material-UIアイコン統合・エンゲージメント表示 ✅ **実装完了**
+- **投稿詳細ページ**: board/[id]/page.tsx スクロール機能統合・sessionStorage連携 ✅ **実装完了**
+- **Type定義拡張**: Post interface commentsCount追加・useInfiniteScroll統合 ✅ **実装完了**
+
+#### 🎨 Material-UIアイコンシステム
+```typescript
+import { 
+  Favorite, FavoriteBorder,      // ハートアイコン（いいね機能）
+  Forum,                        // コメントアイコン
+  Photo, Videocam, PermMedia    // メディアアイコン（種別判定）
+} from '@mui/icons-material';
+```
+
+#### 📊 実装成果
+- **Instagram/Twitter風エンゲージメント**: 投稿統計の完全可視化・クリック・ナビゲーション ✅ **目標達成**
+- **ユーザビリティ向上**: 詳細ページへの直接スクロール・情報アクセス効率化 ✅ **目標達成**  
+- **無限スクロール統合**: Issue #24との完全統合・API・UI・状態管理統一 ✅ **目標達成**
+
+#### 🧪 動作確認完了
+- ✅ ハートアイコン表示・色変化（赤/グレー）
+- ✅ コメント件数の適切な表示・非表示
+- ✅ メディアアイコンの種別判定（画像/動画/混合）
+- ✅ クリック時の詳細ページスクロール機能
+- ✅ レスポンシブ表示・Material-UI統合
+
+**Issue #21エンゲージメント表示機能は完全実装・Instagram/Twitter級UI実現**
+
 ## 技術スタック
 
 - **フロントエンド**: React 19.1.0, Next.js 15.4.5
