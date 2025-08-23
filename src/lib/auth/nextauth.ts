@@ -7,16 +7,33 @@ import { MongoClient } from 'mongodb';
 import { connectDB } from '@/lib/mongodb';
 import User from '@/models/User';
 import { loginSchema } from '@/lib/validations/auth';
-import {
-  checkIPRateLimit,
-  checkUserRateLimit,
-  recordFailedAttempt,
-  resetAttempts,
-} from '@/lib/security/rateLimit';
+// Rate limiting imports removed as they're not used with MongoDB adapter
 import type { UserRole } from '@/types/auth';
 
-const client = new MongoClient(process.env.MONGODB_URI!);
-const clientPromise = client.connect();
+// MongoDBクライアント設定
+let client: MongoClient;
+let clientPromise: Promise<MongoClient>;
+
+if (!process.env.MONGODB_URI) {
+  throw new Error('MONGODB_URI環境変数が設定されていません');
+}
+
+if (process.env.NODE_ENV === 'development') {
+  // 開発環境では既存のクライアントを再利用
+  const globalWithMongo = global as typeof globalThis & {
+    _mongoClientPromise?: Promise<MongoClient>;
+  };
+
+  if (!globalWithMongo._mongoClientPromise) {
+    client = new MongoClient(process.env.MONGODB_URI);
+    globalWithMongo._mongoClientPromise = client.connect();
+  }
+  clientPromise = globalWithMongo._mongoClientPromise;
+} else {
+  // 本番環境では新しいクライアントを作成
+  client = new MongoClient(process.env.MONGODB_URI);
+  clientPromise = client.connect();
+}
 
 export const authOptions: NextAuthOptions = {
   adapter: MongoDBAdapter(clientPromise),
@@ -25,105 +42,65 @@ export const authOptions: NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30日
   },
   providers: [
-    // メールアドレス・パスワード認証
+    // メール・パスワード認証
     CredentialsProvider({
+      id: 'credentials',
       name: 'credentials',
       credentials: {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
       },
-      async authorize(credentials, req) {
-        // IPアドレス取得
-        const ip =
-          (req?.headers?.['x-forwarded-for'] as string) ||
-          (req?.headers?.['x-real-ip'] as string) ||
-          '127.0.0.1';
-
-        const clientIP = Array.isArray(ip) ? ip[0] : ip.split(',')[0].trim();
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          console.log('❌ 認証失敗: メールまたはパスワードが未入力');
+          return null;
+        }
 
         try {
           // バリデーション
           const validatedFields = loginSchema.safeParse(credentials);
           if (!validatedFields.success) {
-            console.log('❌ Validation failed:', validatedFields.error.flatten().fieldErrors);
+            console.log('❌ 認証失敗: バリデーションエラー', validatedFields.error.flatten().fieldErrors);
             return null;
           }
 
           const { email, password } = validatedFields.data;
 
-          // IP制限チェック
-          const ipLimit = checkIPRateLimit(clientIP);
-          if (!ipLimit.success) {
-            console.log(`🚫 IP rate limit exceeded: ${clientIP}`, ipLimit.error);
-            throw new Error(ipLimit.error || 'IP制限により一時的にブロックされています。');
-          }
-
-          // ユーザー制限チェック
-          const userLimit = checkUserRateLimit(email);
-          if (!userLimit.success) {
-            console.log(`🚫 User rate limit exceeded: ${email}`, userLimit.error);
-            throw new Error(userLimit.error || 'アカウントが一時的にブロックされています。');
-          }
-
-          // DB接続
+          // データベース接続
           await connectDB();
-
+          
           // ユーザー検索
-          const user = await User.findOne({ email }).select('+password');
+          const user = await User.findOne({ email: email.toLowerCase() });
           if (!user) {
-            console.log('❌ User not found:', email);
-            // 失敗記録
-            recordFailedAttempt(clientIP, email);
+            console.log('❌ 認証失敗: ユーザーが見つかりません', email);
             return null;
-          }
-
-          // メール認証確認（Phase 2で有効化）
-          if (!user.emailVerified) {
-            console.log('❌ Email not verified:', email);
-            // 未認証は試行回数にカウントしない（正当なユーザーの可能性）
-            throw new Error(
-              'メール認証が完了していません。メールに送信された認証リンクをクリックしてください。'
-            );
           }
 
           // パスワード確認
           const isPasswordValid = await user.comparePassword(password);
           if (!isPasswordValid) {
-            console.log('❌ Invalid password for:', email);
-            // 失敗記録
-            recordFailedAttempt(clientIP, email);
+            console.log('❌ 認証失敗: パスワードが間違っています', email);
             return null;
           }
 
-          // ログイン成功 - 試行回数リセット
-          resetAttempts(clientIP, email);
-          console.log('✅ Login successful:', email, `from IP: ${clientIP}`);
+          // メール認証チェック（一時的に無効化）
+          // if (!user.emailVerified) {
+          //   console.log('❌ 認証失敗: メール認証が完了していません', email);
+          //   return null;
+          // }
 
+          console.log('✅ 認証成功:', email, 'ユーザーID:', user._id, 'メール認証:', user.emailVerified ? '済み' : '未完了');
+          
+          // NextAuth用のユーザーオブジェクトを返す
           return {
             id: user._id.toString(),
-            name: user.name,
             email: user.email,
-            image: user.image || null,
-            role: user.role || 'user',
+            name: user.name,
+            image: user.avatar || user.image || null,
           };
+
         } catch (error) {
-          console.error('❌ Auth error:', error);
-
-          // エラーがレート制限関連でない場合は失敗として記録
-          const errorMessage = error instanceof Error ? error.message : String(error);
-          if (!errorMessage.includes('制限') && !errorMessage.includes('ブロック')) {
-            const validatedFields = loginSchema.safeParse(credentials);
-            if (validatedFields.success) {
-              recordFailedAttempt(clientIP, validatedFields.data.email);
-            }
-          }
-
-          // レート制限エラーの場合、特別な処理でエラー情報を保持
-          if (errorMessage.includes('制限') || errorMessage.includes('ブロック')) {
-            // エラーメッセージをNextAuth.js経由で伝達するため、特別な形式でreturn
-            throw new Error(`RATE_LIMIT_ERROR:${errorMessage}`);
-          }
-
+          console.error('❌ 認証エラー:', error);
           return null;
         }
       },

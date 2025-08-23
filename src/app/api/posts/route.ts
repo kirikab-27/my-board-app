@@ -225,7 +225,7 @@ export async function POST(request: NextRequest) {
     
     await dbConnect();
     const body = await request.json();
-    const { title, content, hashtags = [], isPublic = true } = body;
+    const { title, content, hashtags = [], media = [], isPublic = true } = body;
 
     if (!content || content.trim().length === 0) {
       return NextResponse.json(
@@ -328,6 +328,24 @@ export async function POST(request: NextRequest) {
     // ハッシュタグを追加
     if (finalHashtags.length > 0) {
       postData.hashtags = finalHashtags;
+    }
+    
+    // メディアを追加
+    if (media && media.length > 0) {
+      postData.media = media.map((m: any) => ({
+        mediaId: m.id,
+        type: m.type,
+        url: m.url,
+        thumbnailUrl: m.thumbnailUrl,
+        publicId: m.publicId || '',
+        title: m.title || '',
+        alt: m.alt || '',
+        width: m.metadata?.width,
+        height: m.metadata?.height,
+        size: m.size || 0,
+        mimeType: m.metadata?.mimeType || '',
+        hash: m.metadata?.hash // SHA-256 ハッシュ値（重複防止用）
+      }));
     }
 
     const post = new Post(postData);

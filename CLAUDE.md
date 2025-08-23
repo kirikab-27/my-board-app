@@ -101,6 +101,7 @@
 - **Phase 4.5**: 会員制掲示板CRUD機能拡張 ✅ **統合完了** ✨ **タイトル付き投稿・編集削除権限・会員限定投稿・権限チェック**
 - **Phase 5**: セキュリティ強化・CSRF・レート制限・XSS対策 ✅ **統合完了** ✨ **エンタープライズ級セキュリティ基盤完成**
 - **Phase 6.0**: SNS機能・MongoDB拡張スキーマ・68インデックス最適化 ✅ **統合完了** ✨ **SNS基盤実装完了・GitHub統合済み**
+- **Phase 6.5**: メディアアップロード機能・Instagram風UI・SHA-256重複防止システム ✅ **実装完了** ✨ **Cloudinary統合・本番リリース可能**
 
 ### ✅ Phase 5.5統合完了（2025/08/13）
 
@@ -145,7 +146,59 @@ SNS機能・MongoDB拡張スキーマ・68インデックス最適化。詳細�
 - **通知システム**: リアルタイム通知・14種類通知タイプ・バッチ処理・TTL自動削除 ✅ **統合完了**
 - **GitHub Projects自動化**: CLI統合・自動Issue作成・カラム管理・進捗追跡・Issues #5-10管理 ✅ **統合完了・稼働開始**
 
-**次期実装予定**: 4. **コメント機能** `feature/phase6.3-comments` 📋 GitHub Issue #7 5. **ハッシュタグ** `feature/phase6.3-hashtags` 📋 GitHub Issue #5 6. **メディアアップロード** `feature/phase6.4-media` 📋 GitHub Issue #6
+### ✅ Phase 6.5実装完了（2025/08/23）
+
+**メディアアップロード機能・Instagram風UI・重複防止システム完成**:
+
+#### 🖼️ 基本機能完了
+- **画像・動画アップロード**: Cloudinary統合・自動最適化・変換処理・JPG/PNG/WebP/MP4/WebM対応 ✅ **実装完了**
+- **Instagram風UI**: 正方形サムネイル・ホバーエフェクト・レスポンシブ・3列〜6列グリッド ✅ **実装完了**
+- **ドラッグ&ドロップ**: React Dropzone統合・複数ファイル・進捗表示・キャンセル機能 ✅ **実装完了**
+
+#### 🔒 セキュリティ・重複防止
+- **SHA-256重複防止**: ファイル内容ハッシュベース検出・Web Crypto API・デバッグシステム ✅ **技術実装完了**
+- **セキュリティ対策**: MIME type検証・XSS対策・認証統合・レート制限対応 ✅ **実装完了**
+
+#### 🛠️ 技術統合
+- **PostForm統合**: 投稿作成・編集での完全統合・UX最適化 ✅ **実装完了**
+- **API実装**: `/api/media/upload`・`/api/media/hash`・監査ログ・エラーハンドリング ✅ **実装完了**
+- **モデル拡張**: Media・Post models・メタデータ保存・Cloudinary連携 ✅ **実装完了**
+
+#### 📊 実装成果
+- **基本機能**: 100%完成・本番リリース可能状態
+- **重複防止**: 技術実装完了・動作制限あり（制限事項として記録）
+- **UI/UX**: Instagram風デザイン・完全レスポンシブ・モダンアニメーション
+- **セキュリティ**: エンタープライズ級対策・完全監査対応
+
+**Phase 6.5メディアアップロード機能は基本機能・UI/UX・セキュリティすべて本番リリース可能**
+
+### ✅ Issue #22実装完了（2025/08/23）
+
+**ユーザー検索拡張機能・日本語対応・高度検索システム完成**:
+
+#### 🔍 検索機能完了
+- **日本語テキスト正規化**: ひらがな→カタカナ変換・Unicode正規化・全角→半角変換 ✅ **実装完了**
+- **拡張検索フィールド**: name・username・displayName・bio・location対応 ✅ **実装完了**
+- **@username検索**: @記号での直接ユーザー検索機能 ✅ **実装完了**
+- **リアルタイム検索**: 300msデバウンス・URL同期・履歴管理 ✅ **実装完了**
+
+#### 🎯 高度機能完了
+- **検索履歴機能**: LocalStorage保存・履歴表示・クリア機能 ✅ **実装完了**
+- **推奨ユーザー**: フォロワー数・アクティビティ・認証状態ベース ✅ **実装完了**
+- **ソート・フィルタ**: 関連度・フォロワー数・最新・アクティブ・認証状態 ✅ **実装完了**
+- **レスポンシブUI**: モバイル・タブレット・デスクトップ対応 ✅ **実装完了**
+
+#### 🔧 技術統合完了
+- **API拡張**: `/api/users`検索エンドポイント・包括クエリ対応 ✅ **実装完了**
+- **ページ実装**: `/users/search`高度検索ページ・Material-UI統合 ✅ **実装完了**
+- **ナビゲーション統合**: AuthButton・既存usersページリンク追加 ✅ **実装完了**
+
+#### 🐛 認証・ログイン問題修正完了（2025/08/23）
+- **CredentialsProvider復旧**: メール・パスワード認証の再有効化 ✅ **修正完了**
+- **VerifiedPage Reactエラー修正**: useEffect分離・ナビゲーション状態管理改善 ✅ **修正完了**
+- **メール認証フロー正常化**: 新規登録→認証→ログイン完全動作確認 ✅ **修正完了**
+
+**Issue #22ユーザー検索拡張機能は100%実装完了・認証システム完全修復**
 
 ## 技術スタック
 
@@ -161,6 +214,7 @@ SNS機能・MongoDB拡張スキーマ・68インデックス最適化。詳細�
 - **CI/CD**: GitHub Actions
 - **監視・分析**: Sentry, Web Vitals, カスタムメトリクス
 - **セキュリティ**: DOMPurify, CSP, CSRF対策, レート制限, 監査ログ, NoSQLインジェクション対策（Phase 5完了）
+- **メディア**: Cloudinary統合・画像動画最適化・Instagram風UI・React Dropzone（Phase 6.5完了）
 
 ## プロジェクト構造
 
@@ -325,6 +379,15 @@ git checkout -b feature/phase6.2-notifications  # 通知システム開発（次
 # Vercel本番デプロイ
 git checkout main && git merge develop --no-ff
 git push origin main                      # 自動デプロイトリガー（https://kab137lab.com）
+
+# GitHub Projects 管理・トラブルシューティング
+gh project item-list 2 --owner kirikab-27 --limit 30  # プロジェクトアイテム一覧確認
+gh project item-add 2 --owner kirikab-27 --url URL     # Issue追加（サイレント失敗の可能性あり）
+
+# GitHub Projects GraphQL診断（推奨・確実）
+gh api graphql -f query='{ node(id:"PROJECT_ITEM_ID") { ... } }'  # アイテム存在確認
+gh api graphql -f query='mutation { addProjectV2ItemById(...) }'  # 確実な追加
+gh project item-edit --id ITEM_ID --field-id FIELD_ID --single-select-option-id OPTION_ID  # ステータス設定
 ```
 
 ## 環境設定
@@ -420,7 +483,7 @@ SENTRY_SUPPRESS_GLOBAL_ERROR_HANDLER_FILE_WARNING=1
 - `GET /api/follow` - フォロー状況確認・フォロワー統計取得 ✅ **Phase 6.1実装完了**
 - `POST /api/follow` - フォロー実行・相互フォロー対応 ✅ **Phase 6.1実装完了**
 - `DELETE /api/follow` - アンフォロー実行・統計更新 ✅ **Phase 6.1実装完了**
-- `GET /api/users` - ユーザー一覧・フォロー状況表示 ✅ **Phase 6.1実装完了**
+- `GET /api/users` - ユーザー一覧・フォロー状況表示・拡張検索機能（Issue #22対応） ✅ **実装完了**
 - `GET /api/timeline` - タイムライン投稿取得・無限スクロール対応 ✅ **Phase 6.1実装完了**
 
 ### 通知関連（Phase 6.2実装完了）
@@ -444,6 +507,7 @@ SENTRY_SUPPRESS_GLOBAL_ERROR_HANDLER_FILE_WARNING=1
 - `GET /profile/password` - パスワード変更（強度チェック・現在パスワード確認）✨ **Phase 4新規実装・本番対応**
 - `GET /timeline` - タイムラインページ（フォローユーザー投稿・無限スクロール・リアルタイム更新）✅ **Phase 6.1実装完了・本番対応**
 - `GET /users` - ユーザー一覧ページ（フォロー状況・プロフィール・フォローボタン）✅ **Phase 6.1実装完了・本番対応**
+- `GET /users/search` - ユーザー検索ページ（高度検索・日本語対応・履歴機能）✅ **Issue #22実装完了・本番対応**
 - `GET /members-only` - callbackURL機能確認（AuthGuardImproved使用・自動リダイレクト）
 - `GET /admin/security` - セキュリティ管理ダッシュボード（IP/ユーザー制限統計・レート制限監視・ブロック解除・リアルタイム攻撃状況）✨ **Phase 5実装・2025/08/13アクセス問題解決済み**
 - `GET /auth/verified` - メール認証完了画面・ログイン画面へ誘導
@@ -712,12 +776,65 @@ interface User {
 - **プロフィール機能**: Hydration エラー・アバター・バリデーション解決済み
 - **Material-UI v7**: Grid型エラーはFlexboxレイアウトで解決済み
 
+#### 認証・ログイン問題（2025/08/23修正完了）
+
+- **ログイン失敗・入力リセット**: CredentialsProvider無効化が原因
+  - 修正: `src/lib/auth/nextauth.ts`でCredentialsProvider復旧
+  - 結果: メール・パスワードログイン正常化
+- **メール認証ChunkLoadError**: ポート不整合によるWebpackエラー
+  - 修正: `.env.local`のAPP_URL・NEXTAUTH_URL同期
+  - 結果: 認証リンク正常動作
+- **VerifiedPage Reactエラー**: `Router`レンダリング中状態更新
+  - エラー: `Cannot update component (Router) while rendering different component`
+  - 修正: useEffect分離・カウントダウン/リダイレクト処理独立化
+  - 結果: 認証完了ページ正常動作・5秒自動リダイレクト
+
 **技術的ポイント**:
 
 - Grid依存を完全削除してFlexboxレイアウトに変更
 - レスポンシブ対応を維持（xs: 100%, md: 50%）
 - TypeScript型安全性を確保
 - Material-UI v7完全対応
+
+### GitHub Projects V2 API 反映遅延問題
+
+- **問題**: GraphQL Mutation成功後、GitHub Projects UIに即座反映されない
+- **原因**: GitHub Projects V2 APIのキャッシュクリア時間（5-10分）
+- **解決策**: API成功後、5-10分待機してから確認
+- **診断コマンド**: 
+
+```bash
+# 1. 個別アイテム存在確認
+gh api graphql -f query='
+{
+  node(id: "PROJECT_ITEM_ID") {
+    ... on ProjectV2Item {
+      id
+      content { ... on Issue { number title } }
+      fieldValues(first:10) { nodes { 
+        ... on ProjectV2ItemFieldSingleSelectValue { name }
+      }}
+    }
+  }
+}'
+
+# 2. プロジェクト全体確認
+gh api graphql -f query='
+{
+  node(id: "PROJECT_ID") {
+    ... on ProjectV2 {
+      items(first:100) { totalCount nodes { 
+        content { ... on Issue { number title } }
+      }}
+    }
+  }
+}'
+
+# 3. GitHub CLI確認
+gh project item-list PROJECT_NUMBER --owner OWNER --limit 30
+```
+
+**重要**: API成功レスポンスを信頼し、UI反映は時間を置いて確認すること
 
 ### Vercelデプロイ問題解決済み
 

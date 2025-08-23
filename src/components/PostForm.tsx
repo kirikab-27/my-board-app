@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Box, TextField, Button, Typography, Paper, Alert, Divider, Chip } from '@mui/material';
+import { Box, TextField, Button, Typography, Paper, Alert, Divider, Chip, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
+import { ExpandMore, AttachFile } from '@mui/icons-material';
 import HashtagInput from './hashtags/HashtagInput';
+import MediaUpload, { UploadedMedia } from './media/MediaUpload';
 
 interface PostFormProps {
   onPostCreated: () => void;
@@ -11,10 +13,12 @@ interface PostFormProps {
     content: string;
     title?: string;
     hashtags?: string[];
+    media?: UploadedMedia[];
   } | null;
   onEditCancel?: () => void;
   showHashtags?: boolean;
   showTitle?: boolean;
+  showMedia?: boolean;
   maxHashtags?: number;
 }
 
@@ -24,11 +28,13 @@ export default function PostForm({
   onEditCancel,
   showHashtags = true,
   showTitle = false,
+  showMedia = true,
   maxHashtags = 10
 }: PostFormProps) {
   const [content, setContent] = useState(editingPost?.content || '');
   const [title, setTitle] = useState(editingPost?.title || '');
   const [hashtags, setHashtags] = useState<string[]>(editingPost?.hashtags || []);
+  const [media, setMedia] = useState<UploadedMedia[]>(editingPost?.media || []);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [lastSubmitTime, setLastSubmitTime] = useState<number>(0);
@@ -40,10 +46,12 @@ export default function PostForm({
       setContent(editingPost.content);
       setTitle(editingPost.title || '');
       setHashtags(editingPost.hashtags || []);
+      setMedia(editingPost.media || []);
     } else {
       setContent('');
       setTitle('');
       setHashtags([]);
+      setMedia([]);
     }
   }, [editingPost]);
 
@@ -127,6 +135,17 @@ export default function PostForm({
       if (showHashtags && finalHashtags.length > 0) {
         requestBody.hashtags = finalHashtags;
       }
+      if (showMedia && media.length > 0) {
+        requestBody.media = media.map(m => ({
+          id: m.id,
+          type: m.type,
+          url: m.url,
+          thumbnailUrl: m.thumbnailUrl,
+          publicId: m.publicId,
+          title: m.title,
+          alt: m.alt
+        }));
+      }
 
       const response = await fetch(url, {
         method,
@@ -144,6 +163,7 @@ export default function PostForm({
       setContent('');
       setTitle('');
       setHashtags([]);
+      setMedia([]);
       setExtractedHashtags([]);
       // 新規投稿の場合のみ最終投稿時刻を更新
       if (!editingPost) {
@@ -164,6 +184,7 @@ export default function PostForm({
     setContent('');
     setTitle('');
     setHashtags([]);
+    setMedia([]);
     setExtractedHashtags([]);
     setError('');
     if (onEditCancel) {
@@ -265,6 +286,36 @@ export default function PostForm({
               size="small"
             />
           </>
+        )}
+
+        {/* メディアアップロード機能 */}
+        {showMedia && (
+          <Accordion sx={{ mt: 2, mb: 2 }}>
+            <AccordionSummary
+              expandIcon={<ExpandMore />}
+              aria-controls="media-upload-content"
+              id="media-upload-header"
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <AttachFile />
+                <Typography>
+                  画像・動画を添付 {media.length > 0 && `(${media.length}ファイル)`}
+                </Typography>
+              </Box>
+            </AccordionSummary>
+            <AccordionDetails>
+              <MediaUpload
+                onUploadComplete={setMedia}
+                onUploadError={(error) => setError(error)}
+                maxFiles={5}
+                acceptedTypes="all"
+                uploadType="image"
+                showPreview={true}
+                disabled={isSubmitting}
+                initialMedia={media}
+              />
+            </AccordionDetails>
+          </Accordion>
         )}
 
         {error && (

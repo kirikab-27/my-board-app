@@ -16,6 +16,9 @@ import {
   Alert,
   IconButton,
   Chip,
+  // Card,
+  // CardMedia,
+  // CardContent,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -40,6 +43,15 @@ interface Post {
   isPublic: boolean;
   createdAt: string;
   updatedAt: string;
+  media?: Array<{
+    type: 'image' | 'video' | 'gif';
+    url: string;
+    thumbnailUrl?: string;
+    alt?: string;
+    title?: string;
+    width?: number;
+    height?: number;
+  }>;
 }
 
 export default function PostDetailPage() {
@@ -332,6 +344,137 @@ export default function PostDetailPage() {
               }}
             />
           </Box>
+
+          {/* メディア表示 - Instagram風 */}
+          {post.media && post.media.length > 0 && (
+            <Box sx={{ mb: 4 }}>
+              <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
+                添付メディア
+              </Typography>
+              <Box sx={{ 
+                display: 'grid', 
+                gap: 1,
+                gridTemplateColumns: {
+                  xs: 'repeat(3, 1fr)',
+                  sm: 'repeat(3, 1fr)',
+                  md: 'repeat(4, 1fr)',
+                  lg: 'repeat(5, 1fr)',
+                  xl: 'repeat(6, 1fr)'
+                }
+              }}>
+                {post.media.map((media: any, index: number) => (
+                  <Box
+                    key={index}
+                    sx={{
+                      position: 'relative',
+                      paddingTop: '100%', // 1:1 アスペクト比（正方形）
+                      backgroundColor: '#000',
+                      borderRadius: '8px',
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        '& .media-overlay': {
+                          opacity: 1
+                        },
+                        '& img, & video': {
+                          transform: 'scale(1.05)'
+                        }
+                      }
+                    }}
+                    onClick={() => {
+                      if (media.type === 'image') {
+                        window.open(media.url, '_blank');
+                      }
+                    }}
+                  >
+                    {/* メディア表示 */}
+                    {media.type === 'image' || media.type === 'gif' ? (
+                      <Box
+                        component="img"
+                        src={media.thumbnailUrl || media.url}
+                        alt={media.alt || media.title || '画像'}
+                        sx={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          objectPosition: 'center',
+                          transition: 'transform 0.3s ease'
+                        }}
+                      />
+                    ) : (
+                      <>
+                        <Box
+                          component="video"
+                          src={media.url}
+                          sx={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            transition: 'transform 0.3s ease'
+                          }}
+                        />
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            fontSize: 48,
+                            color: 'white',
+                            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))',
+                            pointerEvents: 'none'
+                          }}
+                        >
+                          ▶
+                        </Box>
+                      </>
+                    )}
+                    
+                    {/* ホバーオーバーレイ */}
+                    <Box
+                      className="media-overlay"
+                      sx={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        background: 'linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.4) 100%)',
+                        opacity: 0,
+                        transition: 'opacity 0.3s ease',
+                        display: 'flex',
+                        alignItems: 'flex-end',
+                        padding: 1,
+                        pointerEvents: 'none'
+                      }}
+                    >
+                      {(media.title || media.alt) && (
+                        <Typography 
+                          variant="caption" 
+                          sx={{ 
+                            color: 'white',
+                            textShadow: '0 1px 2px rgba(0,0,0,0.5)',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            width: '100%'
+                          }}
+                        >
+                          {media.title || media.alt}
+                        </Typography>
+                      )}
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+          )}
 
           {/* 公開設定表示 */}
           <Box sx={{ mb: 3 }}>
