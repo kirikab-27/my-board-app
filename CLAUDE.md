@@ -287,6 +287,56 @@ import {
 
 **Issue #21エンゲージメント表示機能は完全実装・Instagram/Twitter級UI実現**
 
+### ✅ Issue #17実装完了（2025/08/23完了）
+
+**通知ベル一括既読機能・テーマ切り替え簡素化完全実装**:
+
+#### 🔔 通知ベル一括既読機能完了
+- **一括既読ボタン**: NotificationBell.tsx DoneAllアイコン付きボタン・未読通知時のみ表示 ✅ **実装完了**
+- **API統合**: `/api/notifications` PATCH `mark_all_read`アクション活用・既存システム完全統合 ✅ **実装完了**
+- **リアルタイム同期**: 未読数即座リセット（setUnreadCount(0)）・CustomEvent通知リスト更新 ✅ **実装完了**
+- **ローディング状態**: 処理中表示「処理中...」・重複実行防止・UX最適化 ✅ **実装完了**
+
+#### 🌙 テーマ切り替え簡素化完了
+- **システム設定削除**: 3段階（ライト→ダーク→システム）から2段階（ライト⇔ダーク）に簡素化 ✅ **実装完了**
+- **ThemeProvider修正**: システムテーマ監視ロジック完全削除・localStorage管理簡素化 ✅ **実装完了**
+- **toggleTheme関数**: シンプルな2段階切り替え実装・システム依存完全排除 ✅ **実装完了**
+- **TypeScript型安全性**: 'system'型完全削除・型定義統一・NextThemesProvider設定更新 ✅ **実装完了**
+
+#### 🔧 技術実装詳細
+```typescript
+// 通知ベル一括既読機能
+const markAllNotificationsAsRead = async () => {
+  const response = await fetch('/api/notifications', {
+    method: 'PATCH',
+    body: JSON.stringify({ action: 'mark_all_read' }),
+  });
+  if (response.ok) {
+    setUnreadCount(0);
+    window.dispatchEvent(new CustomEvent('notification-update'));
+  }
+};
+
+// テーマ切り替え簡素化
+const toggleTheme = () => {
+  setCurrentTheme(prev => prev === 'light' ? 'dark' : 'light');
+};
+```
+
+#### 📊 実装成果
+- **通知管理効率化**: 大量通知時の操作負担軽減・直感的な一括既読操作 ✅ **目標達成**
+- **テーマUX向上**: システム依存排除・シンプルな2段階切り替えによる直感的操作 ✅ **目標達成**
+- **技術品質確保**: TypeScript型安全性・エラーハンドリング・状態管理統合 ✅ **目標達成**
+
+#### 🧪 動作確認完了
+- ✅ 未読通知時の一括既読ボタン表示・非表示制御
+- ✅ ボタンクリックでの全未読通知既読化・バッジリセット
+- ✅ ライト⇔ダークテーマの2段階切り替え動作
+- ✅ システム設定完全無効化・localStorage永続化
+- ✅ 処理中状態・エラーハンドリング・リアルタイム同期
+
+**Issue #17通知・テーマ機能は完全実装・ユーザビリティ向上実現**
+
 ## 技術スタック
 
 - **フロントエンド**: React 19.1.0, Next.js 15.4.5
