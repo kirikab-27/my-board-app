@@ -244,7 +244,7 @@ export async function POST(request: NextRequest) {
     });
 
     try {
-      const uploadResult = await uploadPromise;
+      const uploadResult = await uploadPromise as { media: any };
       const { media } = uploadResult;
       
       // サムネイル生成
