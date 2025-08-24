@@ -243,7 +243,7 @@ export default function PostDetailPage() {
   if (loading) {
     return (
       <>
-        <AppBar position="static">
+        <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
           <Toolbar>
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               投稿詳細
@@ -252,7 +252,7 @@ export default function PostDetailPage() {
           </Toolbar>
         </AppBar>
 
-        <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Container maxWidth="md" sx={{ mt: { xs: 10, sm: 12, md: 12 } }}>
           <Box
             sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}
           >
@@ -266,7 +266,7 @@ export default function PostDetailPage() {
   if (error || !post) {
     return (
       <>
-        <AppBar position="static">
+        <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
           <Toolbar>
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               投稿詳細
@@ -275,7 +275,7 @@ export default function PostDetailPage() {
           </Toolbar>
         </AppBar>
 
-        <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Container maxWidth="md" sx={{ mt: { xs: 10, sm: 12, md: 12 } }}>
           <Alert severity="error">
             {error || '投稿が見つかりません'}
             <br />
@@ -290,7 +290,7 @@ export default function PostDetailPage() {
 
   return (
     <>
-      <AppBar position="static">
+      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
           <IconButton component={Link} href={backUrl} edge="start" color="inherit" sx={{ mr: 2 }}>
             <ArrowBackIcon />
@@ -302,7 +302,7 @@ export default function PostDetailPage() {
         </Toolbar>
       </AppBar>
 
-      <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
+      <Container maxWidth="md" sx={{ mt: { xs: 10, sm: 12, md: 12 }, mb: 4 }}>
         <Paper sx={{ p: 4 }}>
           {/* タイトル */}
           {post.title && (

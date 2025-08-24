@@ -91,7 +91,7 @@ export const DashboardSkeleton: React.FC = () => {
   return (
     <Box>
       {/* ヘッダー */}
-      <AppBar position="static" color="transparent" elevation={0}>
+      <AppBar position="fixed" color="transparent" elevation={0} sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
           <Skeleton variant="text" width={150} height={32} />
           <Box sx={{ flexGrow: 1 }} />
@@ -99,7 +99,7 @@ export const DashboardSkeleton: React.FC = () => {
         </Toolbar>
       </AppBar>
 
-      <Container maxWidth="md" sx={{ mt: 4 }}>
+      <Container maxWidth="md" sx={{ mt: { xs: 10, sm: 12, md: 12 } }}>
         {/* ウェルカムメッセージ */}
         <Paper sx={{ p: 4, mb: 4 }}>
           <Skeleton variant="text" width="40%" height={40} sx={{ mb: 2 }} />
@@ -142,7 +142,7 @@ export const BoardSkeleton: React.FC = () => {
   return (
     <Box>
       {/* ヘッダー */}
-      <AppBar position="static" color="primary">
+      <AppBar position="fixed" color="primary" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
           <Skeleton variant="text" width={120} height={24} sx={{ color: 'primary.contrastText' }} />
           <Box sx={{ flexGrow: 1 }} />
@@ -150,7 +150,7 @@ export const BoardSkeleton: React.FC = () => {
         </Toolbar>
       </AppBar>
 
-      <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
+      <Container maxWidth="md" sx={{ mt: { xs: 10, sm: 12, md: 12 }, mb: 4 }}>
         {/* 投稿フォーム */}
         <Paper sx={{ p: 3, mb: 3 }}>
           <Skeleton variant="rectangular" height={120} sx={{ mb: 2 }} />

@@ -321,7 +321,7 @@ export default function UserSearchPage() {
   if (!session) {
     return (
       <>
-        <AppBar position="static">
+        <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
           <Toolbar>
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               ユーザー検索
@@ -329,7 +329,7 @@ export default function UserSearchPage() {
             <AuthButton />
           </Toolbar>
         </AppBar>
-        <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Container maxWidth="md" sx={{ mt: { xs: 14, sm: 16, md: 16 } }}>
           <Alert severity="info">
             ユーザー検索を利用するにはログインが必要です。
           </Alert>
@@ -340,7 +340,7 @@ export default function UserSearchPage() {
 
   return (
     <>
-      <AppBar position="static">
+      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
           <IconButton 
             component={Link} 
@@ -358,7 +358,7 @@ export default function UserSearchPage() {
         </Toolbar>
       </AppBar>
 
-      <Container maxWidth="md" sx={{ mt: 3, mb: 4 }}>
+      <Container maxWidth="md" sx={{ mt: { xs: 14, sm: 16, md: 16 }, mb: 4 }}>
         {/* 検索バー */}
         <Paper sx={{ p: 2, mb: 3 }}>
           <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>

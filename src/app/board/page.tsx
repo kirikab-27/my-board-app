@@ -101,7 +101,7 @@ export default function BoardPage() {
   return (
     <AuthGuard>
       <Box sx={{ flexGrow: 1 }}>
-        <AppBar position="static" sx={{ mb: 3 }}>
+        <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
           <Toolbar>
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               掲示板
@@ -118,7 +118,7 @@ export default function BoardPage() {
           </Toolbar>
         </AppBar>
 
-        <Container maxWidth="md">
+        <Container maxWidth="md" sx={{ mt: { xs: 14, sm: 16, md: 16 } }}>
           <Box sx={{ mb: 3 }}>
             <Typography variant="h4" component="h1" gutterBottom>
               みんなの投稿

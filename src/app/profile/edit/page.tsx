@@ -144,7 +144,7 @@ export default function ProfileEditPage() {
   if (status === 'loading' || loading) {
     return (
       <>
-        <AppBar position="static">
+        <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
           <Toolbar>
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               プロフィール編集
@@ -153,7 +153,7 @@ export default function ProfileEditPage() {
           </Toolbar>
         </AppBar>
 
-        <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Container maxWidth="md" sx={{ mt: { xs: 10, sm: 12, md: 12 } }}>
           <Box
             sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}
           >
@@ -166,7 +166,7 @@ export default function ProfileEditPage() {
 
   return (
     <>
-      <AppBar position="static">
+      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             プロフィール編集
@@ -175,7 +175,7 @@ export default function ProfileEditPage() {
         </Toolbar>
       </AppBar>
 
-      <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
+      <Container maxWidth="md" sx={{ mt: { xs: 10, sm: 12, md: 12 }, mb: 4 }}>
         <Paper sx={{ p: 4 }}>
           <Typography variant="h4" gutterBottom>
             プロフィール編集

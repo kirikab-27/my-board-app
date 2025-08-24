@@ -38,7 +38,7 @@ export default function DashboardPage() {
 
   return (
     <>
-      <AppBar position="static">
+      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             ダッシュボード
@@ -51,7 +51,7 @@ export default function DashboardPage() {
         </Toolbar>
       </AppBar>
 
-      <Container maxWidth="md" sx={{ mt: 4 }}>
+      <Container maxWidth="md" sx={{ mt: { xs: 18, sm: 20, md: 20 } }}>
         <Paper sx={{ p: 4 }}>
           <Typography variant="h4" gutterBottom>
             ようこそ！

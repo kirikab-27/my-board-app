@@ -182,7 +182,7 @@ export default function PasswordChangePage() {
   if (status === 'loading') {
     return (
       <>
-        <AppBar position="static">
+        <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
           <Toolbar>
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               パスワード変更
@@ -191,7 +191,7 @@ export default function PasswordChangePage() {
           </Toolbar>
         </AppBar>
 
-        <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Container maxWidth="md" sx={{ mt: { xs: 10, sm: 12, md: 12 } }}>
           <Box
             sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}
           >
@@ -209,7 +209,7 @@ export default function PasswordChangePage() {
 
   return (
     <>
-      <AppBar position="static">
+      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             パスワード変更
@@ -218,7 +218,7 @@ export default function PasswordChangePage() {
         </Toolbar>
       </AppBar>
 
-      <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
+      <Container maxWidth="md" sx={{ mt: { xs: 10, sm: 12, md: 12 }, mb: 4 }}>
         <Paper sx={{ p: 4 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
             <LockIcon color="primary" />

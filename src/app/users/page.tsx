@@ -111,7 +111,7 @@ export default function UsersPage() {
     <>
       <ProfileHeader title="ユーザー一覧" />
       
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Container maxWidth="lg" sx={{ mt: { xs: 18, sm: 20, md: 20 }, mb: 4 }}>
         <Paper sx={{ p: 4 }}>
           {/* ヘッダー */}
           <Box sx={{ mb: 4 }}>

@@ -92,7 +92,7 @@ export default async function ProfilePage() {
     <>
       <ProfileHeader title="プロフィール" />
 
-      <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
+      <Container maxWidth="md" sx={{ mt: { xs: 18, sm: 20, md: 20 }, mb: 4 }}>
         <Paper sx={{ p: 4 }}>
           {/* ヘッダー部分 */}
           <Box

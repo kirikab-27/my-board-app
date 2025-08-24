@@ -34,7 +34,7 @@ export default function NotificationsPage() {
   if (isLoading) {
     return (
       <>
-        <AppBar position="static">
+        <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
           <Toolbar>
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               通知センター
@@ -42,7 +42,7 @@ export default function NotificationsPage() {
             <AuthButton />
           </Toolbar>
         </AppBar>
-        <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Container maxWidth="md" sx={{ mt: { xs: 10, sm: 12, md: 12 } }}>
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
             <Typography>読み込み中...</Typography>
           </Box>
@@ -53,7 +53,7 @@ export default function NotificationsPage() {
 
   return (
     <>
-      <AppBar position="static">
+      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             通知センター
@@ -62,7 +62,7 @@ export default function NotificationsPage() {
         </Toolbar>
       </AppBar>
 
-      <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
+      <Container maxWidth="md" sx={{ mt: { xs: 10, sm: 12, md: 12 }, mb: 4 }}>
         <Paper sx={{ height: 'calc(100vh - 200px)', overflow: 'hidden' }}>
           <NotificationList
             onNotificationClick={handleNotificationClick}
