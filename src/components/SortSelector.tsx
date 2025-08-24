@@ -156,7 +156,7 @@ export function SortSelector({
       {currentOption && (
         <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
           <Chip
-            icon={currentOption.icon}
+            icon={currentOption.icon as React.ReactElement}
             label={currentOption.label}
             size="small"
             variant="outlined"

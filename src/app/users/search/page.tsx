@@ -22,7 +22,8 @@ import {
   Divider,
   FormControl,
   InputLabel,
-  Select
+  Select,
+  Avatar
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
@@ -258,10 +259,18 @@ export default function UserSearchPage() {
       onClick={() => handleUserCardClick(user)}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <ProfileAvatar 
-          name={user.displayName} 
-          size="medium" 
-        />
+        {user.avatar ? (
+          <Avatar
+            src={user.avatar}
+            alt={user.displayName}
+            sx={{ width: 56, height: 56 }}
+          />
+        ) : (
+          <ProfileAvatar 
+            name={user.displayName} 
+            size="medium" 
+          />
+        )}
         
         <Box sx={{ flex: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>

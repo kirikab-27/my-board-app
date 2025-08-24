@@ -339,6 +339,11 @@ import {
 - **エラーゼロの安定動作**: Hydrationエラー解消・ハッシュタグ検索完全動作 ✅ **目標達成**
 - **UI/UX向上**: 5つの主要機能への統一ナビゲーション・既存デザイン完全統合 ✅ **目標達成**
 
+#### 🔧 TypeScriptビルドエラー修正（2025/08/24追加対応）
+- **Mongoose SortOrder型エラー**: posts/infinite/route.tsで発生・SortOrder import・型アサーション追加で解決 ✅ **修正完了**
+- **Material-UI Chip型エラー**: SortSelector.tsxで発生・ReactElement型キャストで解決 ✅ **修正完了**
+- **重要教訓**: 実装中ビルドチェック省略によるエラー後発見・今後は実装→ビルド→修正→完了フロー厳守
+
 **Issue #25ヘッダーハッシュタグナビゲーション機能は完全実装・エラー修正完了・本番リリース可能**
 
 ### ✅ Issue #18実装完了（2025/08/24完了）
@@ -688,14 +693,18 @@ npm start
 npm run lint
 
 # 🚨 開発ベストプラクティス（必須）
-npm run build         # コミット前に必ず実行（エラー事前発見）
+npm run build         # 実装中・コミット前に必ず実行（エラー事前発見）
 npm run type-check    # TypeScript厳格チェック
 npm run build && npm run start  # PR前に本番環境テスト
+
+# ⚠️ 重要：実装中ビルドチェック（Issue #25教訓・2025/08/24）
+# 実装フロー: 機能実装 → npm run build → エラー修正 → 動作確認 → 完了報告
+# 省略厳禁: TypeScriptエラーは実装完了後ではなく実装中に発見・修正すること
 
 # 🚀 並走開発（リアルタイムエラー検知）
 npm run dev:safe      # Next.js + TypeScript + ESLint 同時実行
 npm run dev:all       # 上記と同じ（エラー時全停止版）
-npm run typecheck:watch  # TypeScript監視のみ
+npm run typecheck:watch  # TypeScript監視のみ（推奨：実装中常時実行）
 npm run lint:watch    # ESLint監視のみ
 
 # 認証保護APIテスト
@@ -1130,6 +1139,22 @@ interface User {
 
 - **プロフィール機能**: Hydration エラー・アバター・バリデーション解決済み
 - **Material-UI v7**: Grid型エラーはFlexboxレイアウトで解決済み
+
+#### TypeScriptビルドエラー（Issue #25対応時・2025/08/24解決）
+
+- **Mongoose SortOrder型エラー**: `posts/infinite/route.ts`でソート条件型不適合
+  - エラー: `Type 'number' is not assignable to type 'SortOrder'`
+  - 修正: `import { SortOrder } from 'mongoose'`追加・`Record<string, SortOrder>`型指定・`as SortOrder`アサーション
+  - 結果: MongoDB数値ソート条件（-1, 1）の型安全性確保
+- **Material-UI Chip型エラー**: `SortSelector.tsx`でicon propsのReactNode→ReactElement型不適合
+  - エラー: `Type 'ReactNode' is not assignable to type 'ReactElement'`
+  - 修正: `currentOption.icon as React.ReactElement`型キャスト
+  - 結果: Material-UI v7 Chipコンポーネント要求に対応
+
+**⚠️ 教訓・予防策**:
+- **実装中ビルドチェック必須**: 機能実装→npm run build→エラー修正を1セットで実行
+- **依存関係更新注意**: Mongoose・Material-UI更新時の型定義変更を事前チェック
+- **並走開発推奨**: `npm run dev & npm run typecheck:watch`でリアルタイム型チェック
 
 #### 認証・ログイン問題（2025/08/23修正完了）
 

@@ -149,7 +149,7 @@ const UserSchema = new mongoose.Schema<IUser>({
   // プロフィール詳細
   bio: {
     type: String,
-    maxlength: [160, '自己紹介は160文字以内で入力してください'],
+    maxlength: [300, '自己紹介は300文字以内で入力してください'],
     default: '',
     trim: true,
   },

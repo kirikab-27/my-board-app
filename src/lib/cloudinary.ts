@@ -58,7 +58,7 @@ export const uploadConfig: Record<string, BaseUploadConfig> = {
   avatar: {
     folder: 'board-app/avatars',
     allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-    max_file_size: 2 * 1024 * 1024, // 2MB
+    max_file_size: 5 * 1024 * 1024, // 5MB
     transformation: [
       { width: 400, height: 400, crop: 'fill', gravity: 'face', quality: 'auto:good' }
     ],

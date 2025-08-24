@@ -13,7 +13,8 @@ import {
   CircularProgress,
   Alert,
   Button,
-  Chip
+  Chip,
+  Avatar
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ManageSearchIcon from '@mui/icons-material/ManageSearch';
@@ -30,6 +31,7 @@ interface User {
   email: string;
   bio?: string;
   role: string;
+  avatar?: string;
   createdAt: string;
 }
 
@@ -214,7 +216,15 @@ export default function UsersPage() {
                     <CardContent sx={{ flexGrow: 1 }}>
                       {/* ユーザー基本情報 */}
                       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                        <ProfileAvatar name={user.name} size="medium" />
+                        {user.avatar ? (
+                          <Avatar
+                            src={user.avatar}
+                            alt={user.name}
+                            sx={{ width: 56, height: 56 }}
+                          />
+                        ) : (
+                          <ProfileAvatar name={user.name} size="medium" />
+                        )}
                         <Box sx={{ ml: 2, flexGrow: 1 }}>
                           <Typography variant="h6" noWrap>
                             {user.name}

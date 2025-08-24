@@ -129,48 +129,63 @@ export const authOptions: NextAuthOptions = {
       : []),
   ],
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
+    async jwt({ token, user, trigger }) {
+      // 新規ログインまたはセッション更新でDB情報を取得
+      if (user || trigger === 'update') {
+        const userId = user?.id || token.id;
+        
+        if (userId) {
+          try {
+            await connectDB();
+            const dbUser = await User.findById(userId);
+            console.log(
+              '🔍 JWT callback - trigger:',
+              trigger || 'login',
+              'user:',
+              user?.email || token.email,
+              'dbUser found:',
+              !!dbUser,
+              'avatar:',
+              dbUser?.avatar || 'none'
+            );
 
-        // DBからユーザー情報を取得してroleを設定
-        try {
-          await connectDB();
-          const dbUser = await User.findById(user.id);
-          console.log(
-            '🔍 JWT callback - user:',
-            user.email,
-            'dbUser found:',
-            !!dbUser,
-            'role:',
-            dbUser?.role
-          );
-
-          if (dbUser) {
-            token.role = dbUser.role || 'user'; // デフォルトロール
-            token.emailVerified = dbUser.emailVerified;
-            token.bio = dbUser.bio || ''; // 自己紹介追加
-            console.log('✅ JWT callback - token updated:', {
-              role: token.role,
-              emailVerified: !!token.emailVerified,
-              bio: !!token.bio,
-            });
-          } else {
-            token.role = 'user'; // デフォルトロール
+            if (dbUser) {
+              // 初回ログイン時のみIDを設定
+              if (user) {
+                token.id = user.id;
+              }
+              
+              token.role = dbUser.role || 'user';
+              token.emailVerified = dbUser.emailVerified;
+              token.bio = dbUser.bio || '';
+              token.avatar = dbUser.avatar || null; // プロフィール画像更新
+              
+              console.log('✅ JWT callback - token updated:', {
+                trigger: trigger || 'login',
+                role: token.role,
+                emailVerified: !!token.emailVerified,
+                bio: !!token.bio,
+                avatar: token.avatar ? 'set' : 'none',
+              });
+            } else {
+              token.role = 'user';
+              token.emailVerified = null;
+              token.bio = '';
+              token.avatar = null;
+              console.log('⚠️ JWT callback - user not found in DB, using defaults');
+            }
+          } catch (error) {
+            console.error('❌ JWT callback error:', error);
+            token.role = 'user';
             token.emailVerified = null;
-            token.bio = ''; // デフォルト自己紹介
-            console.log('⚠️ JWT callback - user not found in DB, using defaults');
+            token.avatar = null;
           }
-        } catch (error) {
-          console.error('❌ JWT callback error:', error);
-          token.role = 'user'; // エラー時はデフォルトロール
-          token.emailVerified = null;
         }
       }
 
-      // 既存のトークンの場合もrole情報をログ出力
-      if (!user && token) {
-        console.log('🔄 JWT callback - existing token role:', token.role);
+      // 既存のトークンの場合の情報ログ出力
+      if (!user && !trigger && token) {
+        console.log('🔄 JWT callback - existing token, avatar:', token.avatar ? 'set' : 'none');
       }
 
       return token;
@@ -181,6 +196,7 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role as UserRole;
         session.user.emailVerified = token.emailVerified as Date | null;
         session.user.bio = token.bio as string;
+        session.user.image = token.avatar as string | null; // プロフィール画像をsessionに設定
       }
       return session;
     },

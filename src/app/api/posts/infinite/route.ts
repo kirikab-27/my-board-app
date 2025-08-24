@@ -6,7 +6,7 @@ import User from '@/models/User';
 import Follow from '@/models/Follow';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/nextauth';
-import mongoose from 'mongoose';
+import mongoose, { SortOrder } from 'mongoose';
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,22 +23,22 @@ export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions);
 
     // ソート条件の構築
-    const getSortCondition = (sortBy: string) => {
+    const getSortCondition = (sortBy: string): Record<string, SortOrder> => {
       switch (sortBy) {
         case 'createdAt_desc':
-          return { _id: -1 }; // ObjectIdは作成日時順
+          return { _id: -1 as SortOrder }; // ObjectIdは作成日時順
         case 'createdAt_asc':
-          return { _id: 1 };
+          return { _id: 1 as SortOrder };
         case 'likes_desc':
-          return { likes: -1, _id: -1 };
+          return { likes: -1 as SortOrder, _id: -1 as SortOrder };
         case 'likes_asc':
-          return { likes: 1, _id: -1 };
+          return { likes: 1 as SortOrder, _id: -1 as SortOrder };
         case 'updatedAt_desc':
-          return { updatedAt: -1, _id: -1 };
+          return { updatedAt: -1 as SortOrder, _id: -1 as SortOrder };
         case 'updatedAt_asc':
-          return { updatedAt: 1, _id: -1 };
+          return { updatedAt: 1 as SortOrder, _id: -1 as SortOrder };
         default:
-          return { _id: -1 };
+          return { _id: -1 as SortOrder };
       }
     };
 

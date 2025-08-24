@@ -108,7 +108,7 @@ const MediaUpload: React.FC<MediaUploadProps> = ({
       initialMediaCount: initialMedia?.length || 0,
       hasHashes: initialMedia?.some(m => m.metadata?.hash) || false
     });
-    if (initialMedia) {
+    if (initialMedia && initialMedia.length > 0) {
       setUploadedMedia(initialMedia);
       // 初期メディアのハッシュ状況をログ出力
       initialMedia.forEach((media, index) => {
@@ -119,19 +119,23 @@ const MediaUpload: React.FC<MediaUploadProps> = ({
           hashPreview: media.metadata?.hash?.substring(0, 16) + '...' || 'なし'
         });
       });
+    } else {
+      // プロフィール編集など、初期メディアが空の場合
+      setUploadedMedia([]);
     }
   }, []);
 
   // initialMediaが変更された場合のみ更新（onUploadCompleteは呼ばない）
   useEffect(() => {
+    // 初期メディアが空の場合、何もしない（プロフィール編集など）
+    if (!initialMedia || initialMedia.length === 0) return;
+    
     console.log('📸 initialMedia変更:', { 
       newCount: initialMedia?.length || 0,
       hasHashes: initialMedia?.some(m => m.metadata?.hash) || false 
     });
-    if (initialMedia !== undefined) {
-      setUploadedMedia(initialMedia);
-    }
-  }, [initialMedia]);
+    setUploadedMedia(initialMedia);
+  }, [initialMedia?.length]);
 
   // ファイル形式設定
   const getAcceptedFiles = () => {

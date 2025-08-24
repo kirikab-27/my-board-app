@@ -7,6 +7,8 @@ import LockIcon from '@mui/icons-material/Lock';
 import EmailIcon from '@mui/icons-material/Email';
 import InfoIcon from '@mui/icons-material/Info';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import LanguageIcon from '@mui/icons-material/Language';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
 import Link from 'next/link';
 import User from '@/models/User';
 import dbConnect from '@/lib/mongodb';
@@ -27,6 +29,9 @@ async function getProfile(userId: string) {
     name: string;
     email: string;
     bio?: string;
+    website?: string;
+    location?: string;
+    avatar?: string;
     emailVerified: Date | null;
     role: string;
     createdAt: Date;
@@ -38,6 +43,9 @@ async function getProfile(userId: string) {
     name: safeUser.name,
     email: safeUser.email,
     bio: safeUser.bio || '',
+    website: safeUser.website || '',
+    location: safeUser.location || '',
+    avatar: safeUser.avatar || '',
     emailVerified: safeUser.emailVerified,
     role: safeUser.role,
     createdAt: safeUser.createdAt,
@@ -104,7 +112,23 @@ export default async function ProfilePage() {
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-              <ProfileAvatar name={profile.name} size="xlarge" />
+              {profile.avatar ? (
+                <Box
+                  component="img"
+                  src={profile.avatar}
+                  alt={`${profile.name}のプロフィール画像`}
+                  sx={{
+                    width: 120,
+                    height: 120,
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    border: '4px solid',
+                    borderColor: 'primary.main'
+                  }}
+                />
+              ) : (
+                <ProfileAvatar name={profile.name} size="xlarge" />
+              )}
               <Box>
                 <Typography variant="h4" gutterBottom>
                   {profile.name}
@@ -179,6 +203,49 @@ export default async function ProfilePage() {
                 </Typography>
               </Box>
             </Box>
+
+            {/* ウェブサイト */}
+            {profile.website && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <LanguageIcon color="action" />
+                <Box>
+                  <Typography variant="body2" color="text.secondary">
+                    ウェブサイト
+                  </Typography>
+                  <Typography 
+                    variant="body1" 
+                    component="a" 
+                    href={profile.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{ 
+                      color: 'primary.main',
+                      textDecoration: 'none',
+                      '&:hover': {
+                        textDecoration: 'underline'
+                      }
+                    }}
+                  >
+                    {profile.website}
+                  </Typography>
+                </Box>
+              </Box>
+            )}
+
+            {/* 位置情報 */}
+            {profile.location && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <LocationOnIcon color="action" />
+                <Box>
+                  <Typography variant="body2" color="text.secondary">
+                    位置情報
+                  </Typography>
+                  <Typography variant="body1">
+                    {profile.location}
+                  </Typography>
+                </Box>
+              </Box>
+            )}
 
             {/* 登録日 */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>

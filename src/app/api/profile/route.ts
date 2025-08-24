@@ -8,7 +8,10 @@ import { z } from 'zod';
 // プロフィール更新用バリデーション
 const profileUpdateSchema = z.object({
   name: z.string().min(1, '名前は必須です').max(50, '名前は50文字以内で入力してください'),
-  bio: z.string().max(200, '自己紹介は200文字以内で入力してください').optional(),
+  bio: z.string().max(300, '自己紹介は300文字以内で入力してください').optional(),
+  website: z.string().max(200, 'ウェブサイトURLは200文字以内で入力してください').optional(),
+  location: z.string().max(100, '位置情報は100文字以内で入力してください').optional(),
+  avatar: z.string().optional(),
 });
 
 // GET: プロフィール取得
@@ -34,6 +37,9 @@ export async function GET() {
       name: string;
       email: string;
       bio?: string;
+      website?: string;
+      location?: string;
+      avatar?: string;
       emailVerified: Date | null;
       role: string;
       createdAt: Date;
@@ -47,6 +53,9 @@ export async function GET() {
         name: safeUser.name,
         email: safeUser.email,
         bio: safeUser.bio || '',
+        website: safeUser.website || '',
+        location: safeUser.location || '',
+        avatar: safeUser.avatar || '',
         emailVerified: safeUser.emailVerified,
         role: safeUser.role,
         createdAt: safeUser.createdAt,
@@ -82,7 +91,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const { name, bio } = validationResult.data;
+    const { name, bio, website, location, avatar } = validationResult.data;
 
     await dbConnect();
 
@@ -92,6 +101,9 @@ export async function PUT(request: NextRequest) {
       {
         name,
         bio: bio || '',
+        website: website || '',
+        location: location || '',
+        avatar: avatar || '',
         updatedAt: new Date(),
       },
       {
@@ -113,6 +125,9 @@ export async function PUT(request: NextRequest) {
         name: updatedUser.name,
         email: updatedUser.email,
         bio: updatedUser.bio || '',
+        website: updatedUser.website || '',
+        location: updatedUser.location || '',
+        avatar: updatedUser.avatar || '',
         emailVerified: updatedUser.emailVerified,
         role: updatedUser.role,
         createdAt: updatedUser.createdAt,

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Button, Menu, MenuItem, Box, Typography, IconButton, useMediaQuery, useTheme } from '@mui/material';
+import { Button, Menu, MenuItem, Box, Typography, IconButton, useMediaQuery, useTheme, Avatar } from '@mui/material';
 import {
   Login as LoginIcon,
   Logout as LogoutIcon,
@@ -209,7 +209,15 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
         aria-haspopup="true"
         aria-expanded={open ? 'true' : undefined}
       >
-        <ProfileAvatar name={session.user?.name} size="small" />
+        {session.user?.image ? (
+          <Avatar
+            src={session.user.image}
+            alt={session.user.name || 'プロフィール画像'}
+            sx={{ width: 32, height: 32 }}
+          />
+        ) : (
+          <ProfileAvatar name={session.user?.name} size="small" />
+        )}
       </IconButton>
       <Menu
         anchorEl={anchorEl}

@@ -14,6 +14,7 @@ import {
   Card,
   CardContent,
   CircularProgress,
+  Avatar,
 } from '@mui/material';
 import {
   Forum as ForumIcon,
@@ -21,6 +22,7 @@ import {
   Person as PersonIcon,
 } from '@mui/icons-material';
 import { AuthButton } from '@/components/auth/AuthButton';
+import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
 import { useRouter } from 'next/navigation';
 
 export default function DashboardPage() {
@@ -58,10 +60,23 @@ export default function DashboardPage() {
           </Typography>
 
           <Box sx={{ mt: 2 }}>
-            <Typography variant="h6">ユーザー情報</Typography>
-            <Typography>名前: {session.user?.name}</Typography>
-            <Typography>メール: {session.user?.email}</Typography>
-            <Typography>ID: {session.user?.id}</Typography>
+            <Typography variant="h6" gutterBottom>ユーザー情報</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mb: 2 }}>
+              {session.user?.image ? (
+                <Avatar
+                  src={session.user.image}
+                  alt={session.user.name || 'プロフィール画像'}
+                  sx={{ width: 80, height: 80 }}
+                />
+              ) : (
+                <ProfileAvatar name={session.user?.name} size="large" />
+              )}
+              <Box>
+                <Typography variant="h6">{session.user?.name}</Typography>
+                <Typography color="text.secondary">{session.user?.email}</Typography>
+                <Typography variant="body2" color="text.secondary">ID: {session.user?.id}</Typography>
+              </Box>
+            </Box>
           </Box>
 
           {/* クイックアクション */}
