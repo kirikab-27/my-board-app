@@ -1,6 +1,11 @@
 // import { withSentryConfig } from '@sentry/nextjs';
 import type { NextConfig } from 'next';
 
+// Bundle analyzer for performance optimization
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
+
 const withPWA = require('next-pwa')({
   dest: 'public',
   disable: process.env.NODE_ENV === 'development',
@@ -67,6 +72,44 @@ const nextConfig: NextConfig = {
   },
   // ビルド最適化設定
   output: 'standalone',
+  // Phase 2: JavaScript Bundle Optimization
+  webpack: (config, { isServer, dev }) => {
+    if (!dev) {
+      // Tree shaking optimization for Material-UI
+      config.optimization = {
+        ...config.optimization,
+        usedExports: true,
+        sideEffects: false,
+      };
+      
+      // Bundle splitting optimization
+      config.optimization.splitChunks = {
+        ...config.optimization.splitChunks,
+        chunks: 'all',
+        cacheGroups: {
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            chunks: 'all',
+          },
+          mui: {
+            test: /[\\/]node_modules[\\/]@mui[\\/]/,
+            name: 'mui',
+            chunks: 'all',
+            priority: 10,
+          },
+          chartjs: {
+            test: /[\\/]node_modules[\\/](chart\.js|react-chartjs-2)[\\/]/,
+            name: 'chartjs',
+            chunks: 'async',
+            priority: 15,
+          },
+        },
+      };
+    }
+    
+    return config;
+  },
 };
 
 // const sentryWebpackPluginOptions = {
@@ -76,4 +119,4 @@ const nextConfig: NextConfig = {
 // };
 
 // export default withSentryConfig(nextConfig, sentryWebpackPluginOptions);
-export default withPWA(nextConfig);
+export default withBundleAnalyzer(withPWA(nextConfig));

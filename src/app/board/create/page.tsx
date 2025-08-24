@@ -10,10 +10,22 @@ import {
   CircularProgress,
   AppBar,
   Toolbar,
+  Skeleton,
 } from '@mui/material';
 import PostAddIcon from '@mui/icons-material/PostAdd';
 import { AuthButton } from '@/components/auth/AuthButton';
-import PostForm from '@/components/PostForm';
+import dynamic from 'next/dynamic';
+
+// Dynamic import for PostForm to reduce initial bundle size
+const PostForm = dynamic(() => import('@/components/PostForm'), {
+  loading: () => (
+    <Box sx={{ p: 2 }}>
+      <Skeleton variant="rectangular" width="100%" height={400} sx={{ mb: 2 }} />
+      <Skeleton variant="rectangular" width={200} height={40} />
+    </Box>
+  ),
+  ssr: false
+});
 
 export default function CreatePostPage() {
   const router = useRouter();

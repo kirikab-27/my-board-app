@@ -16,8 +16,18 @@ import {
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { AuthButton } from '@/components/auth/AuthButton';
-import PostForm from '@/components/PostForm';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
+
+// Dynamic import for PostForm to reduce initial bundle size
+const PostForm = dynamic(() => import('@/components/PostForm'), {
+  loading: () => (
+    <Box sx={{ p: 2 }}>
+      <div>Loading form...</div>
+    </Box>
+  ),
+  ssr: false
+});
 
 interface Post {
   _id: string;

@@ -1,32 +1,41 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, Grid, Typography, Alert, Box } from '@mui/material';
-import { Line, Bar, Doughnut } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-} from 'chart.js';
+import { Card, CardContent, CardHeader, Grid, Typography, Alert, Box, Skeleton } from '@mui/material';
+import dynamic from 'next/dynamic';
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend
-);
+// Dynamic import for Chart.js to reduce initial bundle size
+const Line = dynamic(() => import('react-chartjs-2').then(mod => ({ default: mod.Line })), {
+  loading: () => <Skeleton variant="rectangular" width="100%" height={200} />,
+  ssr: false
+});
+
+const Bar = dynamic(() => import('react-chartjs-2').then(mod => ({ default: mod.Bar })), {
+  loading: () => <Skeleton variant="rectangular" width="100%" height={200} />,
+  ssr: false
+});
+
+const Doughnut = dynamic(() => import('react-chartjs-2').then(mod => ({ default: mod.Doughnut })), {
+  loading: () => <Skeleton variant="rectangular" width="100%" height={200} />,
+  ssr: false
+});
+
+// Dynamic Chart.js registration
+const initializeChartJS = async () => {
+  const { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend } = await import('chart.js');
+  
+  ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    BarElement,
+    ArcElement,
+    Title,
+    Tooltip,
+    Legend
+  );
+};
 
 interface DashboardMetrics {
   errorRate: number;
@@ -44,6 +53,14 @@ export default function MonitoringDashboard() {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [chartJSInitialized, setChartJSInitialized] = useState(false);
+
+  // Initialize Chart.js dynamically
+  useEffect(() => {
+    initializeChartJS().then(() => {
+      setChartJSInitialized(true);
+    }).catch(console.error);
+  }, []);
 
   useEffect(() => {
     const fetchMetrics = async () => {
