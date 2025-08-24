@@ -263,31 +263,29 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
           </Typography>
         </Box>
         {/* モバイルでのみナビゲーションメニューを表示 */}
-        {isMobile && (
-          <>
-            <MenuItem onClick={handleHome}>
-              <HomeIcon sx={{ mr: 1 }} />
-              ダッシュボード
-            </MenuItem>
-            <MenuItem onClick={handleBoard}>
-              <ForumIcon sx={{ mr: 1 }} />
-              掲示板
-            </MenuItem>
-            <MenuItem onClick={handleTimeline}>
-              <TimelineIcon sx={{ mr: 1 }} />
-              タイムライン
-            </MenuItem>
-            <MenuItem onClick={handleUsers}>
-              <PeopleIcon sx={{ mr: 1 }} />
-              ユーザー一覧
-            </MenuItem>
-            <MenuItem onClick={handleHashtags}>
-              <TagIcon sx={{ mr: 1 }} />
-              ハッシュタグ
-            </MenuItem>
-            <Box sx={{ borderBottom: 1, borderColor: 'divider', my: 1 }} />
-          </>
-        )}
+        {isMobile && [
+          <MenuItem key="home" onClick={handleHome}>
+            <HomeIcon sx={{ mr: 1 }} />
+            ダッシュボード
+          </MenuItem>,
+          <MenuItem key="board" onClick={handleBoard}>
+            <ForumIcon sx={{ mr: 1 }} />
+            掲示板
+          </MenuItem>,
+          <MenuItem key="timeline" onClick={handleTimeline}>
+            <TimelineIcon sx={{ mr: 1 }} />
+            タイムライン
+          </MenuItem>,
+          <MenuItem key="users" onClick={handleUsers}>
+            <PeopleIcon sx={{ mr: 1 }} />
+            ユーザー一覧
+          </MenuItem>,
+          <MenuItem key="hashtags" onClick={handleHashtags}>
+            <TagIcon sx={{ mr: 1 }} />
+            ハッシュタグ
+          </MenuItem>,
+          <Box key="divider" sx={{ borderBottom: 1, borderColor: 'divider', my: 1 }} />
+        ]}
         {/* ユーザー関連メニュー */}
         <MenuItem onClick={handleProfile}>
           <PersonIcon sx={{ mr: 1 }} />

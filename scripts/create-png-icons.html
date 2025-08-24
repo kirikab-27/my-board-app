@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PWA Icon Generator</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background-color: #f5f5f5; 
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+        }
+        canvas { 
+            border: 1px solid #ccc; 
+            margin: 10px; 
+            border-radius: 4px; 
+        }
+        button { 
+            background-color: #1976d2; 
+            color: white; 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            margin: 5px; 
+        }
+        button:hover { 
+            background-color: #1565c0; 
+        }
+        .download-section { 
+            margin-top: 20px; 
+            padding: 15px; 
+            background-color: #f8f9fa; 
+            border-radius: 4px; 
+        }
+        h1 { 
+            color: #1976d2; 
+            text-align: center; 
+        }
+        .instructions {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 PWA Icon Generator for My Board App</h1>
+        
+        <div class="instructions">
+            <h3>📋 Instructions:</h3>
+            <ol>
+                <li>Click "Generate Icons" to create the PWA icons</li>
+                <li>Download both 192x192 and 512x512 PNG files</li>
+                <li>Place them in <code>public/icons/</code> directory as:
+                    <ul>
+                        <li><code>icon-192x192.png</code></li>
+                        <li><code>icon-512x512.png</code></li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+
+        <button onclick="generateIcons()">🎯 Generate Icons</button>
+        
+        <div id="canvases"></div>
+        
+        <div class="download-section" id="downloadSection" style="display: none;">
+            <h3>📥 Download Icons:</h3>
+            <div id="downloadLinks"></div>
+        </div>
+    </div>
+
+    <script>
+        function drawBoardIcon(canvas, size) {
+            const ctx = canvas.getContext('2d');
+            canvas.width = size;
+            canvas.height = size;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, size, size);
+            
+            // 背景円
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, size/2, 0, 2 * Math.PI);
+            ctx.fillStyle = '#1976d2';
+            ctx.fill();
+            
+            // 掲示板背景
+            const boardWidth = size * 0.5;
+            const boardHeight = size * 0.375;
+            const boardX = size * 0.25;
+            const boardY = size * 0.3125;
+            const borderRadius = size * 0.03125;
+            
+            ctx.beginPath();
+            ctx.roundRect(boardX, boardY, boardWidth, boardHeight, borderRadius);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fill();
+            
+            // 投稿線 1
+            ctx.beginPath();
+            ctx.roundRect(size * 0.3125, size * 0.390625, size * 0.375, size * 0.015625, size * 0.0078125);
+            ctx.fillStyle = '#1976d2';
+            ctx.fill();
+            
+            // 投稿線 2
+            ctx.beginPath();
+            ctx.roundRect(size * 0.3125, size * 0.4296875, size * 0.25, size * 0.015625, size * 0.0078125);
+            ctx.fillStyle = '#1976d2';
+            ctx.fill();
+            
+            // 投稿線 3
+            ctx.beginPath();
+            ctx.roundRect(size * 0.3125, size * 0.46875, size * 0.3125, size * 0.015625, size * 0.0078125);
+            ctx.fillStyle = '#1976d2';
+            ctx.fill();
+            
+            // いいねハート (簡略化)
+            ctx.beginPath();
+            const heartSize = size * 0.03;
+            const heartX = size * 0.625;
+            const heartY = size * 0.546875;
+            ctx.moveTo(heartX, heartY);
+            ctx.bezierCurveTo(heartX, heartY - heartSize/2, heartX + heartSize, heartY - heartSize/2, heartX + heartSize, heartY);
+            ctx.bezierCurveTo(heartX + heartSize, heartY + heartSize/2, heartX, heartY + heartSize, heartX, heartY + heartSize);
+            ctx.bezierCurveTo(heartX, heartY + heartSize, heartX - heartSize, heartY + heartSize/2, heartX - heartSize, heartY);
+            ctx.bezierCurveTo(heartX - heartSize, heartY - heartSize/2, heartX, heartY - heartSize/2, heartX, heartY);
+            ctx.fillStyle = '#ff4444';
+            ctx.fill();
+            
+            // コメントバブル
+            const bubbleX = size * 0.3125;
+            const bubbleY = size * 0.52734375;
+            const bubbleWidth = size * 0.15625;
+            const bubbleHeight = size * 0.078125;
+            
+            ctx.beginPath();
+            ctx.roundRect(bubbleX, bubbleY, bubbleWidth, bubbleHeight, size * 0.015625);
+            ctx.fillStyle = '#f5f5f5';
+            ctx.fill();
+            ctx.strokeStyle = '#1976d2';
+            ctx.lineWidth = size * 0.00390625;
+            ctx.stroke();
+            
+            // コメントドット
+            const dotSize = size * 0.00585937;
+            const dotY = bubbleY + bubbleHeight/2;
+            
+            ctx.beginPath();
+            ctx.arc(bubbleX + bubbleWidth * 0.25, dotY, dotSize, 0, 2 * Math.PI);
+            ctx.fillStyle = '#1976d2';
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.arc(bubbleX + bubbleWidth * 0.5, dotY, dotSize, 0, 2 * Math.PI);
+            ctx.fillStyle = '#1976d2';
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.arc(bubbleX + bubbleWidth * 0.75, dotY, dotSize, 0, 2 * Math.PI);
+            ctx.fillStyle = '#1976d2';
+            ctx.fill();
+        }
+        
+        function generateIcons() {
+            const canvasContainer = document.getElementById('canvases');
+            const downloadSection = document.getElementById('downloadSection');
+            const downloadLinks = document.getElementById('downloadLinks');
+            
+            // Clear previous content
+            canvasContainer.innerHTML = '';
+            downloadLinks.innerHTML = '';
+            
+            const sizes = [192, 512];
+            
+            sizes.forEach(size => {
+                // Create canvas
+                const canvas = document.createElement('canvas');
+                canvas.id = `canvas-${size}`;
+                
+                // Create label
+                const label = document.createElement('div');
+                label.textContent = `${size}x${size} Icon:`;
+                label.style.fontWeight = 'bold';
+                label.style.marginTop = '20px';
+                
+                canvasContainer.appendChild(label);
+                canvasContainer.appendChild(canvas);
+                
+                // Draw icon
+                drawBoardIcon(canvas, size);
+                
+                // Create download link
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL('image/png');
+                link.download = `icon-${size}x${size}.png`;
+                link.innerHTML = `⬇️ Download icon-${size}x${size}.png`;
+                link.style.display = 'inline-block';
+                link.style.margin = '10px';
+                link.style.padding = '10px 15px';
+                link.style.backgroundColor = '#4caf50';
+                link.style.color = 'white';
+                link.style.textDecoration = 'none';
+                link.style.borderRadius = '4px';
+                
+                downloadLinks.appendChild(link);
+            });
+            
+            downloadSection.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
