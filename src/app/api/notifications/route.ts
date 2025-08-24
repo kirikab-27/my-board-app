@@ -57,9 +57,16 @@ export async function GET(request: NextRequest) {
       if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
         // キャッシュヒット時はヘッダーを追加
         requestMonitor.finish(200);
-        return NextResponse.json(cached.data, {
+        const cachedResponse = NextResponse.json(cached.data, {
           headers: { 'X-Cache': 'HIT' }
         });
+        
+        // Phase 4: キャッシュヒット時にも同じヘッダーを適用
+        cachedResponse.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120');
+        cachedResponse.headers.set('CDN-Cache-Control', 'public, s-maxage=60');
+        cachedResponse.headers.set('Vercel-CDN-Cache-Control', 'public, s-maxage=60');
+        
+        return cachedResponse;
       }
     }
 
@@ -145,9 +152,18 @@ export async function GET(request: NextRequest) {
     }
 
     requestMonitor.finish(200);
-    return NextResponse.json(responseData, {
+    
+    // Phase 4: API レスポンス最適化 - 通知ポーリングを60秒キャッシュ
+    const response = NextResponse.json(responseData, {
       headers: { 'X-Cache': 'MISS' }
     });
+    
+    // 通知API用キャッシュヘッダー（60秒キャッシュ・スマートポーリング対応）
+    response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120');
+    response.headers.set('CDN-Cache-Control', 'public, s-maxage=60');
+    response.headers.set('Vercel-CDN-Cache-Control', 'public, s-maxage=60');
+    
+    return response;
 
   } catch (error) {
     console.error('通知取得エラー:', error);

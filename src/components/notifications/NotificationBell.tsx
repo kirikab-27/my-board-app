@@ -52,13 +52,48 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
     }
   }, [session?.user?.id]);
 
-  // 定期的な更新（30秒間隔）
+  // Phase 4: スマートポーリング最適化（60秒間隔・アクティブタブのみ）
   useEffect(() => {
     if (!session?.user?.id) return;
 
-    const interval = setInterval(fetchUnreadCount, 30000);
-    return () => clearInterval(interval);
-  }, [session?.user?.id]);
+    let interval: NodeJS.Timeout | null = null;
+    
+    const startPolling = () => {
+      // アクティブタブかつユーザーがアクティブな場合のみポーリング
+      if (document.visibilityState === 'visible' && !document.hidden) {
+        interval = setInterval(fetchUnreadCount, 60000); // 60秒間隔に延長
+      }
+    };
+
+    const stopPolling = () => {
+      if (interval) {
+        clearInterval(interval);
+        interval = null;
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // タブがアクティブになったら即座に更新してポーリング開始
+        fetchUnreadCount();
+        startPolling();
+      } else {
+        // タブが非アクティブになったらポーリング停止
+        stopPolling();
+      }
+    };
+
+    // 初回実行とポーリング開始
+    startPolling();
+
+    // ページ可視性変更の監視
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      stopPolling();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [session?.user?.id, fetchUnreadCount]);
 
   // 通知を既読にする
   const markNotificationsAsRead = async () => {
