@@ -20,6 +20,8 @@ import {
   Forum as ForumIcon,
   Security as SecurityIcon,
   Person as PersonIcon,
+  Speed as SpeedIcon,
+  NetworkCheck as NetworkIcon,
 } from '@mui/icons-material';
 import { AuthButton } from '@/components/auth/AuthButton';
 import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
@@ -175,6 +177,88 @@ export default function DashboardPage() {
                   </CardContent>
                 </Card>
               </Grid>
+
+              {/* Phase 7.1: 管理者専用パネル */}
+              {session?.user?.role === 'admin' && (
+                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, width: '100%' }}>
+                  {/* Phase 7.1: パフォーマンス測定 */}
+                  <Box sx={{ flex: 1 }}>
+                    <Card>
+                      <CardContent>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                          <SpeedIcon sx={{ mr: 1, color: 'info.main' }} />
+                          <Typography variant="h6">Phase 7.1 パフォーマンス測定</Typography>
+                        </Box>
+                        <Typography color="text.secondary" sx={{ mb: 2 }}>
+                          システムのベースライン測定（管理者限定）
+                        </Typography>
+                        <Button
+                          variant="outlined"
+                          onClick={async () => {
+                            setLoadingButton('performance');
+                            // パフォーマンス測定を実行
+                            const { default: PerformanceBaseline } = await import('@/utils/performance/baseline');
+                            const baseline = new PerformanceBaseline();
+                            await baseline.runMultipleMeasurements(3);
+                            setLoadingButton(null);
+                          }}
+                          fullWidth
+                          disabled={loadingButton === 'performance'}
+                        >
+                          {loadingButton === 'performance' ? (
+                            <CircularProgress size={24} color="inherit" />
+                          ) : (
+                            'ベースライン測定を実行'
+                          )}
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </Box>
+
+                  {/* Phase 7.1: 接続監視 */}
+                  <Box sx={{ flex: 1 }}>
+                    <Card>
+                      <CardContent>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                          <NetworkIcon sx={{ mr: 1, color: 'success.main' }} />
+                          <Typography variant="h6">Phase 7.1 接続監視</Typography>
+                        </Box>
+                        <Typography color="text.secondary" sx={{ mb: 2 }}>
+                          リアルタイム接続状況・API応答時間監視
+                        </Typography>
+                        <Button
+                          variant="outlined"
+                          onClick={async () => {
+                            setLoadingButton('connection');
+                            try {
+                              const response = await fetch('/api/monitoring/connection?detailed=true');
+                              const data = await response.json();
+                              console.log('接続監視メトリクス:', data);
+                              if (data.warnings?.length > 0) {
+                                alert(`警告: ${data.warnings.join(', ')}`);
+                              } else {
+                                alert(`システム正常\n平均応答時間: ${data.metrics.averageResponseTime.toFixed(0)}ms\nアクティブ接続: ${data.metrics.activeConnections}`);
+                              }
+                            } catch (error) {
+                              console.error('接続監視エラー:', error);
+                              alert('監視データの取得に失敗しました');
+                            }
+                            setLoadingButton(null);
+                          }}
+                          fullWidth
+                          disabled={loadingButton === 'connection'}
+                        >
+                          {loadingButton === 'connection' ? (
+                            <CircularProgress size={24} color="inherit" />
+                          ) : (
+                            '接続状況を確認'
+                          )}
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </Box>
+                </Box>
+              )}
             </Grid>
           </Box>
 

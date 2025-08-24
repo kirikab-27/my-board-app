@@ -21,6 +21,7 @@ import { AuthButton } from '@/components/auth/AuthButton';
 import { AuthGuard } from '@/components/auth/AuthGuardImproved';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { InfiniteScrollContainer } from '@/components/InfiniteScrollContainer';
+import performanceConfig from '@/config/performance';
 
 export default function BoardPage() {
   const router = useRouter();
@@ -42,7 +43,7 @@ export default function BoardPage() {
   } = useInfiniteScroll({
     type: 'board',
     limit: 20,
-    pollingInterval: 5000, // 5秒ごとに新着投稿をチェック
+    pollingInterval: performanceConfig.polling.interval, // Phase 7.1: 最適化されたポーリング間隔
     sortBy // ソート条件を渡す
   });
 
