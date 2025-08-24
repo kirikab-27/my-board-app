@@ -11,6 +11,7 @@ import {
   validateSortParam, 
   sanitizeSearchQuery 
 } from '@/lib/security/input-validation';
+import { broadcastNewPostToAdmins } from '@/lib/websocket/server';
 
 // ハッシュタグ処理関数
 async function processHashtags(hashtags: string[], userId: string, userName: string) {
@@ -376,6 +377,20 @@ export async function POST(request: NextRequest) {
       isPublic: isPublic,
       hashtags: finalHashtags
     });
+
+    // Phase 7.2: 管理者にリアルタイム通知送信（新着投稿のみ）
+    try {
+      broadcastNewPostToAdmins({
+        _id: post._id.toString(),
+        title: post.title,
+        content: sanitizedContent,
+        authorName: user.name || '匿名ユーザー',
+        createdAt: post.createdAt || new Date()
+      });
+    } catch (websocketError) {
+      console.warn('⚠️ WebSocket通知送信失敗（ポーリングで代替）:', websocketError);
+      // WebSocket失敗時もポーリングが継続するため、投稿作成は成功扱い
+    }
 
     return NextResponse.json(post, { status: 201 });
   } catch (error) {

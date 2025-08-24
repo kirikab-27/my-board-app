@@ -42,7 +42,7 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
 
   // URLパラメータからcallbackUrlを取得
-  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+  const callbackUrl = searchParams?.get('callbackUrl') || '/dashboard';
 
   // OAuth設定の有効性をチェック（環境変数の存在確認）
   // 本番環境でOAuthを有効にする場合は、環境変数を設定してください

@@ -26,6 +26,7 @@ import {
 import { AuthButton } from '@/components/auth/AuthButton';
 import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
 import { useRouter } from 'next/navigation';
+import AdminWebSocketClient from '@/components/websocket/AdminWebSocketClient';
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -261,6 +262,18 @@ export default function DashboardPage() {
               )}
             </Grid>
           </Box>
+
+          {/* Phase 7.2: 管理者専用WebSocketクライアント */}
+          {session?.user?.role === 'admin' && (
+            <Box sx={{ mt: 4 }}>
+              <AdminWebSocketClient 
+                onNewPost={(notification) => {
+                  console.log('📢 ダッシュボードで新着投稿通知受信:', notification);
+                  // 必要に応じて追加の処理（例：投稿リスト更新等）
+                }}
+              />
+            </Box>
+          )}
 
           <Box sx={{ mt: 4 }}>
             <Typography variant="h6">認証システム状況</Typography>

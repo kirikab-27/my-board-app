@@ -128,7 +128,7 @@ export const useRequireAuth = (options: UseRequireAuthOptions = {}): UseRequireA
       switch (currentError) {
         case 'not_authenticated':
           // ログインページにcallbackUrlを付与
-          const callbackUrl = encodeURIComponent(pathname);
+          const callbackUrl = encodeURIComponent(pathname || '');
           redirectUrl = `${redirectTo}?callbackUrl=${callbackUrl}`;
           break;
 
