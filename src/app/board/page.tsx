@@ -16,7 +16,6 @@ import AddIcon from '@mui/icons-material/Add';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import PostList from '@/components/PostList';
-import SearchBar from '@/components/SearchBar';
 import SortSelector, { SortOption } from '@/components/SortSelector';
 import { AuthButton } from '@/components/auth/AuthButton';
 import { AuthGuard } from '@/components/auth/AuthGuardImproved';
@@ -107,7 +106,11 @@ export default function BoardPage() {
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               掲示板
             </Typography>
-            <AuthButton />
+            <AuthButton 
+              onSearch={setSearchTerm} 
+              onClearSearch={() => setSearchTerm('')}
+              searchResultCount={filteredPosts.length}
+            />
           </Toolbar>
           {/* 2段目のナビゲーション行 */}
           <Toolbar variant="dense" sx={{ minHeight: 48, borderTop: 1, borderColor: 'rgba(255, 255, 255, 0.12)' }}>
@@ -125,15 +128,6 @@ export default function BoardPage() {
                 </Typography>
               )}
             </Typography>
-          </Box>
-
-          {/* 検索バー */}
-          <Box sx={{ mb: 3 }}>
-            <SearchBar 
-              onSearch={setSearchTerm} 
-              onClear={() => setSearchTerm('')}
-              placeholder="投稿を検索..."
-            />
           </Box>
 
           {/* ソート機能 */}

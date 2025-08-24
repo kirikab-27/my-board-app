@@ -22,12 +22,21 @@ import { useRouter } from 'next/navigation';
 import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { HeaderSearchIcon } from '@/components/ui/HeaderSearchIcon';
 
 interface AuthButtonProps {
   isNavigationRow?: boolean;
+  onSearch?: (query: string) => void;
+  onClearSearch?: () => void;
+  searchResultCount?: number;
 }
 
-export const AuthButton: React.FC<AuthButtonProps> = ({ isNavigationRow = false }) => {
+export const AuthButton: React.FC<AuthButtonProps> = ({ 
+  isNavigationRow = false, 
+  onSearch, 
+  onClearSearch, 
+  searchResultCount 
+}) => {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -176,6 +185,14 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ isNavigationRow = false 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
       <ThemeToggle />
+      {onSearch && onClearSearch && (
+        <HeaderSearchIcon 
+          onSearch={onSearch} 
+          onClear={onClearSearch}
+          resultCount={searchResultCount}
+          placeholder="投稿を検索..."
+        />
+      )}
       <NotificationBell />
       <IconButton
         onClick={handleMenuOpen}
