@@ -22,7 +22,8 @@ const Doughnut = dynamic(() => import('react-chartjs-2').then(mod => ({ default:
 
 // Dynamic Chart.js registration
 const initializeChartJS = async () => {
-  const { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend } = await import('chart.js');
+  const chartModule = await import('chart.js');
+  const { Chart: ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend } = chartModule;
   
   ChartJS.register(
     CategoryScale,
