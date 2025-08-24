@@ -23,7 +23,7 @@ export default function VerifiedPage() {
 
   // メールパラメータの初期化
   useEffect(() => {
-    const emailParam = searchParams.get('email');
+    const emailParam = searchParams?.get('email');
     if (emailParam) {
       setEmail(decodeURIComponent(emailParam));
     }

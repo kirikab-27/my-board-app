@@ -59,7 +59,7 @@ interface HashtagDetail {
 export default function HashtagDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const tagName = params.tag as string;
+  const tagName = params?.tag as string;
   
   const [hashtag, setHashtag] = useState<HashtagDetail | null>(null);
   const [posts, setPosts] = useState<any[]>([]);

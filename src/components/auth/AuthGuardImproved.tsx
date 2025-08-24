@@ -23,7 +23,7 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
     
     if (!session) {
       // 現在のURLをcallbackUrlとして保存してリダイレクト
-      const callbackUrl = encodeURIComponent(pathname);
+      const callbackUrl = encodeURIComponent(pathname || '');
       router.push(`/login?callbackUrl=${callbackUrl}`);
     }
   }, [session, status, router, pathname]);

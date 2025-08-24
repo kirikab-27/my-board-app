@@ -87,7 +87,7 @@ export default function UserPostsPage() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const username = params.username as string;
+  const username = params?.username as string;
 
   const [data, setData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -100,8 +100,8 @@ export default function UserPostsPage() {
 
   // URL パラメータから初期状態を設定
   useEffect(() => {
-    const page = parseInt(searchParams.get('page') || '1');
-    const sort = (searchParams.get('sort') || 'createdAt_desc') as SortOption;
+    const page = parseInt(searchParams?.get('page') || '1');
+    const sort = (searchParams?.get('sort') || 'createdAt_desc') as SortOption;
     
     setCurrentPage(page);
     setSortOption(sort);

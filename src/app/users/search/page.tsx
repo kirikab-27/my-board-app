@@ -82,7 +82,7 @@ export default function UserSearchPage() {
   const searchParams = useSearchParams();
   const { data: session } = useSession();
   
-  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
+  const [searchQuery, setSearchQuery] = useState(searchParams?.get('q') || '');
   const [users, setUsers] = useState<User[]>([]);
   const [suggestedUsers, setSuggestedUsers] = useState<User[]>([]);
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
@@ -109,7 +109,7 @@ export default function UserSearchPage() {
 
   // URL パラメータからの検索実行
   useEffect(() => {
-    const q = searchParams.get('q');
+    const q = searchParams?.get('q');
     if (q && q !== searchQuery) {
       setSearchQuery(q);
       performSearch(q, 1);

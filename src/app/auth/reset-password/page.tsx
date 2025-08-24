@@ -51,7 +51,7 @@ export default function ResetPasswordPage() {
   });
 
   useEffect(() => {
-    const tokenParam = searchParams.get('token');
+    const tokenParam = searchParams?.get('token');
     if (!tokenParam) {
       setTokenValid(false);
       setError('リセットトークンが見つかりません。パスワードリセットを最初からやり直してください。');
