@@ -41,6 +41,7 @@ import { AuthButton } from '@/components/auth/AuthButton';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { InfiniteScrollContainer } from '@/components/InfiniteScrollContainer';
 import Link from 'next/link';
+import performanceConfig from '@/config/performance';
 
 export default function TimelinePage() {
   const { data: session } = useSession();
@@ -67,7 +68,7 @@ export default function TimelinePage() {
   } = useInfiniteScroll({
     type: 'timeline',
     limit: 20,
-    pollingInterval: 5000, // 5秒ごとに新着投稿をチェック
+    pollingInterval: performanceConfig.polling.interval, // Phase 7.1: 最適化されたポーリング間隔
     sortBy // ソート条件を渡す
   });
 

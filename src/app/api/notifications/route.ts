@@ -1,6 +1,7 @@
 /**
  * 通知システムAPI - メイン処理
  * Phase 6.2: 通知の取得・作成・管理機能
+ * Phase 7.1: パフォーマンス最適化追加
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -9,6 +10,11 @@ import { authOptions } from '@/lib/auth/nextauth';
 import connectDB from '@/lib/mongodb';
 import Notification from '@/models/Notification';
 import User from '@/models/User';
+import { createConnectionMiddleware } from '@/utils/monitoring/connectionMonitor';
+
+// Phase 7.1: 簡易的なメモリキャッシュ（開発環境のみ）
+const notificationCache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_TTL = 2000; // 2秒（ポーリング間隔と同じ）
 
 /**
  * GET /api/notifications - 通知一覧取得
@@ -19,9 +25,14 @@ import User from '@/models/User';
  * - type: 通知タイプフィルター
  */
 export async function GET(request: NextRequest) {
+  // Phase 7.1: 接続監視開始
+  const monitor = createConnectionMiddleware();
+  const requestMonitor = monitor('/api/notifications', 'GET');
+
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
+      requestMonitor.finish(401);
       return NextResponse.json({ error: '認証が必要です' }, { status: 401 });
     }
 
@@ -35,7 +46,21 @@ export async function GET(request: NextRequest) {
 
     // バリデーション
     if (page < 1 || limit < 1) {
+      requestMonitor.finish(400);
       return NextResponse.json({ error: '無効なページパラメータです' }, { status: 400 });
+    }
+
+    // Phase 7.1: キャッシュチェック（開発環境のみ）
+    const cacheKey = `${session.user.id}-${page}-${limit}-${filter}-${type || 'all'}`;
+    if (process.env.NODE_ENV === 'development') {
+      const cached = notificationCache.get(cacheKey);
+      if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+        // キャッシュヒット時はヘッダーを追加
+        requestMonitor.finish(200);
+        return NextResponse.json(cached.data, {
+          headers: { 'X-Cache': 'HIT' }
+        });
+      }
     }
 
     // フィルター条件構築
@@ -70,10 +95,11 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // 通知取得（ページング）
+    // Phase 7.1: 最適化された通知取得（select フィールド最適化）
     const skip = (page - 1) * limit;
     const [notifications, totalCount, unreadCount] = await Promise.all([
       Notification.find(query)
+        .select('-metadata.ip -metadata.userAgent') // Phase 7.1: 不要なフィールドを除外
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
@@ -87,7 +113,7 @@ export async function GET(request: NextRequest) {
     const hasNextPage = page < totalPages;
     const hasPrevPage = page > 1;
 
-    return NextResponse.json({
+    const responseData = {
       notifications,
       pagination: {
         currentPage: page,
@@ -100,10 +126,32 @@ export async function GET(request: NextRequest) {
       unreadCount,
       filter,
       type: type || null,
+    };
+
+    // Phase 7.1: レスポンスデータをキャッシュに保存（開発環境のみ）
+    if (process.env.NODE_ENV === 'development') {
+      notificationCache.set(cacheKey, {
+        data: responseData,
+        timestamp: Date.now()
+      });
+      
+      // キャッシュサイズ制限（100エントリ）
+      if (notificationCache.size > 100) {
+        const oldestKey = notificationCache.keys().next().value;
+        if (oldestKey) {
+          notificationCache.delete(oldestKey);
+        }
+      }
+    }
+
+    requestMonitor.finish(200);
+    return NextResponse.json(responseData, {
+      headers: { 'X-Cache': 'MISS' }
     });
 
   } catch (error) {
     console.error('通知取得エラー:', error);
+    requestMonitor.finish(500);
     return NextResponse.json(
       { error: '通知の取得に失敗しました' },
       { status: 500 }
