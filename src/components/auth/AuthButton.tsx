@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Button, Menu, MenuItem, Box, Typography, IconButton } from '@mui/material';
+import { Button, Menu, MenuItem, Box, Typography, IconButton, useMediaQuery, useTheme } from '@mui/material';
 import {
   Login as LoginIcon,
   Logout as LogoutIcon,
@@ -14,6 +14,8 @@ import {
   Notifications as NotificationsIcon,
   Tag as TagIcon,
   Search as SearchIcon,
+  Edit as EditIcon,
+  Lock as LockIcon,
 } from '@mui/icons-material';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -21,11 +23,17 @@ import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
-export const AuthButton: React.FC = () => {
+interface AuthButtonProps {
+  isNavigationRow?: boolean;
+}
+
+export const AuthButton: React.FC<AuthButtonProps> = ({ isNavigationRow = false }) => {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -51,6 +59,16 @@ export const AuthButton: React.FC = () => {
   const handleProfile = () => {
     handleMenuClose();
     router.push('/profile');
+  };
+
+  const handleProfileEdit = () => {
+    handleMenuClose();
+    router.push('/profile/edit');
+  };
+
+  const handlePasswordChange = () => {
+    handleMenuClose();
+    router.push('/profile/password');
   };
 
   const handleBoard = () => {
@@ -93,6 +111,10 @@ export const AuthButton: React.FC = () => {
   }
 
   if (!session) {
+    // 未認証時は2段目のナビゲーション行は表示しない
+    if (isNavigationRow) {
+      return null;
+    }
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <ThemeToggle />
@@ -104,6 +126,51 @@ export const AuthButton: React.FC = () => {
         </Button>
       </Box>
     );
+  }
+
+  // 2段目のナビゲーション行の場合
+  if (isNavigationRow) {
+    // デスクトップでのみナビゲーションボタンを表示
+    if (!isMobile) {
+      return (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Button
+            variant="text"
+            startIcon={<HomeIcon />}
+            onClick={handleHome}
+            sx={{ color: 'inherit' }}
+          >
+            ダッシュボード
+          </Button>
+          <Button
+            variant="text"
+            startIcon={<ForumIcon />}
+            onClick={handleBoard}
+            sx={{ color: 'inherit' }}
+          >
+            掲示板
+          </Button>
+          <Button
+            variant="text"
+            startIcon={<TimelineIcon />}
+            onClick={handleTimeline}
+            sx={{ color: 'inherit' }}
+          >
+            タイムライン
+          </Button>
+          <Button
+            variant="text"
+            startIcon={<PeopleIcon />}
+            onClick={handleUsers}
+            sx={{ color: 'inherit' }}
+          >
+            ユーザー一覧
+          </Button>
+        </Box>
+      );
+    }
+    // モバイルでは2段目は何も表示しない（アバターメニューに含める）
+    return null;
   }
 
   return (
@@ -162,37 +229,40 @@ export const AuthButton: React.FC = () => {
             {session.user?.email}
           </Typography>
         </Box>
-        <MenuItem onClick={handleTimeline}>
-          <TimelineIcon sx={{ mr: 1 }} />
-          タイムライン
-        </MenuItem>
-        <MenuItem onClick={handleBoard}>
-          <ForumIcon sx={{ mr: 1 }} />
-          掲示板
-        </MenuItem>
-        <MenuItem onClick={handleHashtags}>
-          <TagIcon sx={{ mr: 1 }} />
-          ハッシュタグ
-        </MenuItem>
-        <MenuItem onClick={handleNotifications}>
-          <NotificationsIcon sx={{ mr: 1 }} />
-          通知
-        </MenuItem>
+        {/* モバイルでのみナビゲーションメニューを表示 */}
+        {isMobile && (
+          <>
+            <MenuItem onClick={handleHome}>
+              <HomeIcon sx={{ mr: 1 }} />
+              ダッシュボード
+            </MenuItem>
+            <MenuItem onClick={handleBoard}>
+              <ForumIcon sx={{ mr: 1 }} />
+              掲示板
+            </MenuItem>
+            <MenuItem onClick={handleTimeline}>
+              <TimelineIcon sx={{ mr: 1 }} />
+              タイムライン
+            </MenuItem>
+            <MenuItem onClick={handleUsers}>
+              <PeopleIcon sx={{ mr: 1 }} />
+              ユーザー一覧
+            </MenuItem>
+            <Box sx={{ borderBottom: 1, borderColor: 'divider', my: 1 }} />
+          </>
+        )}
+        {/* ユーザー関連メニュー */}
         <MenuItem onClick={handleProfile}>
           <PersonIcon sx={{ mr: 1 }} />
-          プロフィール
+          プロフィール表示
         </MenuItem>
-        <MenuItem onClick={handleUsers}>
-          <PeopleIcon sx={{ mr: 1 }} />
-          ユーザー一覧
+        <MenuItem onClick={handleProfileEdit}>
+          <EditIcon sx={{ mr: 1 }} />
+          プロフィール編集
         </MenuItem>
-        <MenuItem onClick={handleUserSearch}>
-          <SearchIcon sx={{ mr: 1 }} />
-          ユーザー検索
-        </MenuItem>
-        <MenuItem onClick={handleHome}>
-          <HomeIcon sx={{ mr: 1 }} />
-          ホーム
+        <MenuItem onClick={handlePasswordChange}>
+          <LockIcon sx={{ mr: 1 }} />
+          パスワード変更
         </MenuItem>
         <MenuItem onClick={handleLogout}>
           <LogoutIcon sx={{ mr: 1 }} />

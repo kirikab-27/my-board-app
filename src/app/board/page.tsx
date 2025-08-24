@@ -109,6 +109,10 @@ export default function BoardPage() {
             </Typography>
             <AuthButton />
           </Toolbar>
+          {/* 2段目のナビゲーション行 */}
+          <Toolbar variant="dense" sx={{ minHeight: 48, borderTop: 1, borderColor: 'rgba(255, 255, 255, 0.12)' }}>
+            <AuthButton isNavigationRow={true} />
+          </Toolbar>
         </AppBar>
 
         <Container maxWidth="md">
