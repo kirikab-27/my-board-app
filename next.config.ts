@@ -11,7 +11,46 @@ const withPWA = require('next-pwa')({
   disable: process.env.NODE_ENV === 'development',
   register: true,
   skipWaiting: true,
+  // Phase 3: Enhanced PWA Caching Strategy
   runtimeCaching: [
+    // API calls - Network First with fallback
+    {
+      urlPattern: /^.*\/api\/posts.*$/,
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'api-posts',
+        expiration: {
+          maxEntries: 100,
+          maxAgeSeconds: 30, // 30 seconds
+        },
+        networkTimeoutSeconds: 3,
+      },
+    },
+    // Images - Cache First for better performance
+    {
+      urlPattern: /\.(?:png|jpg|jpeg|webp|avif|gif|svg|ico)$/,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'images',
+        expiration: {
+          maxEntries: 200,
+          maxAgeSeconds: 24 * 60 * 60, // 24 hours
+        },
+      },
+    },
+    // Static assets - Cache First
+    {
+      urlPattern: /\/_next\/static\/.*/,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'static-assets',
+        expiration: {
+          maxEntries: 100,
+          maxAgeSeconds: 7 * 24 * 60 * 60, // 7 days
+        },
+      },
+    },
+    // All other requests - Network First with cache fallback
     {
       urlPattern: /^https?.*/,
       handler: 'NetworkFirst',
@@ -19,8 +58,9 @@ const withPWA = require('next-pwa')({
         cacheName: 'offlineCache',
         expiration: {
           maxEntries: 200,
-          maxAgeSeconds: 24 * 60 * 60, // 24 hours
+          maxAgeSeconds: 60 * 60, // 1 hour
         },
+        networkTimeoutSeconds: 3,
       },
     },
   ],
@@ -72,6 +112,40 @@ const nextConfig: NextConfig = {
   },
   // ビルド最適化設定
   output: 'standalone',
+  // Phase 3: HTTP Headers and Caching Strategy
+  async headers() {
+    return [
+      {
+        source: '/api/posts/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, s-maxage=30, stale-while-revalidate=60'
+          },
+        ],
+      },
+      {
+        source: '/:path*.(jpg|jpeg|png|webp|avif|ico|svg)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
+          },
+        ],
+      },
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
+          },
+        ],
+      },
+    ];
+  },
+  // Phase 3: Compression
+  compress: true,
   // Phase 2: JavaScript Bundle Optimization
   webpack: (config, { isServer, dev }) => {
     if (!dev) {

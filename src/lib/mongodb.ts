@@ -30,11 +30,21 @@ async function dbConnect() {
       throw new Error('MongoDB URI is not defined. Please set MONGODB_URI in your .env.local file');
     }
 
+    // Phase 3: MongoDB Connection Pool Optimization
     const opts = {
       bufferCommands: false,
-      maxPoolSize: 10,
+      maxPoolSize: 20, // 増加: より多くの同時接続をサポート
+      minPoolSize: 2,  // 最小接続数を維持
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
+      connectTimeoutMS: 10000,
+      maxIdleTimeMS: 30000, // アイドル接続の最大時間
+      // Performance optimizations
+      retryWrites: true,
+      retryReads: true,
+      readPreference: 'secondaryPreferred', // 読み取り性能向上
+      // Compression for better network performance
+      compressors: ['snappy', 'zlib'],
     };
 
     console.log('Attempting to connect to MongoDB...');

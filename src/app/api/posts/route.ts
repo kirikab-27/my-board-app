@@ -210,7 +210,7 @@ export async function GET(request: NextRequest) {
     const hasNextPage = page < totalPages;
     const hasPrevPage = page > 1;
     
-    return NextResponse.json({
+    const response = NextResponse.json({
       posts: postsWithCommentCounts,
       pagination: {
         currentPage: page,
@@ -221,6 +221,13 @@ export async function GET(request: NextRequest) {
         hasPrevPage
       }
     });
+
+    // Phase 3: API Response Caching - 投稿一覧を30秒キャッシュ
+    response.headers.set('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=60');
+    response.headers.set('CDN-Cache-Control', 'public, s-maxage=30');
+    response.headers.set('Vercel-CDN-Cache-Control', 'public, s-maxage=30');
+
+    return response;
   } catch (error) {
     console.error('Error fetching posts:', error);
     return NextResponse.json(

@@ -173,7 +173,7 @@ export async function GET(request: NextRequest) {
       })
     );
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       posts: formattedPosts,
       pagination: {
         nextCursor,
@@ -181,6 +181,13 @@ export async function GET(request: NextRequest) {
         totalCount
       }
     });
+
+    // Phase 3: API Response Caching - 無限スクロールを15秒キャッシュ
+    response.headers.set('Cache-Control', 'public, s-maxage=15, stale-while-revalidate=30');
+    response.headers.set('CDN-Cache-Control', 'public, s-maxage=15');
+    response.headers.set('Vercel-CDN-Cache-Control', 'public, s-maxage=15');
+
+    return response;
 
   } catch (error) {
     console.error('Infinite scroll API error:', error);
