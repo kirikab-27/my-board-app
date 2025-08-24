@@ -175,6 +175,14 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
           >
             ユーザー一覧
           </Button>
+          <Button
+            variant="text"
+            startIcon={<TagIcon />}
+            onClick={handleHashtags}
+            sx={{ color: 'inherit' }}
+          >
+            ハッシュタグ
+          </Button>
         </Box>
       );
     }
@@ -264,6 +272,10 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
             <MenuItem onClick={handleUsers}>
               <PeopleIcon sx={{ mr: 1 }} />
               ユーザー一覧
+            </MenuItem>
+            <MenuItem onClick={handleHashtags}>
+              <TagIcon sx={{ mr: 1 }} />
+              ハッシュタグ
             </MenuItem>
             <Box sx={{ borderBottom: 1, borderColor: 'divider', my: 1 }} />
           </>

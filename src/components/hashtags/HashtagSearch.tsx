@@ -416,11 +416,18 @@ export default function HashtagSearch({
                           {hashtag.isOfficial && <Verified fontSize="small" color="primary" />}
                           {hashtag.isTrending && <TrendingUp fontSize="small" color="error" />}
                           {hashtag.searchScore && (
-                            <Chip 
-                              label={hashtag.searchScore.toFixed(0)}
-                              size="small"
-                              color="primary"
-                            />
+                            <Typography variant="caption" color="primary" component="span" sx={{ 
+                              fontSize: '0.75rem',
+                              backgroundColor: 'primary.main',
+                              color: 'primary.contrastText',
+                              padding: '2px 6px',
+                              borderRadius: '10px',
+                              display: 'inline-block',
+                              minWidth: '20px',
+                              textAlign: 'center'
+                            }}>
+                              {hashtag.searchScore.toFixed(0)}
+                            </Typography>
                           )}
                         </span>
                       }
@@ -438,7 +445,16 @@ export default function HashtagSearch({
                             <Typography variant="caption" color="text.secondary" component="span">
                               {hashtag.stats.uniqueUsers}人のユーザー
                             </Typography>
-                            <Chip label={hashtag.category} size="small" />
+                            <Typography variant="caption" color="primary" component="span" sx={{ 
+                              fontSize: '0.75rem',
+                              backgroundColor: 'primary.main',
+                              color: 'primary.contrastText',
+                              padding: '2px 8px',
+                              borderRadius: '12px',
+                              display: 'inline-block'
+                            }}>
+                              {hashtag.category}
+                            </Typography>
                           </span>
                         </span>
                       }

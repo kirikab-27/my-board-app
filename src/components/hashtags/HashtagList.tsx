@@ -348,12 +348,19 @@ export default function HashtagList({
                   </Typography>
                   {hashtag.isOfficial && <Verified fontSize="small" color="primary" />}
                   {hashtag.isTrending && (
-                    <Chip 
-                      label="トレンド" 
-                      size="small" 
-                      color="error" 
-                      icon={<TrendingUp />} 
-                    />
+                    <Typography variant="caption" component="span" sx={{ 
+                      fontSize: '0.75rem',
+                      backgroundColor: 'error.main',
+                      color: 'error.contrastText',
+                      padding: '2px 8px',
+                      borderRadius: '12px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      <TrendingUp fontSize="small" />
+                      トレンド
+                    </Typography>
                   )}
                 </span>
               }
