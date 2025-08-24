@@ -35,6 +35,7 @@ import { formatDistanceToNow, format } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { useSession } from 'next-auth/react';
 import { TimelinePost } from '@/hooks/useTimeline';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 
 interface TimelinePostCardProps {
   post: TimelinePost;
@@ -340,19 +341,22 @@ export default function TimelinePostCard({
                         sx={{ borderRadius: 1 }}
                       />
                     )}
-                    <CardMedia
-                      component="img"
-                      image={media.thumbnailUrl || media.url}
-                      alt={media.alt || '投稿画像'}
-                      sx={{
-                        maxHeight: 400,
-                        objectFit: 'contain',
-                        borderRadius: 1,
-                        display: imageLoading ? 'none' : 'block'
-                      }}
-                      onLoad={() => setImageLoading(false)}
-                      loading="lazy"
-                    />
+                    <Box sx={{ position: 'relative', maxHeight: 400, borderRadius: 1, overflow: 'hidden' }}>
+                      <OptimizedImage
+                        src={media.thumbnailUrl || media.url}
+                        alt={media.alt || '投稿画像'}
+                        width={600}
+                        height={400}
+                        quality={85}
+                        objectFit="contain"
+                        loading="lazy"
+                        style={{ 
+                          display: imageLoading ? 'none' : 'block',
+                          borderRadius: 8
+                        }}
+                        onLoad={() => setImageLoading(false)}
+                      />
+                    </Box>
                   </Box>
                 ) : (
                   <Box

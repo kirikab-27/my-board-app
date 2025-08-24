@@ -40,6 +40,7 @@ import SortSelector, { SortOption } from '@/components/SortSelector';
 import { AuthButton } from '@/components/auth/AuthButton';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { InfiniteScrollContainer } from '@/components/InfiniteScrollContainer';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 import Link from 'next/link';
 import performanceConfig from '@/config/performance';
 
@@ -266,14 +267,14 @@ export default function TimelinePage() {
                             }}
                           >
                             {media.type.startsWith('image') ? (
-                              <img
+                              <OptimizedImage
                                 src={media.url}
                                 alt=""
-                                style={{
-                                  width: '100%',
-                                  height: '100%',
-                                  objectFit: 'cover',
-                                }}
+                                fill
+                                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                quality={75}
+                                objectFit="cover"
+                                loading="lazy"
                               />
                             ) : (
                               <video

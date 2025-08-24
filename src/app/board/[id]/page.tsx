@@ -28,6 +28,7 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import { AuthButton } from '@/components/auth/AuthButton';
 import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 import { SafePostContent } from '@/components/SafeContent';
 import CommentList from '@/components/comments/CommentList';
 import Link from 'next/link';
@@ -419,20 +420,16 @@ export default function PostDetailPage() {
                   >
                     {/* メディア表示 */}
                     {media.type === 'image' || media.type === 'gif' ? (
-                      <Box
-                        component="img"
+                      <OptimizedImage
                         src={media.thumbnailUrl || media.url}
                         alt={media.alt || media.title || '画像'}
-                        sx={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover',
-                          objectPosition: 'center',
-                          transition: 'transform 0.3s ease'
-                        }}
+                        fill
+                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                        quality={80}
+                        objectFit="cover"
+                        objectPosition="center"
+                        loading="lazy"
+                        style={{ transition: 'transform 0.3s ease' }}
                       />
                     ) : (
                       <>

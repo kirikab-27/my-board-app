@@ -35,7 +35,7 @@ import {
   CheckCircle
 } from '@mui/icons-material';
 import { useDropzone } from 'react-dropzone';
-import Image from 'next/image';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 
 // アップロードされたメディアの型定義
 export interface UploadedMedia {
@@ -712,16 +712,16 @@ const MediaUpload: React.FC<MediaUploadProps> = ({
                   }}
                 >
                   {media.type === 'image' ? (
-                    <Box
-                      component="img"
+                    <OptimizedImage
                       src={media.thumbnailUrl || media.url}
                       alt={media.alt || media.title}
-                      sx={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        objectPosition: 'center'
-                      }}
+                      fill
+                      sizes="(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 20vw"
+                      quality={75}
+                      objectFit="cover"
+                      objectPosition="center"
+                      loading="lazy"
+                      placeholder="blur"
                     />
                   ) : (
                     <Box sx={{ position: 'relative', width: '100%', height: '100%' }}>
@@ -848,10 +848,15 @@ const MediaUpload: React.FC<MediaUploadProps> = ({
                   style={{ maxWidth: '100%', maxHeight: '400px' }}
                 />
               ) : (
-                <img
+                <OptimizedImage
                   src={previewMedia.url}
                   alt={previewMedia.alt}
-                  style={{ maxWidth: '100%', maxHeight: '400px', objectFit: 'contain' }}
+                  width={800}
+                  height={400}
+                  quality={90}
+                  objectFit="contain"
+                  priority
+                  style={{ maxWidth: '100%', maxHeight: '400px' }}
                 />
               )}
               <Typography variant="body2" sx={{ mt: 2 }}>
@@ -962,11 +967,15 @@ const MediaUpload: React.FC<MediaUploadProps> = ({
                     既存ファイル
                   </Typography>
                   <Box sx={{ position: 'relative', width: 100, height: 100, mx: 'auto' }}>
-                    <Image
+                    <OptimizedImage
                       src={duplicate.existingMedia.url}
                       alt={duplicate.existingMedia.alt}
                       fill
-                      style={{ objectFit: 'cover', borderRadius: '4px' }}
+                      sizes="100px"
+                      quality={75}
+                      objectFit="cover"
+                      style={{ borderRadius: '4px' }}
+                      loading="lazy"
                     />
                   </Box>
                   <Typography variant="caption" display="block" sx={{ mt: 1 }}>

@@ -20,6 +20,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
 import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
 import { AuthButton } from '@/components/auth/AuthButton';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 import MediaUpload, { UploadedMedia } from '@/components/media/MediaUpload';
 import Link from 'next/link';
 
@@ -241,19 +242,16 @@ export default function ProfileEditPage() {
                 <Typography variant="h6">プロフィール画像</Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
                   {formData.avatar ? (
-                    <Box
-                      component="img"
-                      src={formData.avatar}
-                      alt="プロフィール画像"
-                      sx={{
-                        width: 80,
-                        height: 80,
-                        borderRadius: '50%',
-                        objectFit: 'cover',
-                        border: '2px solid',
-                        borderColor: 'primary.main'
-                      }}
-                    />
+                    <Box sx={{ position: 'relative', width: 80, height: 80, borderRadius: '50%', overflow: 'hidden', border: '2px solid', borderColor: 'primary.main' }}>
+                      <OptimizedImage
+                        src={formData.avatar}
+                        alt="プロフィール画像"
+                        fill
+                        sizes="80px"
+                        quality={90}
+                        objectFit="cover"
+                      />
+                    </Box>
                   ) : (
                     <ProfileAvatar name={formData.name} size="large" />
                   )}

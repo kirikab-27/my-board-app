@@ -35,6 +35,36 @@ const nextConfig: NextConfig = {
     // TypeScriptエラーは型チェックを続行
     ignoreBuildErrors: false,
   },
+  // Phase 1: Image Optimization Configuration
+  images: {
+    // Enable image optimization
+    formats: ['image/webp', 'image/avif'],
+    // Quality settings for different scenarios
+    deviceSizes: [640, 768, 1024, 1280, 1600],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    // Cloudinary domain configuration
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'via.placeholder.com',
+        pathname: '/**',
+      },
+    ],
+    // Cache optimization
+    minimumCacheTTL: 86400, // 24 hours
+    // Enable optimization for external images
+    unoptimized: false,
+  },
   // ビルド最適化設定
   output: 'standalone',
 };

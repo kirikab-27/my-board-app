@@ -14,6 +14,7 @@ import User from '@/models/User';
 import dbConnect from '@/lib/mongodb';
 import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 import FollowStats from '@/components/follow/FollowStats';
 
 async function getProfile(userId: string) {
@@ -113,19 +114,17 @@ export default async function ProfilePage() {
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
               {profile.avatar ? (
-                <Box
-                  component="img"
-                  src={profile.avatar}
-                  alt={`${profile.name}のプロフィール画像`}
-                  sx={{
-                    width: 120,
-                    height: 120,
-                    borderRadius: '50%',
-                    objectFit: 'cover',
-                    border: '4px solid',
-                    borderColor: 'primary.main'
-                  }}
-                />
+                <Box sx={{ position: 'relative', width: 120, height: 120, borderRadius: '50%', overflow: 'hidden', border: '4px solid', borderColor: 'primary.main' }}>
+                  <OptimizedImage
+                    src={profile.avatar}
+                    alt={`${profile.name}のプロフィール画像`}
+                    fill
+                    sizes="120px"
+                    quality={90}
+                    objectFit="cover"
+                    priority
+                  />
+                </Box>
               ) : (
                 <ProfileAvatar name={profile.name} size="xlarge" />
               )}
