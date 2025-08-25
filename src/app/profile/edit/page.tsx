@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
-import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
+import ProfileAvatar from '@/components/profile/ProfileAvatar';
 import { AuthButton } from '@/components/auth/AuthButton';
 import OptimizedImage from '@/components/ui/OptimizedImage';
 import MediaUpload, { UploadedMedia } from '@/components/media/MediaUpload';

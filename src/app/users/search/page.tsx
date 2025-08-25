@@ -32,7 +32,7 @@ import HistoryIcon from '@mui/icons-material/History';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { AuthButton } from '@/components/auth/AuthButton';
-import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
+import ProfileAvatar from '@/components/profile/ProfileAvatar';
 import Link from 'next/link';
 
 interface User {

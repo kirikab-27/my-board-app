@@ -46,6 +46,9 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
+  
+  // Phase 5: LCP Optimization - Auto-detect above-the-fold images
+  const isAboveFold = priority || loading === 'eager';
 
   // Generate blur data URL if not provided
   const defaultBlurDataURL = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=';
@@ -115,7 +118,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         </Box>
       )}
 
-      {/* Optimized Image */}
+      {/* Phase 5: LCP Optimized Image */}
       <Image
         src={src}
         alt={alt}
@@ -123,8 +126,8 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         height={fill ? undefined : height}
         fill={fill}
         sizes={responsiveSizes}
-        quality={quality}
-        priority={priority}
+        quality={isAboveFold ? Math.max(quality, 90) : quality} // Above-fold: higher quality
+        priority={priority || isAboveFold} // Auto-priority for above-fold images
         placeholder={placeholder}
         blurDataURL={blurDataURL || defaultBlurDataURL}
         className={className}
@@ -133,11 +136,16 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
           objectPosition,
           opacity: isLoading ? 0 : 1,
           transition: 'opacity 0.3s ease-in-out',
+          // Phase 5: CLS Prevention - explicit dimensions
+          width: !fill ? width : undefined,
+          height: !fill ? height : undefined,
           ...style,
         }}
-        loading={loading}
+        loading={isAboveFold ? 'eager' : loading} // Eager loading for above-fold
         onLoad={handleLoad}
         onError={handleError}
+        // Phase 5: LCP Enhancement - fetchPriority for critical images
+        fetchPriority={isAboveFold ? 'high' : 'auto'}
         {...props}
       />
     </Box>

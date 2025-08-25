@@ -27,7 +27,7 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import { AuthButton } from '@/components/auth/AuthButton';
-import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
+import ProfileAvatar from '@/components/profile/ProfileAvatar';
 import OptimizedImage from '@/components/ui/OptimizedImage';
 import { SafePostContent } from '@/components/SafeContent';
 import CommentList from '@/components/comments/CommentList';

@@ -79,7 +79,7 @@ const sortOptions: Array<{
   }
 ];
 
-export function SortSelector({
+function SortSelector({
   value,
   onChange,
   disabled = false,

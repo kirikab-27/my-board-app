@@ -24,7 +24,7 @@ import {
   NetworkCheck as NetworkIcon,
 } from '@mui/icons-material';
 import { AuthButton } from '@/components/auth/AuthButton';
-import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
+import ProfileAvatar from '@/components/profile/ProfileAvatar';
 import { useRouter } from 'next/navigation';
 import AdminWebSocketClient from '@/components/websocket/AdminWebSocketClient';
 

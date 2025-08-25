@@ -12,7 +12,7 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import Link from 'next/link';
 import User from '@/models/User';
 import dbConnect from '@/lib/mongodb';
-import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
+import ProfileAvatar from '@/components/profile/ProfileAvatar';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import OptimizedImage from '@/components/ui/OptimizedImage';
 import FollowStats from '@/components/follow/FollowStats';

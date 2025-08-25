@@ -23,7 +23,7 @@ interface InfiniteScrollContainerProps {
   useVirtualization?: boolean; // 仮想スクロールを使用するかどうか
 }
 
-export function InfiniteScrollContainer({
+function InfiniteScrollContainer({
   children,
   posts,
   renderPost,
@@ -331,3 +331,5 @@ export function InfiniteScrollContainer({
     </Box>
   );
 }
+
+export default InfiniteScrollContainer;

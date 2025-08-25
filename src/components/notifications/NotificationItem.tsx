@@ -26,7 +26,7 @@ import {
 } from '@mui/icons-material';
 // import { formatDistanceToNow } from 'date-fns';
 // import { ja } from 'date-fns/locale';
-import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
+import ProfileAvatar from '@/components/profile/ProfileAvatar';
 
 export interface NotificationItemProps {
   notification: {

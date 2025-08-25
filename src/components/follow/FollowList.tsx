@@ -16,7 +16,7 @@ import {
   useMediaQuery
 } from '@mui/material';
 import FollowButton from './FollowButton';
-import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
+import ProfileAvatar from '@/components/profile/ProfileAvatar';
 
 interface FollowListProps {
   userId: string;

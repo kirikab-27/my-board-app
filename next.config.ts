@@ -146,41 +146,94 @@ const nextConfig: NextConfig = {
   },
   // Phase 3: Compression
   compress: true,
-  // Phase 2: JavaScript Bundle Optimization
+  // Phase 5: Advanced JavaScript Bundle Optimization
   webpack: (config, { isServer, dev }) => {
     if (!dev) {
-      // Tree shaking optimization for Material-UI
+      // Advanced tree shaking optimization
       config.optimization = {
         ...config.optimization,
         usedExports: true,
-        sideEffects: false,
+        sideEffects: false, // Tree shaking optimization
+        // Phase 5: Bundle Size Reduction
+        innerGraph: true,
+        providedExports: true,
       };
       
-      // Bundle splitting optimization
+      // Advanced bundle splitting optimization
       config.optimization.splitChunks = {
         ...config.optimization.splitChunks,
         chunks: 'all',
+        minSize: 20000,
+        maxSize: 500000, // 500KB max chunk size
         cacheGroups: {
+          // Core dependencies
+          default: {
+            minChunks: 2,
+            priority: -20,
+            reuseExistingChunk: true,
+          },
+          // Vendor dependencies
           vendor: {
             test: /[\\/]node_modules[\\/]/,
             name: 'vendors',
             chunks: 'all',
+            priority: -10,
+            maxSize: 400000, // 400KB limit for vendor chunk
           },
+          // Material-UI optimization
           mui: {
             test: /[\\/]node_modules[\\/]@mui[\\/]/,
             name: 'mui',
             chunks: 'all',
             priority: 10,
+            maxSize: 300000, // 300KB limit for MUI
           },
+          // Chart.js lazy loading
           chartjs: {
-            test: /[\\/]node_modules[\\/](chart\.js|react-chartjs-2)[\\/]/,
+            test: /[\\/]node_modules[\\/](chart\.js|react-chartjs-2|recharts)[\\/]/,
             name: 'chartjs',
             chunks: 'async',
             priority: 15,
+            maxSize: 200000, // 200KB limit for charts
+          },
+          // Next.js runtime
+          framework: {
+            test: /[\\/]node_modules[\\/](react|react-dom|next|@next)[\\/]/,
+            name: 'framework',
+            chunks: 'all',
+            priority: 20,
+            maxSize: 600000, // 600KB for React/Next
+          },
+          // Authentication libraries
+          auth: {
+            test: /[\\/]node_modules[\\/](next-auth|@next-auth|bcryptjs|jsonwebtoken)[\\/]/,
+            name: 'auth',
+            chunks: 'all',
+            priority: 12,
+          },
+          // Database and utilities
+          utils: {
+            test: /[\\/]node_modules[\\/](mongodb|mongoose|date-fns|zod|crypto-js)[\\/]/,
+            name: 'utils',
+            chunks: 'all',
+            priority: 8,
           },
         },
       };
+
+      // Phase 5: Dead code elimination
+      config.optimization.minimize = true;
+      
+      // Module concatenation for better minification
+      config.optimization.concatenateModules = true;
     }
+
+    // Resolve optimization to reduce bundle size
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      // Replace crypto-js with Node.js crypto
+      'crypto-js': false,
+    };
     
     return config;
   },

@@ -20,7 +20,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import ManageSearchIcon from '@mui/icons-material/ManageSearch';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
-import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
+import ProfileAvatar from '@/components/profile/ProfileAvatar';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import FollowButton from '@/components/follow/FollowButton';
 import FollowStats from '@/components/follow/FollowStats';

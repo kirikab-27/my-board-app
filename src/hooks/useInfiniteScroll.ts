@@ -32,6 +32,10 @@ interface InfiniteScrollOptions {
   limit?: number;
   pollingInterval?: number; // 新着投稿チェック間隔（ミリ秒）
   sortBy?: string; // ソート条件: 'createdAt_desc' | 'createdAt_asc' | 'likes_desc' | 'likes_asc' | 'updatedAt_desc' | 'updatedAt_asc'
+  // Phase 5: ISR初期データ対応
+  initialData?: Post[]; // 事前取得された初期投稿データ
+  initialTotalCount?: number; // 初期総数
+  initialHasMore?: boolean; // 初期hasMoreフラグ
 }
 
 interface UseInfiniteScrollReturn {
@@ -52,15 +56,28 @@ interface UseInfiniteScrollReturn {
 }
 
 export function useInfiniteScroll(options: InfiniteScrollOptions = {}): UseInfiniteScrollReturn {
-  const { type = 'board', username, limit = 20, pollingInterval = 5000, sortBy = 'createdAt_desc' } = options;
+  const { 
+    type = 'board', 
+    username, 
+    limit = 20, 
+    pollingInterval = 5000, 
+    sortBy = 'createdAt_desc',
+    // Phase 5: ISR初期データ
+    initialData = [],
+    initialTotalCount = null,
+    initialHasMore = true
+  } = options;
   const { data: session } = useSession();
   
-  const [posts, setPosts] = useState<Post[]>([]);
+  // Phase 5: 初期データを設定
+  const [posts, setPosts] = useState<Post[]>(initialData);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [hasNextPage, setHasNextPage] = useState(true);
-  const [cursor, setCursor] = useState<string | null>(null);
-  const [totalCount, setTotalCount] = useState<number | null>(null);
+  const [hasNextPage, setHasNextPage] = useState(initialHasMore);
+  const [cursor, setCursor] = useState<string | null>(
+    initialData.length > 0 ? initialData[initialData.length - 1]._id : null
+  );
+  const [totalCount, setTotalCount] = useState<number | null>(initialTotalCount);
   
   // Phase 4追加状態管理
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -255,13 +272,22 @@ export function useInfiniteScroll(options: InfiniteScrollOptions = {}): UseInfin
     }
   }, [newPosts]);
 
-  // 初回読み込み
+  // 初回読み込み - Phase 5: 初期データがある場合はスキップ
   useEffect(() => {
     if (!initialLoadRef.current) {
       initialLoadRef.current = true;
-      fetchPosts(null);
+      
+      // 初期データがない場合のみフェッチ
+      if (initialData.length === 0) {
+        fetchPosts(null);
+      } else {
+        // 初期データの最初の投稿IDを保存（新着投稿チェック用）
+        if (initialData.length > 0) {
+          setLastPostId(initialData[0]._id);
+        }
+      }
     }
-  }, [fetchPosts]);
+  }, [fetchPosts, initialData]);
 
   // ソート条件変更時の再読み込み
   useEffect(() => {

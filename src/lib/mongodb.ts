@@ -42,9 +42,9 @@ async function dbConnect() {
       // Performance optimizations
       retryWrites: true,
       retryReads: true,
-      readPreference: 'secondaryPreferred', // 読み取り性能向上
+      readPreference: 'secondaryPreferred' as const, // 読み取り性能向上
       // Compression for better network performance
-      compressors: ['snappy', 'zlib'],
+      compressors: ['snappy', 'zlib'] as ('none' | 'snappy' | 'zlib' | 'zstd')[],
     };
 
     console.log('Attempting to connect to MongoDB...');
