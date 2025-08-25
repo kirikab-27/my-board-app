@@ -17,7 +17,12 @@ export function ProfileHeader({ title = 'プロフィール' }: ProfileHeaderPro
         <AuthButton />
       </Toolbar>
       {/* 2段目のナビゲーション行 */}
-      <Toolbar variant="dense" sx={{ minHeight: 48, borderTop: 1, borderColor: 'rgba(255, 255, 255, 0.12)' }}>
+      <Toolbar variant="dense" sx={{ 
+        minHeight: 48, 
+        borderTop: 1, 
+        borderColor: 'rgba(255, 255, 255, 0.12)',
+        bgcolor: 'primary.main' 
+      }}>
         <AuthButton isNavigationRow={true} />
       </Toolbar>
     </AppBar>

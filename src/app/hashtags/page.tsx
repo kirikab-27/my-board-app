@@ -115,7 +115,7 @@ export default function HashtagsPage() {
   return (
     <>
       <ProfileHeader title="ハッシュタグ" />
-      <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Container maxWidth="xl" sx={{ py: 4, mt: { xs: 14, sm: 16, md: 16 } }}>
         {/* ヘッダー */}
         <Box sx={{ mb: 4 }}>
           <Typography variant="h4" component="h1" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

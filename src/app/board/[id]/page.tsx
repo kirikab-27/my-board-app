@@ -425,10 +425,11 @@ export default function PostDetailPage() {
                         alt={media.alt || media.title || '画像'}
                         fill
                         sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                        quality={80}
+                        quality={index === 0 ? 95 : 80} // Phase 5: First image higher quality
                         objectFit="cover"
                         objectPosition="center"
-                        loading="lazy"
+                        loading={index === 0 ? 'eager' : 'lazy'} // Phase 5: First image eager loading
+                        priority={index === 0} // Phase 5: LCP improvement - priority for first image
                         style={{ transition: 'transform 0.3s ease' }}
                       />
                     ) : (

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useTransition, startTransition } from 'react';
 import {
   Container,
   Typography,
@@ -36,6 +36,9 @@ export default function BoardPageClient({ initialData }: BoardPageClientProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('createdAt_desc');
   
+  // Phase 5 Final: Total Blocking Time削減 - React 18 useTransition
+  const [isPending, startTransition] = useTransition();
+  
   // 無限スクロールフックを使用（初期データ付き）
   const {
     posts,
@@ -58,35 +61,65 @@ export default function BoardPageClient({ initialData }: BoardPageClientProps) {
     initialHasMore: initialData.hasMore
   });
 
-  // 投稿削除時のコールバック
+  // 投稿削除時のコールバック - Phase 5 Final: useTransition for TBT reduction
   const handlePostDeleted = useCallback((deletedPostId: string) => {
-    // 削除後にリフレッシュ
-    refresh();
-  }, [refresh]);
+    // 削除後にリフレッシュ（非ブロッキング実行）
+    startTransition(() => {
+      refresh();
+    });
+  }, [refresh, startTransition]);
 
-  // 投稿更新時のコールバック
+  // 投稿更新時のコールバック - Phase 5 Final: useTransition for TBT reduction
   const handlePostUpdated = useCallback((updatedPost: any) => {
-    // 更新後にリフレッシュ
-    refresh();
-  }, [refresh]);
+    // 更新後にリフレッシュ（非ブロッキング実行）
+    startTransition(() => {
+      refresh();
+    });
+  }, [refresh, startTransition]);
 
-  // いいね更新時のコールバック
+  // いいね更新時のコールバック - Phase 5 Final: useTransition for TBT reduction
   const handleLikeUpdate = useCallback((postId: string, newLikes: number, newLikedBy: string[]) => {
-    // いいね更新後にリフレッシュ（必要に応じて）
-    // 今回はローカル更新で対応可能なのでリフレッシュしない
-  }, []);
+    // いいね更新は即座反映のためリフレッシュ不要（パフォーマンス最適化）
+    // 必要に応じて状態更新のみを非ブロッキング実行
+    startTransition(() => {
+      // ローカル状態更新のみ実行（将来の機能拡張用）
+    });
+  }, [startTransition]);
 
   // 投稿クリック時のコールバック
   const handlePostClick = useCallback((post: any) => {
     router.push(`/board/${post._id}`);
   }, [router]);
 
-  // ソート変更時のコールバック
+  // ソート変更時のコールバック - Phase 5 Final: useTransition for TBT reduction
   const handleSortChange = useCallback((newSortBy: SortOption) => {
-    setSortBy(newSortBy);
-    // ソート変更後にリフレッシュして新しい順序で投稿を取得
-    refresh();
-  }, [refresh]);
+    startTransition(() => {
+      setSortBy(newSortBy);
+      // ソート変更後にリフレッシュして新しい順序で投稿を取得
+      refresh();
+    });
+  }, [refresh, startTransition]);
+
+  // 無限スクロール用の非ブロッキングloadMore - Phase 5 Final: useTransition for TBT reduction
+  const handleLoadMore = useCallback(() => {
+    startTransition(() => {
+      loadMore();
+    });
+  }, [loadMore, startTransition]);
+
+  // リフレッシュ用の非ブロッキング関数 - Phase 5 Final: useTransition for TBT reduction
+  const handleRefresh = useCallback(() => {
+    startTransition(() => {
+      refresh();
+    });
+  }, [refresh, startTransition]);
+
+  // 新着投稿表示用の非ブロッキング関数 - Phase 5 Final: useTransition for TBT reduction
+  const handleShowNewPosts = useCallback(() => {
+    startTransition(() => {
+      showNewPosts();
+    });
+  }, [showNewPosts, startTransition]);
 
   // 検索フィルタリング
   const filteredPosts = searchTerm
@@ -119,13 +152,18 @@ export default function BoardPageClient({ initialData }: BoardPageClientProps) {
               掲示板
             </Typography>
             <AuthButton 
-              onSearch={setSearchTerm} 
-              onClearSearch={() => setSearchTerm('')}
+              onSearch={(term) => startTransition(() => setSearchTerm(term))} 
+              onClearSearch={() => startTransition(() => setSearchTerm(''))}
               searchResultCount={filteredPosts.length}
             />
           </Toolbar>
           {/* 2段目のナビゲーション行 */}
-          <Toolbar variant="dense" sx={{ minHeight: 48, borderTop: 1, borderColor: 'rgba(255, 255, 255, 0.12)' }}>
+          <Toolbar variant="dense" sx={{ 
+            minHeight: 48, 
+            borderTop: 1, 
+            borderColor: 'rgba(255, 255, 255, 0.12)',
+            bgcolor: 'primary.main' 
+          }}>
             <AuthButton isNavigationRow={true} />
           </Toolbar>
         </AppBar>
@@ -157,23 +195,23 @@ export default function BoardPageClient({ initialData }: BoardPageClientProps) {
               <LazySortSelector
                 value={sortBy}
                 onChange={handleSortChange}
-                disabled={loading}
+                disabled={loading || isPending}
                 size="small"
               />
             </Box>
           </Paper>
 
-          {/* 無限スクロールコンテナ */}
+          {/* 無限スクロールコンテナ - Phase 5 Final: useTransition統合 */}
           <LazyInfiniteScrollContainer
             posts={filteredPosts}
             renderPost={renderPost}
-            loading={loading}
+            loading={loading || isPending}
             error={error}
             hasNextPage={hasNextPage}
-            onLoadMore={loadMore}
-            onRefresh={refresh}
+            onLoadMore={handleLoadMore}
+            onRefresh={handleRefresh}
             newItemsCount={newPostsCount}
-            onShowNewItems={showNewPosts}
+            onShowNewItems={handleShowNewPosts}
             endMessage="すべての投稿を読み込みました"
             threshold={300}
             showSkeleton={true}

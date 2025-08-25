@@ -72,6 +72,10 @@ const nextConfig: NextConfig = {
     // メモリ使用量を最適化
     workerThreads: false,
   },
+  // Phase 5 Emergency: Next.js 15 uses SWC by default, no need for swcMinify
+  // Phase 5 Emergency: Enable gzip compression and additional optimizations
+  poweredByHeader: false, // Remove X-Powered-By header for security and performance
+  generateEtags: true,    // Enable ETags for better caching
   eslint: {
     // Vercel本番ビルド時にESLintエラーを警告に変更（Phase 5.5対応）
     ignoreDuringBuilds: true,
