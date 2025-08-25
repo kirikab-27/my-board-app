@@ -6,6 +6,41 @@ import Comment from '@/models/Comment';
 import { cache } from 'react';
 import { SortOrder } from 'mongoose';
 
+// Phase 5: Server Component Serialization Utility
+// MongoDB ObjectIDと日付オブジェクトを安全にシリアライズ（読み取り専用オブジェクト対応）
+const serializeObject = (obj: any): any => {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(item => serializeObject(item));
+  }
+
+  if (typeof obj === 'object') {
+    // Date オブジェクトの ISO文字列化
+    if (obj instanceof Date) {
+      return obj.toISOString();
+    }
+
+    // 新しいオブジェクトを作成して再帰的に処理（読み取り専用プロパティ対応）
+    const serialized: any = {};
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        // MongoDB ObjectID の特別処理
+        if (key === '_id' && obj[key] && typeof obj[key].toString === 'function') {
+          serialized[key] = obj[key].toString();
+        } else {
+          serialized[key] = serializeObject(obj[key]);
+        }
+      }
+    }
+    return serialized;
+  }
+
+  return obj;
+};
+
 // Phase 5: ISR Initial Data Fetching - 掲示板初期データ取得最適化
 // ISRキャッシュ機能付きで初期投稿データを取得（1,420ms → 改善対象）
 
@@ -37,31 +72,18 @@ export const getBoardInitialData = cache(async (limit = 20): Promise<BoardData> 
       Post.countDocuments(query)
     ]);
 
-    // コメント件数を効率的に取得
+    // コメント件数を効率的に取得・完全シリアライズ処理
     const postsWithCommentCounts = await Promise.all(
       posts.map(async (post: any) => {
         const commentCount = await Comment.countDocuments({ postId: post._id });
         
-        // userData の安全な処理
-        const userData = post.userId && post.userId._id ? {
-          _id: post.userId._id.toString(),
-          name: post.userId.name || '',
-          email: post.userId.email || '',
-          avatar: post.userId.avatar,
-          username: post.userId.username,
-          displayName: post.userId.displayName
-        } : undefined;
-
-        return {
+        // 投稿データの完全シリアライズ処理
+        const serializedPost = serializeObject({
           ...post,
-          _id: post._id.toString(),
-          userId: userData,
-          commentsCount: commentCount,
-          hashtags: post.hashtags || [],
-          media: post.media || [],
-          createdAt: post.createdAt.toISOString(),
-          updatedAt: post.updatedAt.toISOString()
-        };
+          commentsCount: commentCount
+        });
+
+        return serializedPost;
       })
     );
 
