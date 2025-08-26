@@ -27,6 +27,7 @@ import { useSession } from 'next-auth/react';
 import { formatDistanceToNow } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import CommentForm from './CommentForm';
+import { MentionRenderer } from '../mention';
 
 interface CommentItemProps {
   comment: any;
@@ -252,16 +253,15 @@ export default function CommentItem({
                 </Typography>
               )}
 
-              <Typography
-                variant="body2"
-                component="span"
-                sx={{
-                  wordBreak: 'break-word',
-                  whiteSpace: 'pre-wrap',
+              <MentionRenderer
+                content={comment.content}
+                onMentionClick={(username) => {
+                  // ユーザープロフィールページに遷移
+                  if (typeof window !== 'undefined') {
+                    window.location.href = `/users/${username}`;
+                  }
                 }}
-              >
-                {comment.content}
-              </Typography>
+              />
             </div>
           )}
 

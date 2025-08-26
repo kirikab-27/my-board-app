@@ -29,6 +29,7 @@ import {
 } from '@mui/icons-material';
 import { highlightText } from '@/utils/highlightText';
 import { SafePostContent } from '@/components/SafeContent';
+import { MentionRenderer } from '@/components/mention';
 
 interface Post {
   _id: string;
@@ -379,18 +380,25 @@ export default function PostList({
                 }}
               >
                 {searchQuery ? (
-                  // ハイライト機能を使用する場合（検索時）
-                  <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
-                    {highlightText(post.content, searchQuery)}
-                  </Typography>
+                  // ハイライト機能を使用する場合（検索時）- メンション対応
+                  <MentionRenderer
+                    content={highlightText(post.content, searchQuery) as string}
+                    onMentionClick={(username) => {
+                      // ユーザープロフィールページに遷移
+                      if (typeof window !== 'undefined') {
+                        window.location.href = `/users/${username}`;
+                      }
+                    }}
+                  />
                 ) : (
-                  // 通常表示（XSS対策あり）
-                  <SafePostContent
+                  // 通常表示（XSS対策・メンション対応）
+                  <MentionRenderer
                     content={post.content}
-                    sx={{
-                      '& *': { fontSize: 'inherit !important' },
-                      fontSize: 'body1.fontSize',
-                      whiteSpace: 'pre-wrap',
+                    onMentionClick={(username) => {
+                      // ユーザープロフィールページに遷移
+                      if (typeof window !== 'undefined') {
+                        window.location.href = `/users/${username}`;
+                      }
                     }}
                   />
                 )}

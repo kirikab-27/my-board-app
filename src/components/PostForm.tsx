@@ -5,6 +5,7 @@ import { Box, TextField, Button, Typography, Paper, Alert, Divider, Chip, Accord
 import { ExpandMore, AttachFile } from '@mui/icons-material';
 import HashtagInput from './hashtags/HashtagInput';
 import MediaUpload, { UploadedMedia } from './media/MediaUpload';
+import { MentionInput, extractMentions } from './mention';
 
 interface PostFormProps {
   onPostCreated: () => void;
@@ -40,6 +41,7 @@ export default function PostForm({
   const [lastSubmitTime, setLastSubmitTime] = useState<number>(0);
   const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
   const [extractedHashtags, setExtractedHashtags] = useState<string[]>([]);
+  const [extractedMentions, setExtractedMentions] = useState<string[]>([]);
 
   useEffect(() => {
     if (editingPost) {
@@ -74,6 +76,13 @@ export default function PostForm({
       setExtractedHashtags([]);
     }
   }, [content, title, showHashtags, maxHashtags]);
+
+  // コンテンツからメンションを自動抽出
+  useEffect(() => {
+    const text = `${title} ${content}`;
+    const mentions = extractMentions(text);
+    setExtractedMentions(mentions);
+  }, [content, title]);
 
   // クールダウンタイマー
   useEffect(() => {
@@ -160,11 +169,35 @@ export default function PostForm({
         throw new Error(errorData.error || '投稿に失敗しました');
       }
 
+      const responseData = await response.json();
+
+      // メンション通知送信
+      if (extractedMentions.length > 0) {
+        try {
+          await fetch('/api/mentions/notify', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              mentionedUsernames: extractedMentions,
+              postId: responseData.post?._id || (editingPost ? editingPost._id : null),
+              content: content,
+              type: 'mention_post'
+            }),
+          });
+        } catch (mentionError) {
+          console.warn('メンション通知の送信に失敗しました:', mentionError);
+          // メンション通知の失敗は投稿を失敗させない
+        }
+      }
+
       setContent('');
       setTitle('');
       setHashtags([]);
       setMedia([]);
       setExtractedHashtags([]);
+      setExtractedMentions([]);
       // 新規投稿の場合のみ最終投稿時刻を更新
       if (!editingPost) {
         setLastSubmitTime(Date.now());
@@ -186,6 +219,7 @@ export default function PostForm({
     setHashtags([]);
     setMedia([]);
     setExtractedHashtags([]);
+    setExtractedMentions([]);
     setError('');
     if (onEditCancel) {
       onEditCancel();
@@ -221,27 +255,38 @@ export default function PostForm({
           />
         )}
 
-        {/* コンテンツ入力 */}
-        <TextField
-          fullWidth
-          multiline
-          rows={4}
-          variant="outlined"
-          label="投稿内容"
-          placeholder="投稿内容を入力してください（1000文字以内）"
+        {/* コンテンツ入力（メンション対応） */}
+        <MentionInput
           value={content}
-          onChange={(e) => setContent(e.target.value)}
-          error={content.length > 1000}
-          helperText={`${content.length}/1000文字`}
-          sx={{
-            mb: 2,
-            '& .MuiInputBase-input': {
-              wordWrap: 'break-word',
-              overflowWrap: 'break-word',
-              whiteSpace: 'pre-wrap',
-            },
+          onChange={(newContent) => setContent(newContent)}
+          onSearch={async (query: string) => {
+            if (query.length < 1) return [];
+            try {
+              const response = await fetch(`/api/users/search-mentions?q=${encodeURIComponent(query)}&limit=5`);
+              const data = await response.json();
+              return data.users || [];
+            } catch (error) {
+              console.error('Mention search error:', error);
+              return [];
+            }
           }}
+          placeholder="投稿内容を入力してください（1000文字以内）... (@でユーザーをメンション)"
+          disabled={isSubmitting}
+          minRows={4}
+          maxRows={8}
+          error={content.length > 1000}
+          helperText={`${content.length}/1000文字${extractedMentions.length > 0 ? ` • ${extractedMentions.length}個のメンション` : ''}`}
+          sx={{ mb: 2 }}
         />
+
+        {/* 検出されたメンション表示 */}
+        {extractedMentions.length > 0 && (
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              🏷️ メンション: {extractedMentions.map(mention => `@${mention}`).join(', ')}
+            </Typography>
+          </Box>
+        )}
 
         {/* ハッシュタグ機能 */}
         {showHashtags && (

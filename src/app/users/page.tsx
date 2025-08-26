@@ -28,6 +28,7 @@ import FollowStats from '@/components/follow/FollowStats';
 interface User {
   _id: string;
   name: string;
+  username?: string;
   email: string;
   bio?: string;
   role: string;
@@ -67,11 +68,23 @@ export default function UsersPage() {
     fetchUsers();
   }, []);
 
-  // 検索フィルタリング
-  const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (user.bio && user.bio.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  // 検索フィルタリング（@メンション検索対応）
+  const filteredUsers = users.filter(user => {
+    const searchLower = searchTerm.toLowerCase();
+    
+    // @メンション検索の場合
+    if (searchTerm.startsWith('@')) {
+      const searchUsername = searchTerm.slice(1).toLowerCase(); // @を除去
+      return user.username && user.username.toLowerCase().includes(searchUsername);
+    }
+    
+    // 通常検索（名前、ユーザー名、自己紹介）
+    return (
+      user.name.toLowerCase().includes(searchLower) ||
+      (user.username && user.username.toLowerCase().includes(searchLower)) ||
+      (user.bio && user.bio.toLowerCase().includes(searchLower))
+    );
+  });
 
   // フォロー状態変更ハンドラー
   const handleFollowChange = (userId: string, isFollowing: boolean, isPending: boolean) => {
@@ -130,7 +143,7 @@ export default function UsersPage() {
             <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
               <TextField
                 fullWidth
-                placeholder="ユーザー名や自己紹介で検索..."
+                placeholder="名前、@ユーザー名、自己紹介で検索..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 InputProps={{
@@ -229,6 +242,11 @@ export default function UsersPage() {
                           <Typography variant="h6" noWrap>
                             {user.name}
                           </Typography>
+                          {user.username && (
+                            <Typography variant="body2" color="text.secondary" noWrap>
+                              @{user.username}
+                            </Typography>
+                          )}
                           <Typography variant="caption" color="text.secondary">
                             {getRoleLabel(user.role)}
                           </Typography>
