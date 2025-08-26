@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import {
@@ -15,6 +15,7 @@ import {
   CircularProgress,
   AppBar,
   Toolbar,
+  InputAdornment,
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -34,6 +35,7 @@ export default function ProfileEditPage() {
 
   const [formData, setFormData] = useState({
     name: '',
+    username: '', // ユーザー名（@mention用）
     bio: '',
     email: '', // 表示のみ（変更不可）
     website: '',
@@ -43,10 +45,26 @@ export default function ProfileEditPage() {
 
   const [charCount, setCharCount] = useState({
     name: 0,
+    username: 0,
     bio: 0,
     website: 0,
     location: 0,
   });
+
+  // ユーザー名可用性チェック状態
+  const [usernameStatus, setUsernameStatus] = useState<{
+    checking: boolean;
+    available: boolean | null;
+    message: string;
+    error: boolean;
+  }>({
+    checking: false,
+    available: null,
+    message: '',
+    error: false,
+  });
+
+  const usernameCheckRef = useRef<NodeJS.Timeout | null>(null);
 
   // プロフィール取得
   useEffect(() => {
@@ -60,6 +78,15 @@ export default function ProfileEditPage() {
     fetchProfile();
   }, [session, status, router]);
 
+  // コンポーネントアンマウント時のクリーンアップ
+  useEffect(() => {
+    return () => {
+      if (usernameCheckRef.current) {
+        clearTimeout(usernameCheckRef.current);
+      }
+    };
+  }, []);
+
   const fetchProfile = async () => {
     try {
       const response = await fetch('/api/profile');
@@ -71,6 +98,7 @@ export default function ProfileEditPage() {
 
       setFormData({
         name: data.user.name || '',
+        username: data.user.username || '',
         bio: data.user.bio || '',
         email: data.user.email || '',
         website: data.user.website || '',
@@ -80,6 +108,7 @@ export default function ProfileEditPage() {
 
       setCharCount({
         name: data.user.name?.length || 0,
+        username: data.user.username?.length || 0,
         bio: data.user.bio?.length || 0,
         website: data.user.website?.length || 0,
         location: data.user.location?.length || 0,
@@ -106,24 +135,120 @@ export default function ProfileEditPage() {
     setError(`アバター画像のアップロードに失敗しました: ${error}`);
   };
 
-  const handleChange = (field: 'name' | 'bio' | 'website' | 'location') => (e: React.ChangeEvent<HTMLInputElement>) => {
+  // ユーザー名可用性チェック（デバウンス処理）
+  const checkUsernameAvailability = useCallback(async (username: string) => {
+    if (username.length < 3 || !username) {
+      setUsernameStatus({
+        checking: false,
+        available: null,
+        message: '',
+        error: false,
+      });
+      return;
+    }
+
+    setUsernameStatus({
+      checking: true,
+      available: null,
+      message: 'ユーザー名を確認中...',
+      error: false,
+    });
+
+    try {
+      const response = await fetch(`/api/profile/check-username?username=${encodeURIComponent(username)}`);
+      const data = await response.json();
+
+      if (response.ok) {
+        setUsernameStatus({
+          checking: false,
+          available: data.available,
+          message: data.message || data.error || '',
+          error: !data.available,
+        });
+      } else {
+        setUsernameStatus({
+          checking: false,
+          available: false,
+          message: data.error || 'ユーザー名の確認に失敗しました',
+          error: true,
+        });
+      }
+    } catch (error) {
+      setUsernameStatus({
+        checking: false,
+        available: false,
+        message: 'ネットワークエラーが発生しました',
+        error: true,
+      });
+    }
+  }, []);
+
+  // デバウンス処理付きユーザー名チェック
+  const debouncedUsernameCheck = useCallback((username: string) => {
+    // 既存のタイマーをクリア
+    if (usernameCheckRef.current) {
+      clearTimeout(usernameCheckRef.current);
+    }
+
+    // 500ms後にチェック実行
+    usernameCheckRef.current = setTimeout(() => {
+      checkUsernameAvailability(username);
+    }, 500);
+  }, [checkUsernameAvailability]);
+
+  const handleChange = (field: 'name' | 'username' | 'bio' | 'website' | 'location') => (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
 
     // 文字数制限チェック
     if (field === 'name' && value.length > 50) return;
+    if (field === 'username' && value.length > 30) return;
     if (field === 'bio' && value.length > 300) return;
     if (field === 'website' && value.length > 200) return;
     if (field === 'location' && value.length > 100) return;
 
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    // ユーザー名の文字種制限チェック
+    if (field === 'username') {
+      // 英数字とアンダースコアのみ許可
+      const usernameRegex = /^[a-zA-Z0-9_]*$/;
+      if (!usernameRegex.test(value)) {
+        return; // 不正な文字が入力された場合は更新しない
+      }
+      
+      // 小文字に変換
+      const lowercaseValue = value.toLowerCase();
+      
+      setFormData((prev) => ({
+        ...prev,
+        [field]: lowercaseValue,
+      }));
+      
+      setCharCount((prev) => ({
+        ...prev,
+        [field]: lowercaseValue.length,
+      }));
 
-    setCharCount((prev) => ({
-      ...prev,
-      [field]: value.length,
-    }));
+      // ユーザー名可用性チェック（デバウンス処理）
+      if (lowercaseValue.length >= 3) {
+        debouncedUsernameCheck(lowercaseValue);
+      } else {
+        setUsernameStatus({
+          checking: false,
+          available: null,
+          message: '',
+          error: false,
+        });
+      }
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [field]: value,
+      }));
+
+      setCharCount((prev) => ({
+        ...prev,
+        [field]: value.length,
+      }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -137,6 +262,37 @@ export default function ProfileEditPage() {
       return;
     }
 
+    // ユーザー名バリデーション
+    if (!formData.username.trim()) {
+      setError('ユーザー名は必須です');
+      return;
+    }
+
+    if (formData.username.length < 3) {
+      setError('ユーザー名は3文字以上で入力してください');
+      return;
+    }
+
+    // 予約語チェック
+    const reservedUsernames = [
+      'admin', 'api', 'www', 'mail', 'support', 'help', 
+      'blog', 'news', 'about', 'contact', 'privacy', 'terms',
+      'login', 'register', 'dashboard', 'profile', 'settings',
+      'board', 'post', 'comment', 'user', 'users', 'timeline',
+      'hashtag', 'hashtags', 'notification', 'notifications'
+    ];
+
+    if (reservedUsernames.includes(formData.username.toLowerCase())) {
+      setError('このユーザー名は予約されているため使用できません');
+      return;
+    }
+
+    // ユーザー名可用性チェック
+    if (usernameStatus.error || (usernameStatus.available === false && usernameStatus.message !== '現在のユーザー名です')) {
+      setError('ユーザー名が使用できません: ' + usernameStatus.message);
+      return;
+    }
+
     setSaving(true);
 
     try {
@@ -147,6 +303,7 @@ export default function ProfileEditPage() {
         },
         body: JSON.stringify({
           name: formData.name.trim(),
+          username: formData.username.trim(),
           bio: formData.bio.trim(),
           website: formData.website.trim(),
           location: formData.location.trim(),
@@ -288,6 +445,47 @@ export default function ProfileEditPage() {
                 disabled={saving}
                 helperText={`${charCount.name}/50文字`}
                 error={charCount.name > 50}
+              />
+
+              {/* ユーザー名（@mention用） */}
+              <TextField
+                label="ユーザー名"
+                value={formData.username}
+                onChange={handleChange('username')}
+                required
+                fullWidth
+                disabled={saving}
+                helperText={
+                  usernameStatus.checking 
+                    ? 'ユーザー名を確認中...'
+                    : usernameStatus.message
+                      ? `${usernameStatus.message} (${charCount.username}/30文字)`
+                      : `${charCount.username}/30文字 (英数字とアンダースコアのみ・@メンション用)`
+                }
+                error={charCount.username > 30 || usernameStatus.error}
+                placeholder="username"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Typography 
+                        variant="body1" 
+                        sx={{ 
+                          color: 'text.secondary',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        @
+                      </Typography>
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    usernameStatus.checking && (
+                      <InputAdornment position="end">
+                        <CircularProgress size={20} />
+                      </InputAdornment>
+                    )
+                  )
+                }}
               />
 
               {/* メールアドレス（変更不可） */}

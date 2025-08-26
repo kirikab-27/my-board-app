@@ -8,6 +8,11 @@ import { z } from 'zod';
 // プロフィール更新用バリデーション
 const profileUpdateSchema = z.object({
   name: z.string().min(1, '名前は必須です').max(50, '名前は50文字以内で入力してください'),
+  username: z.string()
+    .min(3, 'ユーザー名は3文字以上で入力してください')
+    .max(30, 'ユーザー名は30文字以内で入力してください')
+    .regex(/^[a-zA-Z0-9_]+$/, 'ユーザー名は英数字とアンダースコアのみ使用できます')
+    .optional(),
   bio: z.string().max(300, '自己紹介は300文字以内で入力してください').optional(),
   website: z.string().max(200, 'ウェブサイトURLは200文字以内で入力してください').optional(),
   location: z.string().max(100, '位置情報は100文字以内で入力してください').optional(),
@@ -35,6 +40,7 @@ export async function GET() {
     const safeUser = user as unknown as {
       _id: any;
       name: string;
+      username?: string;
       email: string;
       bio?: string;
       website?: string;
@@ -51,6 +57,7 @@ export async function GET() {
       user: {
         id: safeUser._id.toString(),
         name: safeUser.name,
+        username: safeUser.username || '',
         email: safeUser.email,
         bio: safeUser.bio || '',
         website: safeUser.website || '',
@@ -91,15 +98,32 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const { name, bio, website, location, avatar } = validationResult.data;
+    const { name, username, bio, website, location, avatar } = validationResult.data;
 
     await dbConnect();
+
+    // ユーザー名重複チェック（変更時のみ）
+    if (username) {
+      const currentUser = await User.findById(session.user.id).select('username');
+      
+      // 現在のユーザー名と異なる場合のみ重複チェック
+      if (currentUser?.username !== username) {
+        const existingUser = await User.findOne({ username }).select('_id');
+        if (existingUser) {
+          return NextResponse.json(
+            { error: 'このユーザー名は既に使用されています' },
+            { status: 400 }
+          );
+        }
+      }
+    }
 
     // ユーザー更新
     const updatedUser = await User.findByIdAndUpdate(
       session.user.id,
       {
         name,
+        ...(username && { username }), // usernameが提供された場合のみ更新
         bio: bio || '',
         website: website || '',
         location: location || '',
@@ -123,6 +147,7 @@ export async function PUT(request: NextRequest) {
       user: {
         id: updatedUser._id.toString(),
         name: updatedUser.name,
+        username: updatedUser.username || '',
         email: updatedUser.email,
         bio: updatedUser.bio || '',
         website: updatedUser.website || '',

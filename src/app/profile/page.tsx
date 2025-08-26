@@ -9,6 +9,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import LanguageIcon from '@mui/icons-material/Language';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import AlternateEmailIcon from '@mui/icons-material/AlternateEmail';
 import Link from 'next/link';
 import User from '@/models/User';
 import dbConnect from '@/lib/mongodb';
@@ -28,6 +29,7 @@ async function getProfile(userId: string) {
   const safeUser = user as unknown as {
     _id: any;
     name: string;
+    username?: string;
     email: string;
     bio?: string;
     website?: string;
@@ -42,6 +44,7 @@ async function getProfile(userId: string) {
   return {
     id: safeUser._id.toString(),
     name: safeUser.name,
+    username: safeUser.username || '',
     email: safeUser.email,
     bio: safeUser.bio || '',
     website: safeUser.website || '',
@@ -132,6 +135,11 @@ export default async function ProfilePage() {
                 <Typography variant="h4" gutterBottom>
                   {profile.name}
                 </Typography>
+                {profile.username && (
+                  <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
+                    @{profile.username}
+                  </Typography>
+                )}
                 <Chip
                   label={getRoleLabel(profile.role)}
                   color={getRoleBadgeColor(profile.role)}
@@ -174,6 +182,21 @@ export default async function ProfilePage() {
 
           {/* プロフィール情報 */}
           <Stack spacing={3}>
+            {/* ユーザー名 */}
+            {profile.username && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <AlternateEmailIcon color="action" />
+                <Box>
+                  <Typography variant="body2" color="text.secondary">
+                    ユーザー名
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontFamily: 'monospace' }}>
+                    @{profile.username}
+                  </Typography>
+                </Box>
+              </Box>
+            )}
+
             {/* メールアドレス */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <EmailIcon color="action" />
