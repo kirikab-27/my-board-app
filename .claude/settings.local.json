@@ -30,7 +30,9 @@
       "Bash(npx husky:*)",
       "Bash(npm run type-check:*)",
       "Bash(npm run lint)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(git merge:*)",
+      "Bash(HUSKY=0 git commit -m \"📝 Claude設定同期・main環境対応\")"
     ],
     "deny": []
   }
