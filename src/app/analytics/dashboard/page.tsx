@@ -265,7 +265,7 @@ export default function AnalyticsDashboard() {
   };
 
   // 時間範囲変更ハンドラ
-  const handleTimeRangeChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+  const handleTimeRangeChange = (event: any) => {
     setTimeRange(event.target.value as TimeRange);
   };
 
