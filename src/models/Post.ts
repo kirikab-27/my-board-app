@@ -53,7 +53,7 @@ export interface IPost extends Document {
   userId?: string; // 投稿者のユーザーID（認証ユーザーの場合）
   authorName?: string; // 投稿者名（表示用・匿名対応）
   authorRole?: string; // 投稿者の役割（'user' | 'moderator' | 'admin'）
-  
+
   // SNS機能
   hashtags: string[]; // ハッシュタグ（#なし）
   mentions: IPostMention[]; // メンション機能
@@ -108,52 +108,9 @@ const PostSchema: Schema = new Schema(
       maxlength: [100, 'タイトルは100文字以内で入力してください'],
       trim: true,
     },
-    maxlength: [1000, '投稿は1000文字以内で入力してください'],
-    trim: true
-  },
-  type: {
-    type: String,
-    enum: ['post', 'repost', 'quote', 'reply'],
-    default: 'post',
-    required: [true, '投稿タイプは必須です']
-  },
-  
-  // 作成者情報
-  userId: {
-    type: String,
-    required: false,
-    validate: {
-      validator: function(v: string) {
-        return !v || /^[0-9a-fA-F]{24}$/.test(v); // MongoDB ObjectId形式
-      },
-      message: 'userIdは有効なMongoDBのObjectId形式である必要があります'
-    }
-  },
-  authorName: {
-    type: String,
-    required: false,
-    maxlength: [100, '作者名は100文字以内で入力してください'],
-    trim: true
-  },
-  authorRole: {
-    type: String,
-    enum: ['user', 'moderator', 'admin'],
-    default: 'user',
-    required: false
-  },
-  
-  // SNS機能
-  hashtags: {
-    type: [String],
-    default: [],
-    validate: {
-      validator: function(arr: string[]) {
-        return arr.length <= 10 && arr.every(tag => 
-          typeof tag === 'string' && 
-          tag.length <= 50 && 
-          /^[a-zA-Z0-9_\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]+$/.test(tag)
-        );
-      },
+    content: {
+      type: String,
+      required: [true, '投稿内容は必須です'],
       maxlength: [1000, '投稿は1000文字以内で入力してください'],
       trim: true,
     },
@@ -181,6 +138,12 @@ const PostSchema: Schema = new Schema(
       maxlength: [100, '作者名は100文字以内で入力してください'],
       trim: true,
     },
+    authorRole: {
+      type: String,
+      enum: ['user', 'moderator', 'admin'],
+      default: 'user',
+      required: false,
+    },
 
     // SNS機能
     hashtags: {
@@ -198,105 +161,47 @@ const PostSchema: Schema = new Schema(
             )
           );
         },
-        message:
-          'ハッシュタグは10個以下、各50文字以内で、英数字・ひらがな・カタカナ・漢字・アンダースコアのみ使用可能です',
+        message: 'ハッシュタグは10個まで、各タグは50文字以内で入力してください',
       },
     },
-    mentions: [
-      {
-        userId: {
-          type: String,
-          required: true,
-          validate: {
-            validator: function (v: string) {
-              return /^[0-9a-fA-F]{24}$/.test(v);
-            },
-            message: '無効なユーザーIDです',
+    mentions: {
+      type: [
+        {
+          userId: String,
+          username: String,
+          startIndex: Number,
+          endIndex: Number,
+        },
+      ],
+      default: [],
+    },
+    media: {
+      type: [
+        {
+          mediaId: String,
+          type: {
+            type: String,
+            enum: ['image', 'video', 'gif'],
           },
+          url: String,
+          thumbnailUrl: String,
+          publicId: String,
+          title: String,
+          alt: String,
+          width: Number,
+          height: Number,
+          size: Number,
+          mimeType: String,
+          hash: String,
         },
-        username: {
-          type: String,
-          required: true,
-          maxlength: [30, 'ユーザー名は30文字以内である必要があります'],
-        },
-        startIndex: {
-          type: Number,
-          required: true,
-          min: 0,
-        },
-        endIndex: {
-          type: Number,
-          required: true,
-          min: 0,
-        },
-      },
-    ],
-    media: [
-      {
-        type: {
-          type: String,
-          enum: ['image', 'video', 'gif'],
-          required: true,
-        },
-        url: {
-          type: String,
-          required: true,
-          validate: {
-            validator: function (v: string) {
-              return /^https:\/\/res\.cloudinary\.com\//.test(v);
-            },
-            message: '無効なメディアURLです',
-          },
-        },
-        thumbnailUrl: {
-          type: String,
-          validate: {
-            validator: function (v: string) {
-              return !v || /^https:\/\/res\.cloudinary\.com\//.test(v);
-            },
-            message: '無効なサムネイルURLです',
-          },
-        },
-        alt: {
-          type: String,
-          maxlength: [200, '代替テキストは200文字以内で入力してください'],
-        },
-        width: {
-          type: Number,
-          min: 1,
-          max: 8000,
-        },
-        height: {
-          type: Number,
-          min: 1,
-          max: 8000,
-        },
-        size: {
-          type: Number,
-          min: 0,
-          max: 50 * 1024 * 1024, // 50MB制限
-        },
-      },
-    ],
+      ],
+      default: [],
+    },
     location: {
-      name: {
-        type: String,
-        maxlength: [100, '場所名は100文字以内で入力してください'],
-      },
-      latitude: {
-        type: Number,
-        min: -90,
-        max: 90,
-      },
-      longitude: {
-        type: Number,
-        min: -180,
-        max: 180,
-      },
-      accuracy: {
-        type: Number,
-        min: 0,
-      },
+      name: String,
+      latitude: Number,
+      longitude: Number,
+      accuracy: Number,
     },
 
     // プライバシー・公開設定
@@ -304,39 +209,55 @@ const PostSchema: Schema = new Schema(
       type: String,
       enum: ['public', 'followers', 'friends', 'private'],
       default: 'public',
-      required: [true, 'プライバシー設定は必須です'],
     },
     isPublic: {
       type: Boolean,
-      default: true, // 既存投稿の互換性のため初期値はtrue
-      required: [true, '公開設定は必須です'],
+      default: true,
     },
 
-    // いいね機能（既存互換性）
+    // いいね機能（拡張）
     likes: {
       type: Number,
       default: 0,
-      min: [0, 'いいね数は0以上である必要があります'],
+      min: 0,
     },
     likedBy: {
       type: [String],
       default: [],
-      validate: {
-        validator: function (arr: string[]) {
-          return arr.every((item) => typeof item === 'string' && item.length > 0);
-        },
-        message: 'likedByには有効な文字列のみ含めることができます',
-      },
     },
 
     // 統計情報
     stats: {
-      likes: { type: Number, default: 0, min: 0 },
-      comments: { type: Number, default: 0, min: 0 },
-      reposts: { type: Number, default: 0, min: 0 },
-      quotes: { type: Number, default: 0, min: 0 },
-      views: { type: Number, default: 0, min: 0 },
-      shares: { type: Number, default: 0, min: 0 },
+      likes: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+      comments: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+      reposts: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+      quotes: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+      views: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+      shares: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
     },
 
     // リポスト・引用機能
@@ -346,7 +267,7 @@ const PostSchema: Schema = new Schema(
         validator: function (v: string) {
           return !v || /^[0-9a-fA-F]{24}$/.test(v);
         },
-        message: '無効な元投稿IDです',
+        message: 'originalPostIdは有効なMongoDBのObjectId形式である必要があります',
       },
     },
     quotedPostId: {
@@ -355,7 +276,7 @@ const PostSchema: Schema = new Schema(
         validator: function (v: string) {
           return !v || /^[0-9a-fA-F]{24}$/.test(v);
         },
-        message: '無効な引用投稿IDです',
+        message: 'quotedPostIdは有効なMongoDBのObjectId形式である必要があります',
       },
     },
     replyToId: {
@@ -364,14 +285,13 @@ const PostSchema: Schema = new Schema(
         validator: function (v: string) {
           return !v || /^[0-9a-fA-F]{24}$/.test(v);
         },
-        message: '無効な返信先投稿IDです',
+        message: 'replyToIdは有効なMongoDBのObjectId形式である必要があります',
       },
     },
 
     // メタデータ
     language: {
       type: String,
-      default: 'ja',
       maxlength: [10, '言語コードは10文字以内で入力してください'],
     },
     isEdited: {
@@ -402,34 +322,8 @@ const PostSchema: Schema = new Schema(
   },
   {
     timestamps: true,
-    collection: 'posts',
-    versionKey: false,
   }
 );
-
-// ミドルウェア：保存前処理
-PostSchema.pre('save', async function (next) {
-  try {
-    // ハッシュタグとメンションを自動抽出
-    if (this.isModified('content')) {
-      this.hashtags = (this as any).extractHashtags();
-      this.mentions = (this as any).extractMentions();
-    }
-
-    // 統計情報を既存フィールドと同期
-    this.likes = (this.stats as any).likes;
-    
-    // 編集フラグの設定
-    if (this.isModified('content') && !this.isNew) {
-      (this as any).isEdited = true;
-      (this as any).editedAt = new Date();
-    }
-
-    next();
-  } catch (error) {
-    next(error as Error);
-  }
-});
 
 // ハッシュタグ抽出メソッド
 PostSchema.methods.extractHashtags = function (): string[] {
@@ -472,45 +366,6 @@ PostSchema.methods.extractMentions = function (): IPostMention[] {
   }
 
   return mentions;
-};
-
-// 統計情報更新メソッド
-PostSchema.methods.updateStats = async function (): Promise<void> {
-  try {
-    // いいね数（既存互換性）
-    this.stats.likes = this.likedBy.length;
-    this.likes = this.stats.likes;
-
-    // コメント数
-    const Comment = mongoose.models.Comment;
-    if (Comment) {
-      this.stats.comments = await Comment.countDocuments({
-        postId: this._id,
-        isDeleted: { $ne: true },
-      });
-    }
-
-    // リポスト数
-    const Post = mongoose.models.Post;
-    if (Post) {
-      this.stats.reposts = await Post.countDocuments({
-        originalPostId: this._id,
-        type: 'repost',
-        isDeleted: { $ne: true },
-      });
-
-      // 引用数
-      this.stats.quotes = await Post.countDocuments({
-        quotedPostId: this._id,
-        type: 'quote',
-        isDeleted: { $ne: true },
-      });
-    }
-
-    await this.save();
-  } catch (error) {
-    console.error('投稿統計情報の更新に失敗しました:', error);
-  }
 };
 
 // ユーザーが投稿を閲覧できるかチェック

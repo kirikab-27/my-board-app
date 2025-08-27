@@ -8,7 +8,24 @@ export interface IUser extends mongoose.Document {
   password: string;
   emailVerified: Date | null;
   image?: string;
+  avatar?: string;
+  cover?: string; // カバー画像URL
+  username?: string; // ユーザー名（英数字・アンダースコア）
+  displayName?: string; // 表示名（50文字以内）
   bio?: string; // 自己紹介（最大200文字）
+  location?: string; // 位置情報（100文字以内）
+  website?: string; // ウェブサイトURL（200文字以内）
+  isVerified?: boolean; // 認証済みフラグ
+  isPrivate?: boolean; // プライベートアカウントフラグ
+  stats?: {
+    postsCount?: number;
+    followersCount?: number;
+    followingCount?: number;
+    likesReceived?: number;
+    commentsReceived?: number;
+  }; // ユーザー統計
+  lastSeen?: Date; // 最終アクセス日時
+  isOnline?: boolean; // オンライン状態
   role: 'user' | 'moderator' | 'admin';
   createdAt: Date;
   updatedAt: Date;
@@ -17,58 +34,29 @@ export interface IUser extends mongoose.Document {
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
-const UserSchema = new mongoose.Schema<IUser>({
-  // 基本情報
-  name: {
-    type: String,
-    required: [true, '名前は必須です'],
-    trim: true,
-    maxlength: [50, '名前は50文字以内で入力してください'],
-  },
-  username: {
-    type: String,
-    required: [false, 'ユーザー名は必須です'], // preミドルウェアで自動生成されるため
-    unique: true,
-    trim: true,
-    lowercase: true,
-    minlength: [3, 'ユーザー名は3文字以上で入力してください'],
-    maxlength: [30, 'ユーザー名は30文字以内で入力してください'],
-    match: [/^[a-zA-Z0-9_]+$/, 'ユーザー名は英数字とアンダースコアのみ使用できます'],
-  },
-  displayName: {
-    type: String,
-    trim: true,
-    maxlength: [50, '表示名は50文字以内で入力してください'],
-  },
-  email: {
-    type: String,
-    required: [true, 'メールアドレスは必須です'],
-    unique: true,
-    lowercase: true,
-    match: [
-      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-      '有効なメールアドレスを入力してください',
-    ],
-  },
-  password: {
-    type: String,
-    required: [true, 'パスワードは必須です'],
-    minlength: [8, 'パスワードは8文字以上で入力してください'],
-  },
-  emailVerified: {
-    type: Date,
-    default: null,
-  },
-  
-  // プロフィール画像・カバー
-  avatar: {
-    type: String,
-    default: null,
-    validate: {
-      validator: function(v: string) {
-        return !v || /^https:\/\/res\.cloudinary\.com\//.test(v);
-      },
-      message: '無効な画像URLです',
+const UserSchema = new mongoose.Schema<IUser>(
+  {
+    // 基本情報
+    name: {
+      type: String,
+      required: [true, '名前は必須です'],
+      trim: true,
+      maxlength: [50, '名前は50文字以内で入力してください'],
+    },
+    username: {
+      type: String,
+      required: [false, 'ユーザー名は必須です'], // preミドルウェアで自動生成されるため
+      unique: true,
+      trim: true,
+      lowercase: true,
+      minlength: [3, 'ユーザー名は3文字以上で入力してください'],
+      maxlength: [30, 'ユーザー名は30文字以内で入力してください'],
+      match: [/^[a-zA-Z0-9_]+$/, 'ユーザー名は英数字とアンダースコアのみ使用できます'],
+    },
+    displayName: {
+      type: String,
+      trim: true,
+      maxlength: [50, '表示名は50文字以内で入力してください'],
     },
     email: {
       type: String,
@@ -80,45 +68,53 @@ const UserSchema = new mongoose.Schema<IUser>({
         '有効なメールアドレスを入力してください',
       ],
     },
-  },
-  image: {
-    type: String,
-    default: null, // 既存互換性のため残す
-  },
-  
-  // プロフィール詳細
-  bio: {
-    type: String,
-    maxlength: [300, '自己紹介は300文字以内で入力してください'],
-    default: '',
-    trim: true,
-  },
-  location: {
-    type: String,
-    maxlength: [100, '位置情報は100文字以内で入力してください'],
-    trim: true,
-  },
-  website: {
-    type: String,
-    maxlength: [200, 'ウェブサイトURLは200文字以内で入力してください'],
-    validate: {
-      validator: function(v: string) {
-        return !v || /^https?:\/\//.test(v);
-      },
-      message: '有効なURLを入力してください（http://またはhttps://から始まる）',
+    password: {
+      type: String,
+      required: [true, 'パスワードは必須です'],
+      minlength: [8, 'パスワードは8文字以上で入力してください'],
     },
     emailVerified: {
       type: Date,
       default: null,
     },
-    image: {
+
+    // プロフィール画像・カバー
+    avatar: {
       type: String,
       default: null,
+      validate: {
+        validator: function (v: string) {
+          return !v || /^https:\/\/res\.cloudinary\.com\//.test(v);
+        },
+        message: '無効な画像URLです',
+      },
     },
+    image: {
+      type: String,
+      default: null, // 既存互換性のため残す
+    },
+
+    // プロフィール詳細
     bio: {
       type: String,
-      maxlength: [200, '自己紹介は200文字以内で入力してください'],
+      maxlength: [300, '自己紹介は300文字以内で入力してください'],
       default: '',
+      trim: true,
+    },
+    location: {
+      type: String,
+      maxlength: [100, '位置情報は100文字以内で入力してください'],
+      trim: true,
+    },
+    website: {
+      type: String,
+      maxlength: [200, 'ウェブサイトURLは200文字以内で入力してください'],
+      validate: {
+        validator: function (v: string) {
+          return !v || /^https?:\/\//.test(v);
+        },
+        message: '有効なURLを入力してください（http://またはhttps://から始まる）',
+      },
     },
     role: {
       type: String,
@@ -157,31 +153,29 @@ UserSchema.methods.updateStats = async function (): Promise<void> {
     if (Post) {
       this.stats.postsCount = await Post.countDocuments({ userId: this._id });
     }
-    
+
     // フォロワー・フォロー数
     const Follow = mongoose.models.Follow;
     if (Follow) {
       this.stats.followersCount = await Follow.countDocuments({ following: this._id });
       this.stats.followingCount = await Follow.countDocuments({ follower: this._id });
     }
-    
+
     // いいね・コメント受信数
     if (Post) {
       const posts = await Post.find({ userId: this._id });
       this.stats.likesReceived = posts.reduce((total, post) => total + (post.likes || 0), 0);
     }
-    
+
     const Comment = mongoose.models.Comment;
     if (Comment) {
       this.stats.commentsReceived = await Comment.countDocuments({ postUserId: this._id });
     }
-    
+
     // 統計情報のみの部分更新（バリデーションを回避）
-    await mongoose.model('User').updateOne(
-      { _id: this._id },
-      { $set: { stats: this.stats } },
-      { runValidators: false }
-    );
+    await mongoose
+      .model('User')
+      .updateOne({ _id: this._id }, { $set: { stats: this.stats } }, { runValidators: false });
   } catch (error) {
     console.error('統計情報の更新に失敗しました:', error);
   }
