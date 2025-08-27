@@ -16,6 +16,7 @@ import {
   Search as SearchIcon,
   Edit as EditIcon,
   Lock as LockIcon,
+  Security as SecurityIcon,
 } from '@mui/icons-material';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -294,6 +295,10 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
         <MenuItem onClick={handleProfileEdit}>
           <EditIcon sx={{ mr: 1 }} />
           プロフィール編集
+        </MenuItem>
+        <MenuItem onClick={() => router.push('/profile/privacy')}>
+          <SecurityIcon sx={{ mr: 1 }} />
+          プライバシー設定
         </MenuItem>
         <MenuItem onClick={handlePasswordChange}>
           <LockIcon sx={{ mr: 1 }} />

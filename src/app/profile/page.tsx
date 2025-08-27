@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { Container, Paper, Typography, Box, Button, Divider, Chip, Stack } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import LockIcon from '@mui/icons-material/Lock';
+import SecurityIcon from '@mui/icons-material/Security';
 import EmailIcon from '@mui/icons-material/Email';
 import InfoIcon from '@mui/icons-material/Info';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
@@ -164,6 +165,14 @@ export default async function ProfilePage() {
                 startIcon={<LockIcon />}
               >
                 パスワード変更
+              </Button>
+              <Button
+                component={Link}
+                href="/profile/privacy"
+                variant="outlined"
+                startIcon={<SecurityIcon />}
+              >
+                プライバシー設定
               </Button>
             </Stack>
           </Box>
