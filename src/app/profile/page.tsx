@@ -4,14 +4,20 @@ import { redirect } from 'next/navigation';
 import { Container, Paper, Typography, Box, Button, Divider, Chip, Stack } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import LockIcon from '@mui/icons-material/Lock';
+import SecurityIcon from '@mui/icons-material/Security';
 import EmailIcon from '@mui/icons-material/Email';
 import InfoIcon from '@mui/icons-material/Info';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import LanguageIcon from '@mui/icons-material/Language';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import AlternateEmailIcon from '@mui/icons-material/AlternateEmail';
 import Link from 'next/link';
 import User from '@/models/User';
 import dbConnect from '@/lib/mongodb';
-import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
+import ProfileAvatar from '@/components/profile/ProfileAvatar';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
+import OptimizedImage from '@/components/ui/OptimizedImage';
+import FollowStats from '@/components/follow/FollowStats';
 
 async function getProfile(userId: string) {
   await dbConnect();
@@ -24,8 +30,12 @@ async function getProfile(userId: string) {
   const safeUser = user as unknown as {
     _id: any;
     name: string;
+    username?: string;
     email: string;
     bio?: string;
+    website?: string;
+    location?: string;
+    avatar?: string;
     emailVerified: Date | null;
     role: string;
     createdAt: Date;
@@ -35,8 +45,12 @@ async function getProfile(userId: string) {
   return {
     id: safeUser._id.toString(),
     name: safeUser.name,
+    username: safeUser.username || '',
     email: safeUser.email,
     bio: safeUser.bio || '',
+    website: safeUser.website || '',
+    location: safeUser.location || '',
+    avatar: safeUser.avatar || '',
     emailVerified: safeUser.emailVerified,
     role: safeUser.role,
     createdAt: safeUser.createdAt,
@@ -91,7 +105,7 @@ export default async function ProfilePage() {
     <>
       <ProfileHeader title="プロフィール" />
 
-      <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
+      <Container maxWidth="md" sx={{ mt: { xs: 18, sm: 20, md: 20 }, mb: 4 }}>
         <Paper sx={{ p: 4 }}>
           {/* ヘッダー部分 */}
           <Box
@@ -103,11 +117,30 @@ export default async function ProfilePage() {
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-              <ProfileAvatar name={profile.name} size="xlarge" />
+              {profile.avatar ? (
+                <Box sx={{ position: 'relative', width: 120, height: 120, borderRadius: '50%', overflow: 'hidden', border: '4px solid', borderColor: 'primary.main' }}>
+                  <OptimizedImage
+                    src={profile.avatar}
+                    alt={`${profile.name}のプロフィール画像`}
+                    fill
+                    sizes="120px"
+                    quality={90}
+                    objectFit="cover"
+                    priority
+                  />
+                </Box>
+              ) : (
+                <ProfileAvatar name={profile.name} size="xlarge" />
+              )}
               <Box>
                 <Typography variant="h4" gutterBottom>
                   {profile.name}
                 </Typography>
+                {profile.username && (
+                  <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
+                    @{profile.username}
+                  </Typography>
+                )}
                 <Chip
                   label={getRoleLabel(profile.role)}
                   color={getRoleBadgeColor(profile.role)}
@@ -133,13 +166,46 @@ export default async function ProfilePage() {
               >
                 パスワード変更
               </Button>
+              <Button
+                component={Link}
+                href="/profile/privacy"
+                variant="outlined"
+                startIcon={<SecurityIcon />}
+              >
+                プライバシー設定
+              </Button>
             </Stack>
+          </Box>
+
+          <Divider sx={{ mb: 3 }} />
+
+          {/* フォロー統計 */}
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h6" gutterBottom>
+              フォロー統計
+            </Typography>
+            <FollowStats userId={profile.id} showRelationship={false} />
           </Box>
 
           <Divider sx={{ mb: 3 }} />
 
           {/* プロフィール情報 */}
           <Stack spacing={3}>
+            {/* ユーザー名 */}
+            {profile.username && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <AlternateEmailIcon color="action" />
+                <Box>
+                  <Typography variant="body2" color="text.secondary">
+                    ユーザー名
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontFamily: 'monospace' }}>
+                    @{profile.username}
+                  </Typography>
+                </Box>
+              </Box>
+            )}
+
             {/* メールアドレス */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <EmailIcon color="action" />
@@ -168,6 +234,49 @@ export default async function ProfilePage() {
                 </Typography>
               </Box>
             </Box>
+
+            {/* ウェブサイト */}
+            {profile.website && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <LanguageIcon color="action" />
+                <Box>
+                  <Typography variant="body2" color="text.secondary">
+                    ウェブサイト
+                  </Typography>
+                  <Typography 
+                    variant="body1" 
+                    component="a" 
+                    href={profile.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{ 
+                      color: 'primary.main',
+                      textDecoration: 'none',
+                      '&:hover': {
+                        textDecoration: 'underline'
+                      }
+                    }}
+                  >
+                    {profile.website}
+                  </Typography>
+                </Box>
+              </Box>
+            )}
+
+            {/* 位置情報 */}
+            {profile.location && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <LocationOnIcon color="action" />
+                <Box>
+                  <Typography variant="body2" color="text.secondary">
+                    位置情報
+                  </Typography>
+                  <Typography variant="body1">
+                    {profile.location}
+                  </Typography>
+                </Box>
+              </Box>
+            )}
 
             {/* 登録日 */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>

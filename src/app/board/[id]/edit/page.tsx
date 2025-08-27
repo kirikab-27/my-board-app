@@ -5,24 +5,29 @@ import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import {
   Container,
-  Paper,
   Typography,
   Box,
-  TextField,
   Button,
   Alert,
-  Stack,
   CircularProgress,
   AppBar,
   Toolbar,
   IconButton,
 } from '@mui/material';
-import SaveIcon from '@mui/icons-material/Save';
-import CancelIcon from '@mui/icons-material/Cancel';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import EditIcon from '@mui/icons-material/Edit';
 import { AuthButton } from '@/components/auth/AuthButton';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
+
+// Dynamic import for PostForm to reduce initial bundle size
+const PostForm = dynamic(() => import('@/components/PostForm'), {
+  loading: () => (
+    <Box sx={{ p: 2 }}>
+      <div>Loading form...</div>
+    </Box>
+  ),
+  ssr: false
+});
 
 interface Post {
   _id: string;
@@ -33,6 +38,21 @@ interface Post {
   userId?: string;
   authorName?: string;
   isPublic: boolean;
+  hashtags?: string[];
+  media?: Array<{
+    mediaId: string;
+    type: 'image' | 'video';
+    url: string;
+    thumbnailUrl?: string;
+    publicId?: string;
+    title?: string;
+    alt?: string;
+    width?: number;
+    height?: number;
+    size?: number;
+    mimeType?: string;
+    hash?: string;
+  }>;
   createdAt: string;
   updatedAt: string;
 }
@@ -43,22 +63,9 @@ export default function EditPostPage() {
   const { data: session, status } = useSession();
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
   const postId = params?.id as string;
-
-  const [formData, setFormData] = useState({
-    title: '',
-    content: '',
-    isPublic: true,
-  });
-
-  const [charCount, setCharCount] = useState({
-    title: 0,
-    content: 0,
-  });
 
   useEffect(() => {
     if (postId && session?.user?.id) {
@@ -84,15 +91,6 @@ export default function EditPostPage() {
       }
 
       setPost(data);
-      setFormData({
-        title: data.title || '',
-        content: data.content || '',
-        isPublic: data.isPublic,
-      });
-      setCharCount({
-        title: (data.title || '').length,
-        content: (data.content || '').length,
-      });
     } catch (err) {
       setError(err instanceof Error ? err.message : '投稿の取得に失敗しました');
     } finally {
@@ -100,83 +98,20 @@ export default function EditPostPage() {
     }
   };
 
-  const handleChange = (field: 'title' | 'content') => (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-
-    // 文字数制限チェック
-    if (field === 'title' && value.length > 100) return;
-    if (field === 'content' && value.length > 1000) return;
-
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-
-    setCharCount((prev) => ({
-      ...prev,
-      [field]: value.length,
-    }));
+  const handlePostUpdated = () => {
+    // 投稿更新後に詳細ページにリダイレクト
+    router.push(`/board/${postId}`);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setSuccess(null);
-
-    // バリデーション
-    if (!formData.content.trim()) {
-      setError('投稿内容は必須です');
-      return;
-    }
-
-    if (formData.content.length > 1000) {
-      setError('投稿内容は1000文字以内で入力してください');
-      return;
-    }
-
-    if (formData.title && formData.title.length > 100) {
-      setError('タイトルは100文字以内で入力してください');
-      return;
-    }
-
-    setSaving(true);
-
-    try {
-      const response = await fetch(`/api/posts/${postId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: formData.title.trim() || undefined,
-          content: formData.content.trim(),
-          isPublic: formData.isPublic,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || '投稿の更新に失敗しました');
-      }
-
-      setSuccess('投稿を更新しました');
-
-      // 2秒後に投稿詳細ページにリダイレクト
-      setTimeout(() => {
-        router.push(`/board/${postId}`);
-      }, 2000);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '投稿の更新に失敗しました');
-    } finally {
-      setSaving(false);
-    }
+  const handleEditCancel = () => {
+    // キャンセル時は詳細ページに戻る
+    router.push(`/board/${postId}`);
   };
 
   if (status === 'loading' || loading) {
     return (
       <>
-        <AppBar position="static">
+        <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
           <Toolbar>
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               投稿編集
@@ -185,7 +120,7 @@ export default function EditPostPage() {
           </Toolbar>
         </AppBar>
 
-        <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Container maxWidth="md" sx={{ mt: { xs: 10, sm: 12, md: 12 } }}>
           <Box
             sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}
           >
@@ -204,7 +139,7 @@ export default function EditPostPage() {
   if (error || !post) {
     return (
       <>
-        <AppBar position="static">
+        <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
           <Toolbar>
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               投稿編集
@@ -213,7 +148,7 @@ export default function EditPostPage() {
           </Toolbar>
         </AppBar>
 
-        <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Container maxWidth="md" sx={{ mt: { xs: 10, sm: 12, md: 12 } }}>
           <Alert severity="error">
             {error || '投稿が見つかりません'}
             <br />
@@ -228,7 +163,7 @@ export default function EditPostPage() {
 
   return (
     <>
-      <AppBar position="static">
+      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
           <IconButton
             component={Link}
@@ -246,107 +181,44 @@ export default function EditPostPage() {
         </Toolbar>
       </AppBar>
 
-      <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
-        <Paper sx={{ p: 4 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-            <EditIcon color="primary" />
-            <Typography variant="h4">投稿を編集</Typography>
-          </Box>
+      <Container maxWidth="md" sx={{ mt: { xs: 10, sm: 12, md: 12 }, mb: 4 }}>
+        {error && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
+          </Alert>
+        )}
 
-          {error && (
-            <Alert severity="error" sx={{ mb: 3 }}>
-              {error}
-            </Alert>
-          )}
-
-          {success && (
-            <Alert severity="success" sx={{ mb: 3 }}>
-              {success}
-              <br />
-              <Typography variant="body2" sx={{ mt: 1 }}>
-                2秒後に投稿詳細ページに戻ります...
-              </Typography>
-            </Alert>
-          )}
-
-          <form onSubmit={handleSubmit}>
-            <Stack spacing={3}>
-              {/* タイトル */}
-              <TextField
-                label="タイトル（任意）"
-                value={formData.title}
-                onChange={handleChange('title')}
-                fullWidth
-                disabled={saving}
-                helperText={`${charCount.title}/100文字`}
-                error={charCount.title > 100}
-                placeholder="投稿のタイトルを入力してください"
-                sx={{
-                  '& .MuiInputBase-input': {
-                    wordWrap: 'break-word',
-                    overflowWrap: 'break-word',
-                  },
-                }}
-              />
-
-              {/* 投稿内容 */}
-              <TextField
-                label="投稿内容"
-                value={formData.content}
-                onChange={handleChange('content')}
-                multiline
-                rows={8}
-                required
-                fullWidth
-                disabled={saving}
-                helperText={`${charCount.content}/1000文字`}
-                error={charCount.content > 1000}
-                placeholder="投稿内容を入力してください"
-                sx={{
-                  '& .MuiInputBase-input': {
-                    wordWrap: 'break-word',
-                    overflowWrap: 'break-word',
-                    whiteSpace: 'pre-wrap',
-                  },
-                }}
-              />
-
-              {/* 注意事項 */}
-              <Alert severity="info">
-                <Typography variant="body2">
-                  <strong>編集について:</strong>
-                </Typography>
-                <Typography variant="body2" sx={{ mt: 1 }}>
-                  • タイトルは任意ですが、100文字以内で入力してください
-                  <br />
-                  • 投稿内容は必須で、1000文字以内で入力してください
-                  <br />• 編集した投稿は更新日時が記録されます
-                </Typography>
-              </Alert>
-
-              {/* ボタン */}
-              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-                <Button
-                  component={Link}
-                  href={`/board/${postId}`}
-                  variant="outlined"
-                  startIcon={<CancelIcon />}
-                  disabled={saving}
-                >
-                  キャンセル
-                </Button>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  startIcon={saving ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
-                  disabled={saving || !formData.content.trim()}
-                >
-                  {saving ? '更新中...' : '更新する'}
-                </Button>
-              </Box>
-            </Stack>
-          </form>
-        </Paper>
+        <PostForm
+          onPostCreated={handlePostUpdated}
+          editingPost={{
+            _id: post._id,
+            title: post.title,
+            content: post.content,
+            hashtags: post.hashtags,
+            media: post.media?.map((media, index) => ({
+              id: media.mediaId || `media-${index}-${Date.now()}`, // ユニークID確保
+              type: media.type,
+              url: media.url,
+              thumbnailUrl: media.thumbnailUrl,
+              title: media.title || '',
+              alt: media.alt || '',
+              publicId: media.publicId || '', // publicId復元
+              size: media.size || 0,
+              metadata: {
+                originalName: media.title || '',
+                mimeType: media.mimeType || '',
+                width: media.width || 0,
+                height: media.height || 0,
+                hash: media.hash // SHA-256 ハッシュ値（重複防止用）
+              }
+            })) || []
+          }}
+          onEditCancel={handleEditCancel}
+          showHashtags={true}
+          showTitle={true}
+          showMedia={true}
+          maxHashtags={10}
+        />
       </Container>
     </>
   );

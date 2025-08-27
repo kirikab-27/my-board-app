@@ -10,9 +10,9 @@ interface SessionProviderProps {
 export function SessionProvider({ children }: SessionProviderProps) {
   return (
     <NextAuthSessionProvider
-      // セッション自動更新設定
-      refetchInterval={5 * 60} // 5分ごとに自動でセッション更新
-      refetchOnWindowFocus={true} // ウィンドウフォーカス時にセッション更新
+      // Phase 4: セッション更新頻度最適化
+      refetchInterval={10 * 60} // 10分ごとに変更（5分→10分）負荷軽減
+      refetchOnWindowFocus={false} // フォーカス時の自動更新を無効化（不要な更新を削減）
     >
       {children}
     </NextAuthSessionProvider>

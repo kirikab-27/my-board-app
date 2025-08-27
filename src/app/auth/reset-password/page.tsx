@@ -56,10 +56,7 @@ export default function ResetPasswordPage() {
   });
 
   useEffect(() => {
-    const tokenParam = searchParams.get('token');
-    console.log('🔍 Reset password page - Token parameter:', tokenParam);
-    console.log('🔍 Full search params:', Object.fromEntries(searchParams.entries()));
-
+    const tokenParam = searchParams?.get('token');
     if (!tokenParam) {
       console.log('❌ No token found in URL parameters');
       setTokenValid(false);

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Post from '@/models/Post';
+import User from '@/models/User';
+import Notification from '@/models/Notification';
 import mongoose from 'mongoose';
 import { getClientIP } from '@/utils/getClientIP';
 import { getApiAuth, createServerErrorResponse } from '@/lib/auth/server';
@@ -54,9 +56,38 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       isAuthenticated,
     });
 
+    // 認証ユーザーの場合は投稿者に通知を送信
+    if (isAuthenticated && post.userId && post.userId !== session.user.id) {
+      try {
+        const likerUser = (await User.findById(session.user.id).select('name').lean()) as {
+          name?: string;
+        } | null;
+
+        await (
+          Notification as typeof Notification & {
+            createNotification: (data: any) => Promise<any>;
+          }
+        ).createNotification({
+          type: 'like_post',
+          title: 'いいね通知',
+          userId: post.userId,
+          fromUserId: session.user.id,
+          fromUserName: likerUser?.name || 'ユーザー',
+          metadata: {
+            postId: post._id.toString(),
+          },
+          priority: 'normal',
+        });
+      } catch (notificationError) {
+        console.error('いいね通知作成エラー:', notificationError);
+        // 通知作成エラーでもいいね処理は継続
+      }
+    }
+
     return NextResponse.json({
       message: 'いいねしました',
       likes: post!.likes,
+      likedBy: post!.likedBy,
       liked: true,
     });
   } catch (error) {
@@ -155,6 +186,7 @@ export async function DELETE(
     return NextResponse.json({
       message: 'いいねを取り消しました',
       likes: updatedPost!.likes,
+      likedBy: updatedPost!.likedBy,
       liked: false,
     });
   } catch (error) {

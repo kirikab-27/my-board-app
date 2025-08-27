@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import {
@@ -16,6 +16,9 @@ import {
   Alert,
   IconButton,
   Chip,
+  // Card,
+  // CardMedia,
+  // CardContent,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -24,8 +27,10 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import { AuthButton } from '@/components/auth/AuthButton';
-import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
+import ProfileAvatar from '@/components/profile/ProfileAvatar';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 import { SafePostContent } from '@/components/SafeContent';
+import CommentList from '@/components/comments/CommentList';
 import Link from 'next/link';
 
 interface Post {
@@ -39,6 +44,15 @@ interface Post {
   isPublic: boolean;
   createdAt: string;
   updatedAt: string;
+  media?: Array<{
+    type: 'image' | 'video' | 'gif';
+    url: string;
+    thumbnailUrl?: string;
+    alt?: string;
+    title?: string;
+    width?: number;
+    height?: number;
+  }>;
 }
 
 export default function PostDetailPage() {
@@ -50,16 +64,96 @@ export default function PostDetailPage() {
   const [liking, setLiking] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // スクロール用のref
+  const mediaRef = useRef<HTMLDivElement>(null);
+  const commentsRef = useRef<HTMLDivElement>(null);
+  const [backUrl, setBackUrl] = useState<string>(() => {
+    // 初期状態でURLパラメータをチェック
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const from = urlParams.get('from');
+      const sessionReferrer = sessionStorage.getItem('timeline_referrer');
+
+      if (from === 'timeline') {
+        // sessionStorageもクリア
+        sessionStorage.removeItem('timeline_referrer');
+        return '/timeline';
+      }
+
+      if (sessionReferrer === 'timeline') {
+        sessionStorage.removeItem('timeline_referrer');
+        return '/timeline';
+      }
+    }
+    return '/board';
+  });
 
   const postId = params?.id as string;
+  const isInitialMount = useRef(true);
 
   useEffect(() => {
     if (postId) {
       fetchPost();
     }
+    // 初回マウント時に参照元を判断（状態初期化で処理されなかった場合のフォールバック）
+    if (isInitialMount.current && backUrl === '/board') {
+      determineBackUrl();
+      isInitialMount.current = false;
+    }
     // fetchPost is recreated on every render, so we don't include it in deps
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [postId]);
+  }, [postId, backUrl]);
+
+  // スクロール機能：sessionStorageの値に基づいてスクロール
+  useEffect(() => {
+    if (!loading && post) {
+      const scrollToComments = sessionStorage.getItem('scrollToComments');
+      const scrollToMedia = sessionStorage.getItem('scrollToMedia');
+      
+      if (scrollToComments === 'true' && commentsRef.current) {
+        sessionStorage.removeItem('scrollToComments');
+        setTimeout(() => {
+          commentsRef.current?.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }, 100);
+      } else if (scrollToMedia === 'true' && mediaRef.current) {
+        sessionStorage.removeItem('scrollToMedia');
+        setTimeout(() => {
+          mediaRef.current?.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }, 100);
+      }
+    }
+  }, [loading, post]);
+
+  const determineBackUrl = () => {
+    // sessionStorageから判断
+    const sessionReferrer =
+      typeof window !== 'undefined' ? sessionStorage.getItem('timeline_referrer') : null;
+
+    if (sessionReferrer === 'timeline') {
+      setBackUrl('/timeline');
+      // sessionStorageをクリア
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('timeline_referrer');
+      }
+      return;
+    }
+
+    // document.referrerから参照元を判断（フォールバック）
+    const referrer = document.referrer;
+
+    if (referrer.includes('/timeline')) {
+      setBackUrl('/timeline');
+    } else {
+      setBackUrl('/board');
+    }
+  };
 
   const fetchPost = async () => {
     try {
@@ -84,8 +178,10 @@ export default function PostDetailPage() {
     setLiking(true);
 
     try {
+      // いいね状態に応じてPOSTまたはDELETEを選択
+      const method = isLiked ? 'DELETE' : 'POST';
       const response = await fetch(`/api/posts/${post._id}/like`, {
-        method: 'POST',
+        method,
       });
 
       const data = await response.json();
@@ -123,8 +219,8 @@ export default function PostDetailPage() {
         throw new Error(data.error || '投稿の削除に失敗しました');
       }
 
-      // 削除成功後、掲示板一覧にリダイレクト
-      router.push('/board');
+      // 削除成功後、参照元に応じてリダイレクト
+      router.push(backUrl);
     } catch (err) {
       setError(err instanceof Error ? err.message : '投稿の削除に失敗しました');
     } finally {
@@ -143,12 +239,12 @@ export default function PostDetailPage() {
   };
 
   const isAuthor = session?.user?.id === post?.userId;
-  const isLiked = post?.likedBy.includes(session?.user?.id || '');
+  const isLiked = post?.likedBy?.includes(session?.user?.id || '') || false;
 
   if (loading) {
     return (
       <>
-        <AppBar position="static">
+        <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
           <Toolbar>
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               投稿詳細
@@ -157,7 +253,7 @@ export default function PostDetailPage() {
           </Toolbar>
         </AppBar>
 
-        <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Container maxWidth="md" sx={{ mt: { xs: 10, sm: 12, md: 12 } }}>
           <Box
             sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}
           >
@@ -171,7 +267,7 @@ export default function PostDetailPage() {
   if (error || !post) {
     return (
       <>
-        <AppBar position="static">
+        <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
           <Toolbar>
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               投稿詳細
@@ -180,12 +276,12 @@ export default function PostDetailPage() {
           </Toolbar>
         </AppBar>
 
-        <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Container maxWidth="md" sx={{ mt: { xs: 10, sm: 12, md: 12 } }}>
           <Alert severity="error">
             {error || '投稿が見つかりません'}
             <br />
-            <Button component={Link} href="/board" sx={{ mt: 2 }}>
-              掲示板一覧に戻る
+            <Button component={Link} href={backUrl} sx={{ mt: 2 }}>
+              {backUrl === '/timeline' ? 'タイムラインに戻る' : '掲示板一覧に戻る'}
             </Button>
           </Alert>
         </Container>
@@ -195,9 +291,9 @@ export default function PostDetailPage() {
 
   return (
     <>
-      <AppBar position="static">
+      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
-          <IconButton component={Link} href="/board" edge="start" color="inherit" sx={{ mr: 2 }}>
+          <IconButton component={Link} href={backUrl} edge="start" color="inherit" sx={{ mr: 2 }}>
             <ArrowBackIcon />
           </IconButton>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
@@ -207,7 +303,7 @@ export default function PostDetailPage() {
         </Toolbar>
       </AppBar>
 
-      <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
+      <Container maxWidth="md" sx={{ mt: { xs: 10, sm: 12, md: 12 }, mb: 4 }}>
         <Paper sx={{ p: 4 }}>
           {/* タイトル */}
           {post.title && (
@@ -280,6 +376,134 @@ export default function PostDetailPage() {
             />
           </Box>
 
+          {/* メディア表示 - Instagram風 */}
+          {post.media && post.media.length > 0 && (
+            <Box ref={mediaRef} sx={{ mb: 4 }}>
+              <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
+                添付メディア
+              </Typography>
+              <Box sx={{ 
+                display: 'grid', 
+                gap: 1,
+                gridTemplateColumns: {
+                  xs: 'repeat(3, 1fr)',
+                  sm: 'repeat(3, 1fr)',
+                  md: 'repeat(4, 1fr)',
+                  lg: 'repeat(5, 1fr)',
+                  xl: 'repeat(6, 1fr)'
+                }
+              }}>
+                {post.media.map((media: any, index: number) => (
+                  <Box
+                    key={index}
+                    sx={{
+                      position: 'relative',
+                      paddingTop: '100%', // 1:1 アスペクト比（正方形）
+                      backgroundColor: '#000',
+                      borderRadius: '8px',
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        '& .media-overlay': {
+                          opacity: 1
+                        },
+                        '& img, & video': {
+                          transform: 'scale(1.05)'
+                        }
+                      }
+                    }}
+                    onClick={() => {
+                      if (media.type === 'image') {
+                        window.open(media.url, '_blank');
+                      }
+                    }}
+                  >
+                    {/* メディア表示 */}
+                    {media.type === 'image' || media.type === 'gif' ? (
+                      <OptimizedImage
+                        src={media.thumbnailUrl || media.url}
+                        alt={media.alt || media.title || '画像'}
+                        fill
+                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                        quality={index === 0 ? 95 : 80} // Phase 5: First image higher quality
+                        objectFit="cover"
+                        objectPosition="center"
+                        loading={index === 0 ? 'eager' : 'lazy'} // Phase 5: First image eager loading
+                        priority={index === 0} // Phase 5: LCP improvement - priority for first image
+                        style={{ transition: 'transform 0.3s ease' }}
+                      />
+                    ) : (
+                      <>
+                        <Box
+                          component="video"
+                          src={media.url}
+                          sx={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            transition: 'transform 0.3s ease'
+                          }}
+                        />
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            fontSize: 48,
+                            color: 'white',
+                            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))',
+                            pointerEvents: 'none'
+                          }}
+                        >
+                          ▶
+                        </Box>
+                      </>
+                    )}
+                    
+                    {/* ホバーオーバーレイ */}
+                    <Box
+                      className="media-overlay"
+                      sx={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        background: 'linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.4) 100%)',
+                        opacity: 0,
+                        transition: 'opacity 0.3s ease',
+                        display: 'flex',
+                        alignItems: 'flex-end',
+                        padding: 1,
+                        pointerEvents: 'none'
+                      }}
+                    >
+                      {(media.title || media.alt) && (
+                        <Typography 
+                          variant="caption" 
+                          sx={{ 
+                            color: 'white',
+                            textShadow: '0 1px 2px rgba(0,0,0,0.5)',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            width: '100%'
+                          }}
+                        >
+                          {media.title || media.alt}
+                        </Typography>
+                      )}
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+          )}
+
           {/* 公開設定表示 */}
           <Box sx={{ mb: 3 }}>
             <Chip
@@ -295,8 +519,13 @@ export default function PostDetailPage() {
           <Box
             sx={{ display: 'flex', gap: 2, justifyContent: 'space-between', alignItems: 'center' }}
           >
-            <Button component={Link} href="/board" variant="outlined" startIcon={<ArrowBackIcon />}>
-              一覧に戻る
+            <Button
+              component={Link}
+              href={backUrl}
+              variant="outlined"
+              startIcon={<ArrowBackIcon />}
+            >
+              {backUrl === '/timeline' ? 'タイムラインに戻る' : '一覧に戻る'}
             </Button>
 
             {isAuthor && (
@@ -324,6 +553,11 @@ export default function PostDetailPage() {
               </Box>
             )}
           </Box>
+        </Paper>
+
+        {/* コメント欄 */}
+        <Paper ref={commentsRef} sx={{ p: 4, mt: 3 }}>
+          <CommentList postId={post._id} />
         </Paper>
       </Container>
     </>

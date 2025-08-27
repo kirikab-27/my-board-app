@@ -6,13 +6,18 @@ export type PostPrivacy = 'public' | 'followers' | 'friends' | 'private';
 export type MediaType = 'image' | 'video' | 'gif';
 
 export interface IPostMedia {
+  mediaId: string; // メディアID
   type: MediaType;
   url: string; // Cloudinary URL
   thumbnailUrl?: string; // サムネイル（動画用）
+  publicId?: string; // Cloudinary公開ID
+  title?: string; // ファイルタイトル
   alt?: string; // 代替テキスト
   width?: number;
   height?: number;
   size?: number; // ファイルサイズ（bytes）
+  mimeType?: string; // MIMEタイプ
+  hash?: string; // SHA-256 ハッシュ値（重複防止用）
 }
 
 export interface IPostLocation {
@@ -47,7 +52,8 @@ export interface IPost extends Document {
   // 作成者情報
   userId?: string; // 投稿者のユーザーID（認証ユーザーの場合）
   authorName?: string; // 投稿者名（表示用・匿名対応）
-
+  authorRole?: string; // 投稿者の役割（'user' | 'moderator' | 'admin'）
+  
   // SNS機能
   hashtags: string[]; // ハッシュタグ（#なし）
   mentions: IPostMention[]; // メンション機能
@@ -102,11 +108,51 @@ const PostSchema: Schema = new Schema(
       maxlength: [100, 'タイトルは100文字以内で入力してください'],
       trim: true,
     },
-    content: {
-      type: String,
-      required: function (this: IPost) {
-        // リポストの場合はコンテンツ不要
-        return this.type !== 'repost';
+    maxlength: [1000, '投稿は1000文字以内で入力してください'],
+    trim: true
+  },
+  type: {
+    type: String,
+    enum: ['post', 'repost', 'quote', 'reply'],
+    default: 'post',
+    required: [true, '投稿タイプは必須です']
+  },
+  
+  // 作成者情報
+  userId: {
+    type: String,
+    required: false,
+    validate: {
+      validator: function(v: string) {
+        return !v || /^[0-9a-fA-F]{24}$/.test(v); // MongoDB ObjectId形式
+      },
+      message: 'userIdは有効なMongoDBのObjectId形式である必要があります'
+    }
+  },
+  authorName: {
+    type: String,
+    required: false,
+    maxlength: [100, '作者名は100文字以内で入力してください'],
+    trim: true
+  },
+  authorRole: {
+    type: String,
+    enum: ['user', 'moderator', 'admin'],
+    default: 'user',
+    required: false
+  },
+  
+  // SNS機能
+  hashtags: {
+    type: [String],
+    default: [],
+    validate: {
+      validator: function(arr: string[]) {
+        return arr.length <= 10 && arr.every(tag => 
+          typeof tag === 'string' && 
+          tag.length <= 50 && 
+          /^[a-zA-Z0-9_\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]+$/.test(tag)
+        );
       },
       maxlength: [1000, '投稿は1000文字以内で入力してください'],
       trim: true,
@@ -371,8 +417,8 @@ PostSchema.pre('save', async function (next) {
     }
 
     // 統計情報を既存フィールドと同期
-    this.likes = (this as any).stats.likes;
-
+    this.likes = (this.stats as any).likes;
+    
     // 編集フラグの設定
     if (this.isModified('content') && !this.isNew) {
       (this as any).isEdited = true;
@@ -524,6 +570,7 @@ PostSchema.index({ hashtags: 1 }); // ハッシュタグ検索
 PostSchema.index({ 'mentions.userId': 1 }); // メンション検索
 PostSchema.index({ 'stats.likes': -1 }); // 人気投稿
 PostSchema.index({ type: 1, createdAt: -1 }); // 投稿タイプ別
+PostSchema.index({ authorRole: 1, createdAt: -1 }); // 投稿者役割別
 
 // 複合インデックス
 PostSchema.index({ privacy: 1, createdAt: -1 }); // プライバシー設定別

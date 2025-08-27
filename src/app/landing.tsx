@@ -25,6 +25,7 @@ import {
 } from '@mui/icons-material';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 export default function LandingPage() {
   const { status } = useSession();
@@ -56,8 +57,20 @@ export default function LandingPage() {
       sx={{
         minHeight: '100vh',
         background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`,
+        position: 'relative',
       }}
     >
+      {/* テーマ切り替えボタン（右上固定） */}
+      <Box
+        sx={{
+          position: 'fixed',
+          top: 24,
+          right: 24,
+          zIndex: 1000,
+        }}
+      >
+        <ThemeToggle />
+      </Box>
       <Container maxWidth="lg" sx={{ pt: 8, pb: 6 }}>
         {/* ヒーローセクション */}
         <Box textAlign="center" mb={8}>

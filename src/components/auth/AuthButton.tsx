@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Button, Menu, MenuItem, Box, Typography, IconButton } from '@mui/material';
+import { Button, Menu, MenuItem, Box, Typography, IconButton, useMediaQuery, useTheme, Avatar } from '@mui/material';
 import {
   Login as LoginIcon,
   Logout as LogoutIcon,
@@ -9,16 +9,41 @@ import {
   Forum as ForumIcon,
   Home as HomeIcon,
   Person as PersonIcon,
+  People as PeopleIcon,
+  Timeline as TimelineIcon,
+  Notifications as NotificationsIcon,
+  Tag as TagIcon,
+  Search as SearchIcon,
+  Edit as EditIcon,
+  Lock as LockIcon,
+  Security as SecurityIcon,
 } from '@mui/icons-material';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
+import ProfileAvatar from '@/components/profile/ProfileAvatar';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { HeaderSearchIcon } from '@/components/ui/HeaderSearchIcon';
 
-export const AuthButton: React.FC = () => {
+interface AuthButtonProps {
+  isNavigationRow?: boolean;
+  onSearch?: (query: string) => void;
+  onClearSearch?: () => void;
+  searchResultCount?: number;
+}
+
+export const AuthButton: React.FC<AuthButtonProps> = ({ 
+  isNavigationRow = false, 
+  onSearch, 
+  onClearSearch, 
+  searchResultCount 
+}) => {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -46,6 +71,16 @@ export const AuthButton: React.FC = () => {
     router.push('/profile');
   };
 
+  const handleProfileEdit = () => {
+    handleMenuClose();
+    router.push('/profile/edit');
+  };
+
+  const handlePasswordChange = () => {
+    handleMenuClose();
+    router.push('/profile/password');
+  };
+
   const handleBoard = () => {
     handleMenuClose();
     router.push('/board');
@@ -56,13 +91,43 @@ export const AuthButton: React.FC = () => {
     router.push('/dashboard');
   };
 
+  const handleUsers = () => {
+    handleMenuClose();
+    router.push('/users');
+  };
+
+  const handleTimeline = () => {
+    handleMenuClose();
+    router.push('/timeline');
+  };
+
+  const handleNotifications = () => {
+    handleMenuClose();
+    router.push('/notifications');
+  };
+
+  const handleHashtags = () => {
+    handleMenuClose();
+    router.push('/hashtags');
+  };
+
+  const handleUserSearch = () => {
+    handleMenuClose();
+    router.push('/users/search');
+  };
+
   if (status === 'loading') {
     return <div>Loading...</div>;
   }
 
   if (!session) {
+    // 未認証時は2段目のナビゲーション行は表示しない
+    if (isNavigationRow) {
+      return null;
+    }
     return (
-      <Box sx={{ display: 'flex', gap: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <ThemeToggle />
         <Button variant="outlined" startIcon={<LoginIcon />} onClick={handleLogin}>
           ログイン
         </Button>
@@ -73,8 +138,71 @@ export const AuthButton: React.FC = () => {
     );
   }
 
+  // 2段目のナビゲーション行の場合
+  if (isNavigationRow) {
+    // デスクトップでのみナビゲーションボタンを表示
+    if (!isMobile) {
+      return (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Button
+            variant="text"
+            startIcon={<HomeIcon />}
+            onClick={handleHome}
+            sx={{ color: 'inherit' }}
+          >
+            ダッシュボード
+          </Button>
+          <Button
+            variant="text"
+            startIcon={<ForumIcon />}
+            onClick={handleBoard}
+            sx={{ color: 'inherit' }}
+          >
+            掲示板
+          </Button>
+          <Button
+            variant="text"
+            startIcon={<TimelineIcon />}
+            onClick={handleTimeline}
+            sx={{ color: 'inherit' }}
+          >
+            タイムライン
+          </Button>
+          <Button
+            variant="text"
+            startIcon={<PeopleIcon />}
+            onClick={handleUsers}
+            sx={{ color: 'inherit' }}
+          >
+            ユーザー一覧
+          </Button>
+          <Button
+            variant="text"
+            startIcon={<TagIcon />}
+            onClick={handleHashtags}
+            sx={{ color: 'inherit' }}
+          >
+            ハッシュタグ
+          </Button>
+        </Box>
+      );
+    }
+    // モバイルでは2段目は何も表示しない（アバターメニューに含める）
+    return null;
+  }
+
   return (
-    <>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <ThemeToggle />
+      {onSearch && onClearSearch && (
+        <HeaderSearchIcon 
+          onSearch={onSearch} 
+          onClear={onClearSearch}
+          resultCount={searchResultCount}
+          placeholder="投稿を検索..."
+        />
+      )}
+      <NotificationBell />
       <IconButton
         onClick={handleMenuOpen}
         sx={{ p: 0 }}
@@ -82,7 +210,15 @@ export const AuthButton: React.FC = () => {
         aria-haspopup="true"
         aria-expanded={open ? 'true' : undefined}
       >
-        <ProfileAvatar name={session.user?.name} size="small" />
+        {session.user?.image ? (
+          <Avatar
+            src={session.user.image}
+            alt={session.user.name || 'プロフィール画像'}
+            sx={{ width: 32, height: 32 }}
+          />
+        ) : (
+          <ProfileAvatar name={session.user?.name} size="small" />
+        )}
       </IconButton>
       <Menu
         anchorEl={anchorEl}
@@ -127,23 +263,52 @@ export const AuthButton: React.FC = () => {
             {session.user?.email}
           </Typography>
         </Box>
-        <MenuItem onClick={handleBoard}>
-          <ForumIcon sx={{ mr: 1 }} />
-          掲示板
-        </MenuItem>
+        {/* モバイルでのみナビゲーションメニューを表示 */}
+        {isMobile && [
+          <MenuItem key="home" onClick={handleHome}>
+            <HomeIcon sx={{ mr: 1 }} />
+            ダッシュボード
+          </MenuItem>,
+          <MenuItem key="board" onClick={handleBoard}>
+            <ForumIcon sx={{ mr: 1 }} />
+            掲示板
+          </MenuItem>,
+          <MenuItem key="timeline" onClick={handleTimeline}>
+            <TimelineIcon sx={{ mr: 1 }} />
+            タイムライン
+          </MenuItem>,
+          <MenuItem key="users" onClick={handleUsers}>
+            <PeopleIcon sx={{ mr: 1 }} />
+            ユーザー一覧
+          </MenuItem>,
+          <MenuItem key="hashtags" onClick={handleHashtags}>
+            <TagIcon sx={{ mr: 1 }} />
+            ハッシュタグ
+          </MenuItem>,
+          <Box key="divider" sx={{ borderBottom: 1, borderColor: 'divider', my: 1 }} />
+        ]}
+        {/* ユーザー関連メニュー */}
         <MenuItem onClick={handleProfile}>
           <PersonIcon sx={{ mr: 1 }} />
-          プロフィール
+          プロフィール表示
         </MenuItem>
-        <MenuItem onClick={handleHome}>
-          <HomeIcon sx={{ mr: 1 }} />
-          ホーム
+        <MenuItem onClick={handleProfileEdit}>
+          <EditIcon sx={{ mr: 1 }} />
+          プロフィール編集
+        </MenuItem>
+        <MenuItem onClick={() => router.push('/profile/privacy')}>
+          <SecurityIcon sx={{ mr: 1 }} />
+          プライバシー設定
+        </MenuItem>
+        <MenuItem onClick={handlePasswordChange}>
+          <LockIcon sx={{ mr: 1 }} />
+          パスワード変更
         </MenuItem>
         <MenuItem onClick={handleLogout}>
           <LogoutIcon sx={{ mr: 1 }} />
           ログアウト
         </MenuItem>
       </Menu>
-    </>
+    </Box>
   );
 };

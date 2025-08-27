@@ -55,7 +55,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     await dbConnect();
     const { id } = await params;
     const body = await request.json();
-    const { title, content, isPublic } = body;
+    const { title, content, isPublic, hashtags = [], media = [] } = body;
 
     // IPアドレス取得（Next.js 15対応）
     const ip =
@@ -131,6 +131,36 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     // isPublicが指定されている場合のみ更新
     if (typeof isPublic === 'boolean') {
       updateData.isPublic = isPublic;
+    }
+
+    // ハッシュタグの処理
+    if (Array.isArray(hashtags)) {
+      const processedHashtags = hashtags
+        .filter(tag => typeof tag === 'string')
+        .map(tag => tag.toLowerCase().replace(/^#/, '').trim())
+        .filter(tag => /^[a-zA-Z0-9_\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]+$/.test(tag))
+        .filter(tag => tag.length >= 1 && tag.length <= 50)
+        .slice(0, 10); // 最大10個
+      updateData.hashtags = processedHashtags;
+    }
+
+    // メディアの処理
+    if (Array.isArray(media)) {
+      const processedMedia = media.map((m: any) => ({
+        mediaId: m.id,
+        type: m.type,
+        url: m.url,
+        thumbnailUrl: m.thumbnailUrl,
+        publicId: m.publicId || '',
+        title: m.title || '',
+        alt: m.alt || '',
+        width: m.metadata?.width,
+        height: m.metadata?.height,
+        size: m.size || 0,
+        mimeType: m.metadata?.mimeType || '',
+        hash: m.metadata?.hash // SHA-256 ハッシュ値（重複防止用）
+      })).slice(0, 5); // 最大5個
+      updateData.media = processedMedia;
     }
 
     const post = await Post.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });

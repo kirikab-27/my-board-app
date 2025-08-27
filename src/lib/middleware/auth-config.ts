@@ -71,6 +71,30 @@ export const routeConfig: RouteConfig = {
       redirectTo: '/login',
       description: 'プロフィール管理',
     },
+    '/timeline': {
+      requiredRole: 'user',
+      requireEmailVerified: false,
+      redirectTo: '/login',
+      description: 'タイムライン',
+    },
+    '/users': {
+      requiredRole: 'user',
+      requireEmailVerified: false,
+      redirectTo: '/login',
+      description: 'ユーザー一覧',
+    },
+    '/hashtags': {
+      requiredRole: 'user',
+      requireEmailVerified: false,
+      redirectTo: '/login',
+      description: 'ハッシュタグ',
+    },
+    '/notifications': {
+      requiredRole: 'user',
+      requireEmailVerified: false,
+      redirectTo: '/login',
+      description: '通知',
+    },
     '/members-only': {
       requiredRole: 'user',
       requireEmailVerified: false,
@@ -129,6 +153,8 @@ export const routeConfig: RouteConfig = {
     '/auth/reset-password',
     '/unauthorized',
     '/access-denied',
+    '/manifest.json',
+    '/sw.js',
   ],
 };
 

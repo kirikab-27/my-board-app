@@ -16,9 +16,20 @@ import {
   DialogActions,
   Button,
 } from '@mui/material';
-import { MoreVert, Edit, Delete, ThumbUp, ThumbUpOutlined } from '@mui/icons-material';
+import { 
+  MoreVert, 
+  Edit, 
+  Delete, 
+  Favorite, 
+  FavoriteBorder,
+  Forum,
+  Photo,
+  Videocam,
+  PermMedia
+} from '@mui/icons-material';
 import { highlightText } from '@/utils/highlightText';
 import { SafePostContent } from '@/components/SafeContent';
+import { MentionRenderer } from '@/components/mention';
 
 interface Post {
   _id: string;
@@ -26,22 +37,43 @@ interface Post {
   content: string;
   likes: number;
   likedBy: string[];
-  userId?: string;
+  userId?: {
+    _id: string;
+    name: string;
+    email: string;
+    avatar?: string;
+    username?: string;
+    displayName?: string;
+  };
   authorName?: string;
+  isPublic: boolean;
+  hashtags?: Array<{ _id: string; name: string; count: number }>;
+  media?: Array<{ url: string; type: string; publicId: string }>;
+  commentsCount?: number; // コメント件数
   createdAt: string;
   updatedAt: string;
 }
 
 interface PostListProps {
   posts: Post[];
-  onRefresh: () => void;
-  onEditPost: (post: Post) => void;
-  onPostClick?: (post: Post) => void; // 投稿クリック時のハンドラー
-  searchQuery?: string; // 検索クエリ（ハイライト用）
+  onPostDeleted?: (postId: string) => void;
+  onPostUpdated?: (post: Post) => void;
+  onLikeUpdate?: (postId: string, newLikes: number, newLikedBy: string[]) => void;
+  searchTerm?: string;
+  sessionUserId?: string | null;
+  onRefresh?: () => void;
+  onEditPost?: (post: Post) => void;
+  onPostClick?: (post: Post) => void;
+  searchQuery?: string;
 }
 
 export default function PostList({
   posts,
+  onPostDeleted,
+  onPostUpdated,
+  onLikeUpdate,
+  searchTerm,
+  sessionUserId,
   onRefresh,
   onEditPost,
   onPostClick,
@@ -56,13 +88,15 @@ export default function PostList({
   const [isDeleting, setIsDeleting] = useState(false);
   const [likingPosts, setLikingPosts] = useState<Set<string>>(new Set());
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
+  const [postLikeCounts, setPostLikeCounts] = useState<Map<string, number>>(new Map());
 
   console.log('PostList レンダリング:', posts.length, '件の投稿');
 
-  // 投稿のいいね状態を取得
+  // 投稿のいいね状態と最新いいね数を取得
   React.useEffect(() => {
     const fetchLikeStates = async () => {
       const likedSet = new Set<string>();
+      const likeCountMap = new Map<string, number>();
 
       for (const post of posts) {
         try {
@@ -72,13 +106,21 @@ export default function PostList({
             if (data.liked) {
               likedSet.add(post._id);
             }
+            // 最新のいいね数を保存
+            likeCountMap.set(post._id, data.likes);
+          } else {
+            // API エラーの場合は初期値を使用
+            likeCountMap.set(post._id, post.likes);
           }
         } catch (error) {
           console.error(`Failed to fetch like state for post ${post._id}:`, error);
+          // エラーの場合は初期値を使用
+          likeCountMap.set(post._id, post.likes);
         }
       }
 
       setLikedPosts(likedSet);
+      setPostLikeCounts(likeCountMap);
     };
 
     if (posts.length > 0) {
@@ -101,7 +143,7 @@ export default function PostList({
   const handleEdit = () => {
     console.log('編集がクリックされました:', selectedPost?._id);
     if (selectedPost) {
-      onEditPost(selectedPost);
+      onEditPost?.(selectedPost);
     }
     handleMenuClose();
   };
@@ -140,8 +182,9 @@ export default function PostList({
       const result = await response.json();
       console.log('削除成功:', result);
 
-      onRefresh();
-      console.log('投稿一覧を更新中...');
+      onPostDeleted?.(postToDelete._id);
+      onRefresh?.();
+      console.log('投稿削除処理完了');
     } catch (error) {
       console.error('削除処理エラー:', error);
       setError(error instanceof Error ? error.message : '削除に失敗しました');
@@ -195,7 +238,16 @@ export default function PostList({
         return newSet;
       });
 
-      onRefresh(); // 投稿一覧を更新
+      // いいね数をリアルタイム更新
+      setPostLikeCounts((prev) => {
+        const newMap = new Map(prev);
+        newMap.set(postId, data.likes);
+        return newMap;
+      });
+
+      // コールバック関数を呼び出し
+      onLikeUpdate?.(postId, data.likes, data.likedBy || []);
+      onRefresh?.(); // 投稿一覧を更新
     } catch (error) {
       console.error('いいねエラー:', error);
       setError(error instanceof Error ? error.message : 'いいね操作に失敗しました');
@@ -211,6 +263,53 @@ export default function PostList({
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleString('ja-JP');
+  };
+
+  // メディアの種類と枚数を判定する関数
+  const getMediaInfo = (media?: Array<{ url: string; type: string; publicId: string }>) => {
+    if (!media || media.length === 0) return null;
+    
+    const images = media.filter(m => m.type === 'image');
+    const videos = media.filter(m => m.type === 'video');
+    const totalCount = media.length;
+    
+    if (videos.length > 0 && images.length > 0) {
+      // 混在の場合
+      return {
+        icon: <PermMedia fontSize="small" />,
+        count: totalCount,
+        label: `メディア ${totalCount}件`
+      };
+    } else if (videos.length > 0) {
+      // 動画のみ
+      return {
+        icon: <Videocam fontSize="small" />,
+        count: videos.length,
+        label: `動画 ${videos.length}件`
+      };
+    } else {
+      // 画像のみ
+      return {
+        icon: <Photo fontSize="small" />,
+        count: images.length,
+        label: `画像 ${images.length}件`
+      };
+    }
+  };
+
+  // コメント・メディアアイコンのクリックハンドラー
+  const handleStatsClick = (event: React.MouseEvent, post: Post, type: 'comments' | 'media') => {
+    event.stopPropagation(); // 投稿詳細ページへの遷移を防ぐ
+    
+    if (onPostClick) {
+      // 詳細ページに遷移して該当セクションにスクロールする情報をsessionStorageに保存
+      if (type === 'comments') {
+        sessionStorage.setItem('scrollToComments', 'true');
+      } else if (type === 'media') {
+        sessionStorage.setItem('scrollToMedia', 'true');
+      }
+      onPostClick(post);
+    }
   };
 
   if (posts.length === 0) {
@@ -281,18 +380,25 @@ export default function PostList({
                 }}
               >
                 {searchQuery ? (
-                  // ハイライト機能を使用する場合（検索時）
-                  <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
-                    {highlightText(post.content, searchQuery)}
-                  </Typography>
+                  // ハイライト機能を使用する場合（検索時）- メンション対応
+                  <MentionRenderer
+                    content={highlightText(post.content, searchQuery) as string}
+                    onMentionClick={(username) => {
+                      // ユーザープロフィールページに遷移
+                      if (typeof window !== 'undefined') {
+                        window.location.href = `/users/${username}`;
+                      }
+                    }}
+                  />
                 ) : (
-                  // 通常表示（XSS対策あり）
-                  <SafePostContent
+                  // 通常表示（XSS対策・メンション対応）
+                  <MentionRenderer
                     content={post.content}
-                    sx={{
-                      '& *': { fontSize: 'inherit !important' },
-                      fontSize: 'body1.fontSize',
-                      whiteSpace: 'pre-wrap',
+                    onMentionClick={(username) => {
+                      // ユーザープロフィールページに遷移
+                      if (typeof window !== 'undefined') {
+                        window.location.href = `/users/${username}`;
+                      }
                     }}
                   />
                 )}
@@ -321,28 +427,69 @@ export default function PostList({
                   {post.updatedAt !== post.createdAt && <> (更新: {formatDate(post.updatedAt)})</>}
                 </Typography>
 
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <IconButton
-                    size="small"
-                    onClick={(event) => handleLike(event, post._id)}
-                    disabled={likingPosts.has(post._id)}
-                    color={likedPosts.has(post._id) ? 'primary' : 'default'}
-                  >
-                    {likedPosts.has(post._id) ? (
-                      <ThumbUp fontSize="small" />
-                    ) : (
-                      <ThumbUpOutlined fontSize="small" />
-                    )}
-                  </IconButton>
-                  <Typography variant="caption" color="text.secondary">
-                    {post.likes}
-                  </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  {/* いいねボタン */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <IconButton
+                      size="small"
+                      onClick={(event) => handleLike(event, post._id)}
+                      disabled={likingPosts.has(post._id)}
+                      color={likedPosts.has(post._id) ? 'error' : 'default'}
+                      title="いいね"
+                    >
+                      {likedPosts.has(post._id) ? (
+                        <Favorite fontSize="small" />
+                      ) : (
+                        <FavoriteBorder fontSize="small" />
+                      )}
+                    </IconButton>
+                    <Typography variant="caption" color="text.secondary">
+                      {postLikeCounts.get(post._id) ?? post.likes}
+                    </Typography>
+                  </Box>
+
+                  {/* コメント件数 */}
+                  {post.commentsCount !== undefined && post.commentsCount > 0 && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <IconButton
+                        size="small"
+                        onClick={(event) => handleStatsClick(event, post, 'comments')}
+                        color="default"
+                        title={`コメント ${post.commentsCount}件`}
+                      >
+                        <Forum fontSize="small" />
+                      </IconButton>
+                      <Typography variant="caption" color="text.secondary">
+                        {post.commentsCount}
+                      </Typography>
+                    </Box>
+                  )}
+
+                  {/* メディア情報 */}
+                  {(() => {
+                    const mediaInfo = getMediaInfo(post.media);
+                    return mediaInfo ? (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <IconButton
+                          size="small"
+                          onClick={(event) => handleStatsClick(event, post, 'media')}
+                          color="default"
+                          title={mediaInfo.label}
+                        >
+                          {mediaInfo.icon}
+                        </IconButton>
+                        <Typography variant="caption" color="text.secondary">
+                          {mediaInfo.count}
+                        </Typography>
+                      </Box>
+                    ) : null;
+                  })()}
                 </Box>
               </Box>
             </Box>
 
             {/* 本人の投稿の場合のみメニューボタンを表示 */}
-            {session?.user?.id === post.userId && (
+            {session?.user?.id === post.userId?._id && (
               <IconButton
                 size="small"
                 onClick={(e) => {

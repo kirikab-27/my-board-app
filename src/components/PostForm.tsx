@@ -1,31 +1,88 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Box, TextField, Button, Typography, Paper, Alert } from '@mui/material';
+import { Box, TextField, Button, Typography, Paper, Alert, Divider, Chip, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
+import { ExpandMore, AttachFile } from '@mui/icons-material';
+import HashtagInput from './hashtags/HashtagInput';
+import MediaUpload, { UploadedMedia } from './media/MediaUpload';
+import { MentionInput, extractMentions } from './mention';
 
 interface PostFormProps {
   onPostCreated: () => void;
   editingPost?: {
     _id: string;
     content: string;
+    title?: string;
+    hashtags?: string[];
+    media?: UploadedMedia[];
   } | null;
   onEditCancel?: () => void;
+  showHashtags?: boolean;
+  showTitle?: boolean;
+  showMedia?: boolean;
+  maxHashtags?: number;
 }
 
-export default function PostForm({ onPostCreated, editingPost, onEditCancel }: PostFormProps) {
+export default function PostForm({ 
+  onPostCreated, 
+  editingPost, 
+  onEditCancel,
+  showHashtags = true,
+  showTitle = false,
+  showMedia = true,
+  maxHashtags = 10
+}: PostFormProps) {
   const [content, setContent] = useState(editingPost?.content || '');
+  const [title, setTitle] = useState(editingPost?.title || '');
+  const [hashtags, setHashtags] = useState<string[]>(editingPost?.hashtags || []);
+  const [media, setMedia] = useState<UploadedMedia[]>(editingPost?.media || []);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [lastSubmitTime, setLastSubmitTime] = useState<number>(0);
   const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
+  const [extractedHashtags, setExtractedHashtags] = useState<string[]>([]);
+  const [extractedMentions, setExtractedMentions] = useState<string[]>([]);
 
   useEffect(() => {
     if (editingPost) {
       setContent(editingPost.content);
+      setTitle(editingPost.title || '');
+      setHashtags(editingPost.hashtags || []);
+      setMedia(editingPost.media || []);
     } else {
       setContent('');
+      setTitle('');
+      setHashtags([]);
+      setMedia([]);
     }
   }, [editingPost]);
+
+  // コンテンツからハッシュタグを自動抽出
+  useEffect(() => {
+    if (!showHashtags) return;
+    
+    const text = `${title} ${content}`;
+    const hashtagRegex = /#([a-zA-Z0-9_\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]+)/g;
+    const matches = text.match(hashtagRegex);
+    
+    if (matches) {
+      const extracted = matches
+        .map(tag => tag.replace('#', '').toLowerCase())
+        .filter((tag, index, arr) => arr.indexOf(tag) === index) // 重複除去
+        .slice(0, maxHashtags);
+      
+      setExtractedHashtags(extracted);
+    } else {
+      setExtractedHashtags([]);
+    }
+  }, [content, title, showHashtags, maxHashtags]);
+
+  // コンテンツからメンションを自動抽出
+  useEffect(() => {
+    const text = `${title} ${content}`;
+    const mentions = extractMentions(text);
+    setExtractedMentions(mentions);
+  }, [content, title]);
 
   // クールダウンタイマー
   useEffect(() => {
@@ -45,8 +102,13 @@ export default function PostForm({ onPostCreated, editingPost, onEditCancel }: P
       return;
     }
 
-    if (content.length > 200) {
-      setError('投稿は200文字以内で入力してください');
+    if (content.length > 1000) {
+      setError('投稿は1000文字以内で入力してください');
+      return;
+    }
+
+    if (showTitle && title && title.length > 100) {
+      setError('タイトルは100文字以内で入力してください');
       return;
     }
 
@@ -72,12 +134,34 @@ export default function PostForm({ onPostCreated, editingPost, onEditCancel }: P
 
       const method = editingPost ? 'PUT' : 'POST';
 
+      // 最終的なハッシュタグ配列（手動入力 + 自動抽出）
+      const finalHashtags = [...new Set([...hashtags, ...extractedHashtags])].slice(0, maxHashtags);
+
+      const requestBody: any = { content };
+      if (showTitle && title.trim()) {
+        requestBody.title = title.trim();
+      }
+      if (showHashtags && finalHashtags.length > 0) {
+        requestBody.hashtags = finalHashtags;
+      }
+      if (showMedia && media.length > 0) {
+        requestBody.media = media.map(m => ({
+          id: m.id,
+          type: m.type,
+          url: m.url,
+          thumbnailUrl: m.thumbnailUrl,
+          publicId: m.publicId,
+          title: m.title,
+          alt: m.alt
+        }));
+      }
+
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ content }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -85,7 +169,35 @@ export default function PostForm({ onPostCreated, editingPost, onEditCancel }: P
         throw new Error(errorData.error || '投稿に失敗しました');
       }
 
+      const responseData = await response.json();
+
+      // メンション通知送信
+      if (extractedMentions.length > 0) {
+        try {
+          await fetch('/api/mentions/notify', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              mentionedUsernames: extractedMentions,
+              postId: responseData.post?._id || (editingPost ? editingPost._id : null),
+              content: content,
+              type: 'mention_post'
+            }),
+          });
+        } catch (mentionError) {
+          console.warn('メンション通知の送信に失敗しました:', mentionError);
+          // メンション通知の失敗は投稿を失敗させない
+        }
+      }
+
       setContent('');
+      setTitle('');
+      setHashtags([]);
+      setMedia([]);
+      setExtractedHashtags([]);
+      setExtractedMentions([]);
       // 新規投稿の場合のみ最終投稿時刻を更新
       if (!editingPost) {
         setLastSubmitTime(Date.now());
@@ -103,9 +215,21 @@ export default function PostForm({ onPostCreated, editingPost, onEditCancel }: P
 
   const handleCancel = () => {
     setContent('');
+    setTitle('');
+    setHashtags([]);
+    setMedia([]);
+    setExtractedHashtags([]);
+    setExtractedMentions([]);
     setError('');
     if (onEditCancel) {
       onEditCancel();
+    }
+  };
+
+  // 自動抽出されたハッシュタグをマニュアルリストに追加
+  const addExtractedHashtag = (tag: string) => {
+    if (!hashtags.includes(tag) && hashtags.length < maxHashtags) {
+      setHashtags([...hashtags, tag]);
     }
   };
 
@@ -116,25 +240,128 @@ export default function PostForm({ onPostCreated, editingPost, onEditCancel }: P
       </Typography>
 
       <Box component="form" onSubmit={handleSubmit}>
-        <TextField
-          fullWidth
-          multiline
-          rows={4}
-          variant="outlined"
-          placeholder="投稿内容を入力してください（200文字以内）"
+        {/* タイトル入力（オプション） */}
+        {showTitle && (
+          <TextField
+            fullWidth
+            variant="outlined"
+            label="タイトル（任意）"
+            placeholder="投稿のタイトルを入力してください"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            error={title.length > 100}
+            helperText={`${title.length}/100文字`}
+            sx={{ mb: 2 }}
+          />
+        )}
+
+        {/* コンテンツ入力（メンション対応） */}
+        <MentionInput
           value={content}
-          onChange={(e) => setContent(e.target.value)}
-          error={content.length > 200}
-          helperText={`${content.length}/200文字`}
-          sx={{
-            mb: 2,
-            '& .MuiInputBase-input': {
-              wordWrap: 'break-word',
-              overflowWrap: 'break-word',
-              whiteSpace: 'pre-wrap',
-            },
+          onChange={(newContent) => setContent(newContent)}
+          onSearch={async (query: string) => {
+            if (query.length < 1) return [];
+            try {
+              const response = await fetch(`/api/users/search-mentions?q=${encodeURIComponent(query)}&limit=5`);
+              const data = await response.json();
+              return data.users || [];
+            } catch (error) {
+              console.error('Mention search error:', error);
+              return [];
+            }
           }}
+          placeholder="投稿内容を入力してください（1000文字以内）... (@でユーザーをメンション)"
+          disabled={isSubmitting}
+          minRows={4}
+          maxRows={8}
+          error={content.length > 1000}
+          helperText={`${content.length}/1000文字${extractedMentions.length > 0 ? ` • ${extractedMentions.length}個のメンション` : ''}`}
+          sx={{ mb: 2 }}
         />
+
+        {/* 検出されたメンション表示 */}
+        {extractedMentions.length > 0 && (
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              🏷️ メンション: {extractedMentions.map(mention => `@${mention}`).join(', ')}
+            </Typography>
+          </Box>
+        )}
+
+        {/* ハッシュタグ機能 */}
+        {showHashtags && (
+          <>
+            <Divider sx={{ my: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                ハッシュタグ
+              </Typography>
+            </Divider>
+
+            {/* 自動抽出されたハッシュタグ */}
+            {extractedHashtags.length > 0 && (
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  📝 自動検出されたハッシュタグ:
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                  {extractedHashtags.map((tag, index) => (
+                    <Chip
+                      key={index}
+                      label={`#${tag}`}
+                      size="small"
+                      color={hashtags.includes(tag) ? 'primary' : 'default'}
+                      clickable
+                      onClick={() => addExtractedHashtag(tag)}
+                      disabled={hashtags.includes(tag)}
+                    />
+                  ))}
+                </Box>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                  💡 クリックして手動リストに追加
+                </Typography>
+              </Box>
+            )}
+
+            {/* ハッシュタグ入力コンポーネント */}
+            <HashtagInput
+              value={hashtags}
+              onChange={setHashtags}
+              maxTags={maxHashtags}
+              placeholder="追加のハッシュタグを入力..."
+              size="small"
+            />
+          </>
+        )}
+
+        {/* メディアアップロード機能 */}
+        {showMedia && (
+          <Accordion sx={{ mt: 2, mb: 2 }}>
+            <AccordionSummary
+              expandIcon={<ExpandMore />}
+              aria-controls="media-upload-content"
+              id="media-upload-header"
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <AttachFile />
+                <Typography>
+                  画像・動画を添付 {media.length > 0 && `(${media.length}ファイル)`}
+                </Typography>
+              </Box>
+            </AccordionSummary>
+            <AccordionDetails>
+              <MediaUpload
+                onUploadComplete={setMedia}
+                onUploadError={(error) => setError(error)}
+                maxFiles={5}
+                acceptedTypes="all"
+                uploadType="image"
+                showPreview={true}
+                disabled={isSubmitting}
+                initialMedia={media}
+              />
+            </AccordionDetails>
+          </Accordion>
+        )}
 
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
@@ -146,7 +373,7 @@ export default function PostForm({ onPostCreated, editingPost, onEditCancel }: P
           <Button
             type="submit"
             variant="contained"
-            disabled={isSubmitting || content.length > 200 || cooldownRemaining > 0}
+            disabled={isSubmitting || content.length > 1000 || (showTitle && title.length > 100) || cooldownRemaining > 0}
           >
             {isSubmitting
               ? '投稿中...'

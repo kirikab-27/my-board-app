@@ -1,0 +1,58 @@
+{
+  "timestamp": "2025-08-17T10:57:50.918Z",
+  "tests": [
+    {
+      "name": "API存在確認: /api/follow",
+      "status": "PASS",
+      "details": "エンドポイント応答確認",
+      "timestamp": "2025-08-17T10:57:55.319Z"
+    },
+    {
+      "name": "API存在確認: /api/follow/requests",
+      "status": "PASS",
+      "details": "エンドポイント応答確認",
+      "timestamp": "2025-08-17T10:57:56.738Z"
+    },
+    {
+      "name": "API存在確認: /api/follow/stats",
+      "status": "PASS",
+      "details": "エンドポイント応答確認",
+      "timestamp": "2025-08-17T10:57:58.399Z"
+    },
+    {
+      "name": "API存在確認: /api/timeline",
+      "status": "PASS",
+      "details": "認証エラー（期待される動作）",
+      "timestamp": "2025-08-17T10:58:05.361Z"
+    },
+    {
+      "name": "Followモデル構造確認",
+      "status": "PASS",
+      "details": "全必須フィールド確認済み",
+      "timestamp": "2025-08-17T10:58:05.362Z"
+    },
+    {
+      "name": "タイムライン・フォロー統合",
+      "status": "PASS",
+      "details": "フォロー機能統合確認済み",
+      "timestamp": "2025-08-17T10:58:05.363Z"
+    },
+    {
+      "name": "型定義確認: src/models/Follow.ts",
+      "status": "PASS",
+      "details": "Follow型定義確認",
+      "timestamp": "2025-08-17T10:58:05.365Z"
+    },
+    {
+      "name": "開発サーバー起動確認",
+      "status": "PASS",
+      "details": "サーバー正常応答",
+      "timestamp": "2025-08-17T10:58:15.803Z"
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "passed": 8,
+    "failed": 0
+  }
+}

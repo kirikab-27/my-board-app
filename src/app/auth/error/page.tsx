@@ -49,7 +49,7 @@ export default function AuthErrorPage() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const error = searchParams.get('error') || 'default';
+    const error = searchParams?.get('error') || 'default';
     setErrorType(error);
   }, [searchParams]);
 
