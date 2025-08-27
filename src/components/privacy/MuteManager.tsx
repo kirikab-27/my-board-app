@@ -421,32 +421,24 @@ export const MuteManager: React.FC = () => {
             <Typography variant="h6" gutterBottom>
               ミュート統計
             </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={6} sm={3}>
-                <Box textAlign="center">
-                  <Typography variant="h4" color="primary">{stats.total}</Typography>
-                  <Typography variant="caption">総数</Typography>
-                </Box>
-              </Grid>
-              <Grid item xs={6} sm={3}>
-                <Box textAlign="center">
-                  <Typography variant="h4" color="secondary">{stats.user}</Typography>
-                  <Typography variant="caption">ユーザー</Typography>
-                </Box>
-              </Grid>
-              <Grid item xs={6} sm={3}>
-                <Box textAlign="center">
-                  <Typography variant="h4" color="info.main">{stats.keyword}</Typography>
-                  <Typography variant="caption">キーワード</Typography>
-                </Box>
-              </Grid>
-              <Grid item xs={6} sm={3}>
-                <Box textAlign="center">
-                  <Typography variant="h4" color="warning.main">{stats.hashtag}</Typography>
-                  <Typography variant="caption">ハッシュタグ</Typography>
-                </Box>
-              </Grid>
-            </Grid>
+            <Box display="flex" flexWrap="wrap" gap={2} justifyContent="space-around">
+              <Box textAlign="center" minWidth="120px">
+                <Typography variant="h4" color="primary">{stats.total}</Typography>
+                <Typography variant="caption">総数</Typography>
+              </Box>
+              <Box textAlign="center" minWidth="120px">
+                <Typography variant="h4" color="secondary">{stats.user}</Typography>
+                <Typography variant="caption">ユーザー</Typography>
+              </Box>
+              <Box textAlign="center" minWidth="120px">
+                <Typography variant="h4" color="info.main">{stats.keyword}</Typography>
+                <Typography variant="caption">キーワード</Typography>
+              </Box>
+              <Box textAlign="center" minWidth="120px">
+                <Typography variant="h4" color="warning.main">{stats.hashtag}</Typography>
+                <Typography variant="caption">ハッシュタグ</Typography>
+              </Box>
+            </Box>
           </Paper>
         )}
 

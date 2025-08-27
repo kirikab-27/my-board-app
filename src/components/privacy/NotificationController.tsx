@@ -300,8 +300,8 @@ export const NotificationController: React.FC = () => {
               <Typography variant="h6">グローバル設定</Typography>
             </Box>
             
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
+            <Box display="flex" flexDirection="column" gap={2}>
+              <Box>
                 <FormControlLabel
                   control={
                     <Switch
@@ -318,9 +318,9 @@ export const NotificationController: React.FC = () => {
                   }
                   label="通知を受信する"
                 />
-              </Grid>
+              </Box>
               
-              <Grid item xs={12} sm={6}>
+              <Box>
                 <FormControlLabel
                   control={
                     <Switch
@@ -338,9 +338,9 @@ export const NotificationController: React.FC = () => {
                   }
                   label="プッシュ通知"
                 />
-              </Grid>
+              </Box>
               
-              <Grid item xs={12} sm={6}>
+              <Box>
                 <FormControlLabel
                   control={
                     <Switch
@@ -358,9 +358,9 @@ export const NotificationController: React.FC = () => {
                   }
                   label="メール通知"
                 />
-              </Grid>
+              </Box>
               
-              <Grid item xs={12} sm={6}>
+              <Box>
                 <FormControlLabel
                   control={
                     <Switch
@@ -378,8 +378,8 @@ export const NotificationController: React.FC = () => {
                   }
                   label="通知音"
                 />
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
 
             {/* 統計情報 */}
             <Box sx={{ mt: 3, p: 2, bgcolor: 'background.default', borderRadius: 1 }}>
@@ -400,9 +400,9 @@ export const NotificationController: React.FC = () => {
             </Box>
           </AccordionSummary>
           <AccordionDetails>
-            <Grid container spacing={2}>
+            <Box display="flex" flexWrap="wrap" gap={2}>
               {Object.entries(settings.notificationTypes).map(([type, enabled]) => (
-                <Grid item xs={12} sm={6} md={4} key={type}>
+                <Box flex="1 1 300px" key={type}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -420,9 +420,9 @@ export const NotificationController: React.FC = () => {
                     }
                     label={getNotificationTypeLabel(type)}
                   />
-                </Grid>
+                </Box>
               ))}
-            </Grid>
+            </Box>
           </AccordionDetails>
         </Accordion>
 
@@ -540,8 +540,8 @@ export const NotificationController: React.FC = () => {
                   </Box>
                 </Box>
 
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6}>
+                <Box display="flex" flexDirection="column" gap={2}>
+                  <Box>
                     <FormControlLabel
                       control={
                         <Switch
@@ -558,8 +558,8 @@ export const NotificationController: React.FC = () => {
                       }
                       label="正規表現を使用"
                     />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
+                  </Box>
+                  <Box>
                     <FormControlLabel
                       control={
                         <Switch
@@ -576,8 +576,8 @@ export const NotificationController: React.FC = () => {
                       }
                       label="大文字小文字を区別"
                     />
-                  </Grid>
-                </Grid>
+                  </Box>
+                </Box>
               </>
             )}
           </AccordionDetails>
@@ -646,12 +646,13 @@ export const NotificationController: React.FC = () => {
                   />
 
                   {settings.timeControl.silentMode.enabled && (
-                    <Grid container spacing={2}>
-                      <Grid item xs={6}>
+                    <Box display="flex" gap={2}>
+                      <Box flex="1">
                         <TextField
                           label="開始時刻"
                           type="time"
                           size="small"
+                          fullWidth
                           value={settings.timeControl.silentMode.start}
                           onChange={(e) =>
                             handleUpdateSettings({
@@ -666,12 +667,13 @@ export const NotificationController: React.FC = () => {
                           }
                           InputLabelProps={{ shrink: true }}
                         />
-                      </Grid>
-                      <Grid item xs={6}>
+                      </Box>
+                      <Box flex="1">
                         <TextField
                           label="終了時刻"
                           type="time"
                           size="small"
+                          fullWidth
                           value={settings.timeControl.silentMode.end}
                           onChange={(e) =>
                             handleUpdateSettings({
@@ -686,8 +688,8 @@ export const NotificationController: React.FC = () => {
                           }
                           InputLabelProps={{ shrink: true }}
                         />
-                      </Grid>
-                    </Grid>
+                      </Box>
+                    </Box>
                   )}
                 </Box>
 
@@ -710,28 +712,30 @@ export const NotificationController: React.FC = () => {
 
                   {settings.timeControl.allowedTimeSlots.map((slot, index) => (
                     <Box key={index} sx={{ mb: 2, p: 2, border: 1, borderColor: 'divider', borderRadius: 1 }}>
-                      <Grid container spacing={2} alignItems="center">
-                        <Grid item xs={4}>
+                      <Box display="flex" gap={2} alignItems="center">
+                        <Box flex="1">
                           <TextField
                             label="開始"
                             type="time"
                             size="small"
+                            fullWidth
                             value={slot.start}
                             onChange={(e) => updateTimeSlot(index, 'start', e.target.value)}
                             InputLabelProps={{ shrink: true }}
                           />
-                        </Grid>
-                        <Grid item xs={4}>
+                        </Box>
+                        <Box flex="1">
                           <TextField
                             label="終了"
                             type="time"
                             size="small"
+                            fullWidth
                             value={slot.end}
                             onChange={(e) => updateTimeSlot(index, 'end', e.target.value)}
                             InputLabelProps={{ shrink: true }}
                           />
-                        </Grid>
-                        <Grid item xs={4}>
+                        </Box>
+                        <Box>
                           <IconButton
                             color="error"
                             onClick={() => removeTimeSlot(index)}
@@ -739,8 +743,8 @@ export const NotificationController: React.FC = () => {
                           >
                             <DeleteIcon />
                           </IconButton>
-                        </Grid>
-                      </Grid>
+                        </Box>
+                      </Box>
                     </Box>
                   ))}
                 </Box>
@@ -871,8 +875,8 @@ const NotificationFilterTestDialog: React.FC<NotificationFilterTestDialogProps> 
             placeholder="フィルタテスト用の内容を入力"
           />
           
-          <Grid container spacing={2} sx={{ mb: 2 }}>
-            <Grid item xs={6}>
+          <Box display="flex" gap={2} sx={{ mb: 2 }}>
+            <Box flex={1}>
               <FormControl fullWidth size="small">
                 <InputLabel>通知タイプ</InputLabel>
                 <Select
@@ -887,9 +891,9 @@ const NotificationFilterTestDialog: React.FC<NotificationFilterTestDialogProps> 
                   <MenuItem value="reply">返信</MenuItem>
                 </Select>
               </FormControl>
-            </Grid>
+            </Box>
             
-            <Grid item xs={6}>
+            <Box flex={1}>
               <FormControl fullWidth size="small">
                 <InputLabel>優先度</InputLabel>
                 <Select
@@ -902,8 +906,8 @@ const NotificationFilterTestDialog: React.FC<NotificationFilterTestDialogProps> 
                   <MenuItem value="high">高</MenuItem>
                 </Select>
               </FormControl>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
           
           {result && (
             <Alert 

@@ -130,21 +130,17 @@ const NotificationSettingsSchema = new mongoose.Schema<INotificationSettings>({
   
   // 優先度設定
   prioritySettings: {
-    type: Map,
-    of: {
-      type: String,
-      enum: ['low', 'normal', 'high'],
+    type: Object,
+    default: {
+      like: 'low',
+      comment: 'normal',
+      follow: 'normal',
+      mention: 'high',
+      reply: 'high',
+      directMessage: 'high',
+      system: 'high',
+      security: 'high',
     },
-    default: new Map([
-      ['like', 'low'],
-      ['comment', 'normal'],
-      ['follow', 'normal'],
-      ['mention', 'high'],
-      ['reply', 'high'],
-      ['directMessage', 'high'],
-      ['system', 'high'],
-      ['security', 'high'],
-    ]),
   },
   
   // 通知タイプ別ON/OFF設定
@@ -207,16 +203,16 @@ NotificationSettingsSchema.statics.createDefault = async function(userId: string
         end: '07:00',
       },
     },
-    prioritySettings: new Map([
-      ['like', 'low'],
-      ['comment', 'normal'],
-      ['follow', 'normal'],
-      ['mention', 'high'],
-      ['reply', 'high'],
-      ['directMessage', 'high'],
-      ['system', 'high'],
-      ['security', 'high'],
-    ]),
+    prioritySettings: {
+      like: 'low',
+      comment: 'normal',
+      follow: 'normal',
+      mention: 'high',
+      reply: 'high',
+      directMessage: 'high',
+      system: 'high',
+      security: 'high',
+    },
     notificationTypes: {
       like: true,
       comment: true,
@@ -258,17 +254,17 @@ NotificationSettingsSchema.statics.shouldFilterNotification = async function(
   }
   
   // 送信者制限チェック
-  if (await this.checkSenderRestriction(settings, userId, senderId)) {
+  if (await (this as any).checkSenderRestriction(settings, userId, senderId)) {
     return true;
   }
   
   // 内容フィルタチェック
-  if (await this.checkContentFilter(settings, content)) {
+  if (await (this as any).checkContentFilter(settings, content)) {
     return true;
   }
   
   // 時間帯制御チェック
-  if (await this.checkTimeControl(settings)) {
+  if (await (this as any).checkTimeControl(settings)) {
     return true;
   }
   

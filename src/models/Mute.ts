@@ -177,7 +177,7 @@ MuteSchema.statics.isMuted = async function(
         break;
         
       case 'keyword':
-        if (content && this.matchesKeyword(content, mute)) {
+        if (content && (this as any).matchesKeyword(content, mute)) {
           return true;
         }
         break;
