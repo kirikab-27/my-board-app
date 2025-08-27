@@ -5,7 +5,7 @@ import Post from '@/models/Post';
 export async function GET(request: NextRequest) {
   try {
     await dbConnect();
-    
+
     const { searchParams } = new URL(request.url);
     const query = searchParams.get('q');
     const page = parseInt(searchParams.get('page') || '1');
@@ -14,10 +14,7 @@ export async function GET(request: NextRequest) {
     const sortOrder = searchParams.get('sortOrder') || 'desc';
 
     if (!query || query.trim().length === 0) {
-      return NextResponse.json(
-        { error: '検索クエリを入力してください' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: '検索クエリを入力してください' }, { status: 400 });
     }
 
     if (query.trim().length < 1) {
@@ -29,12 +26,9 @@ export async function GET(request: NextRequest) {
 
     // バリデーション
     if (page < 1) {
-      return NextResponse.json(
-        { error: 'ページ番号は1以上である必要があります' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'ページ番号は1以上である必要があります' }, { status: 400 });
     }
-    
+
     if (limit < 1 || limit > 100) {
       return NextResponse.json(
         { error: '取得件数は1〜100の範囲で指定してください' },
@@ -46,21 +40,15 @@ export async function GET(request: NextRequest) {
     const sortOptions: { [key: string]: 1 | -1 } = {};
     const validSortFields = ['createdAt', 'updatedAt', 'likes'];
     const validSortOrders = ['asc', 'desc'];
-    
+
     if (!validSortFields.includes(sortBy)) {
-      return NextResponse.json(
-        { error: '無効なソートフィールドです' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: '無効なソートフィールドです' }, { status: 400 });
     }
-    
+
     if (!validSortOrders.includes(sortOrder)) {
-      return NextResponse.json(
-        { error: '無効なソート順です' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: '無効なソート順です' }, { status: 400 });
     }
-    
+
     sortOptions[sortBy] = sortOrder === 'desc' ? -1 : 1;
 
     // MongoDB のテキスト検索を使用
@@ -115,12 +103,8 @@ export async function GET(request: NextRequest) {
 
     // データ取得
     const [posts, totalCount] = await Promise.all([
-      Post.find(searchFilter)
-        .sort(sortOptions)
-        .skip(skip)
-        .limit(limit)
-        .lean(),
-      Post.countDocuments(searchFilter)
+      Post.find(searchFilter).sort(sortOptions).skip(skip).limit(limit).lean(),
+      Post.countDocuments(searchFilter),
     ]);
 
     // ページネーション情報
@@ -136,16 +120,12 @@ export async function GET(request: NextRequest) {
         totalCount,
         limit,
         hasNextPage,
-        hasPrevPage
+        hasPrevPage,
       },
-      query: query.trim()
+      query: query.trim(),
     });
-
   } catch (error) {
     console.error('Error searching posts:', error);
-    return NextResponse.json(
-      { error: '検索に失敗しました' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '検索に失敗しました' }, { status: 500 });
   }
 }

@@ -182,14 +182,11 @@ export default function RegisterPage() {
                 <Typography variant="body2" color="text.secondary">
                   <strong>次の手順:</strong>
                   <br />
-                  1. メールボックスを確認してください
+                  1. ログインページに移動してください
                   <br />
-                  2. 「メールアドレス認証」メール内のリンクをクリック
+                  2. 作成したアカウントでログインしてください
                   <br />
-                  3. 認証完了後、ログインしてご利用ください
-                </Typography>
-                <Typography variant="body2" sx={{ mt: 1, fontWeight: 'bold' }}>
-                  ⚠ 認証メールの有効期限は24時間です
+                  3. すぐにご利用いただけます
                 </Typography>
               </Alert>
             )}

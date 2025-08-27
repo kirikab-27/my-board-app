@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
     // パスワード更新（bcryptハッシュ化は User model の pre-save で実行される）
     console.log('🔐 Updating password...');
     user.password = password;
-    await user.save();
+    await user.save({ validateModifiedOnly: true });
 
     // 使用済みトークン削除
     await VerificationToken.deleteOne({ _id: resetToken._id });

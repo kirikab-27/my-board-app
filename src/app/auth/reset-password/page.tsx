@@ -19,16 +19,19 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
 // バリデーションスキーマ
-const resetPasswordSchema = z.object({
-  password: z.string()
-    .min(8, 'パスワードは8文字以上で入力してください')
-    .max(100, 'パスワードは100文字以内で入力してください')
-    .regex(/^(?=.*[a-zA-Z])(?=.*\d)/, 'パスワードは英数字を含む必要があります'),
-  confirmPassword: z.string(),
-}).refine(data => data.password === data.confirmPassword, {
-  message: 'パスワードが一致しません',
-  path: ['confirmPassword'],
-});
+const resetPasswordSchema = z
+  .object({
+    password: z
+      .string()
+      .min(8, 'パスワードは8文字以上で入力してください')
+      .max(100, 'パスワードは100文字以内で入力してください')
+      .regex(/^(?=.*[a-zA-Z])(?=.*\d)/, 'パスワードは英数字を含む必要があります'),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'パスワードが一致しません',
+    path: ['confirmPassword'],
+  });
 
 type ResetPasswordSchema = z.infer<typeof resetPasswordSchema>;
 
@@ -38,7 +41,9 @@ export default function ResetPasswordPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [tokenValid, setTokenValid] = useState<boolean | null>(null);
-  
+
+  console.log('🔄 ResetPasswordPage render:', { tokenValid, token, error, isLoading });
+
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -53,9 +58,13 @@ export default function ResetPasswordPage() {
   useEffect(() => {
     const tokenParam = searchParams?.get('token');
     if (!tokenParam) {
+      console.log('❌ No token found in URL parameters');
       setTokenValid(false);
-      setError('リセットトークンが見つかりません。パスワードリセットを最初からやり直してください。');
+      setError(
+        'リセットトークンが見つかりません。パスワードリセットを最初からやり直してください。'
+      );
     } else {
+      console.log('✅ Token found, setting as valid:', tokenParam);
       setToken(tokenParam);
       setTokenValid(true);
     }
@@ -96,7 +105,6 @@ export default function ResetPasswordPage() {
       setTimeout(() => {
         router.push('/login');
       }, 3000);
-
     } catch (err) {
       console.error('❌ Reset password error:', err);
       setError(err instanceof Error ? err.message : 'パスワードリセットに失敗しました');
@@ -115,8 +123,21 @@ export default function ResetPasswordPage() {
 
   if (tokenValid === false) {
     return (
-      <Container maxWidth="sm" sx={{ mt: 8, mb: 4 }}>
-        <Card sx={{ maxWidth: 400, width: '100%', mx: 'auto' }}>
+      <Container
+        maxWidth="sm"
+        sx={{
+          mt: { xs: 2, sm: 8 },
+          mb: 4,
+          px: { xs: 2, sm: 3 },
+        }}
+      >
+        <Card
+          sx={{
+            maxWidth: { xs: '100%', sm: 400 },
+            width: '100%',
+            mx: 'auto',
+          }}
+        >
           <CardHeader>
             <Typography variant="h5" component="h1" gutterBottom>
               無効なリセットリンク
@@ -125,20 +146,12 @@ export default function ResetPasswordPage() {
           <CardContent>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <Alert severity="error">{error}</Alert>
-              
-              <Button
-                variant="contained"
-                onClick={handleRequestNewReset}
-                fullWidth
-              >
+
+              <Button variant="contained" onClick={handleRequestNewReset} fullWidth>
                 新しいリセットリンクを要求
               </Button>
-              
-              <Button
-                variant="outlined"
-                onClick={handleBackToLogin}
-                fullWidth
-              >
+
+              <Button variant="outlined" onClick={handleBackToLogin} fullWidth>
                 ログインページに戻る
               </Button>
             </Box>
@@ -149,20 +162,40 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 8, mb: 4 }}>
-      <Card sx={{ maxWidth: 400, width: '100%', mx: 'auto' }}>
+    <Container
+      maxWidth="sm"
+      sx={{
+        mt: { xs: 2, sm: 8 },
+        mb: 4,
+        px: { xs: 2, sm: 3 },
+      }}
+    >
+      <Card
+        sx={{
+          maxWidth: { xs: '100%', sm: 400 },
+          width: '100%',
+          mx: 'auto',
+          minHeight: { xs: 'auto', sm: 'auto' },
+        }}
+      >
         <CardHeader>
-          <Typography variant="h5" component="h1" gutterBottom>
+          <Typography
+            variant="h5"
+            component="h1"
+            gutterBottom
+            sx={{
+              fontSize: { xs: '1.25rem', sm: '1.5rem' },
+              textAlign: 'center',
+            }}
+          >
             新しいパスワードの設定
           </Typography>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} noValidate>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {error && (
-                <Alert severity="error">{error}</Alert>
-              )}
-              
+              {error && <Alert severity="error">{error}</Alert>}
+
               {success && (
                 <Alert severity="success">
                   {success}
@@ -174,10 +207,12 @@ export default function ResetPasswordPage() {
 
               <Alert severity="info">
                 <Typography variant="body2">
-                  セキュアなパスワードを設定してください：<br />
-                  • 8文字以上<br />
-                  • 英数字を含む<br />
-                  • 他のサイトと異なるもの
+                  セキュアなパスワードを設定してください：
+                  <br />
+                  • 8文字以上
+                  <br />
+                  • 英数字を含む
+                  <br />• 他のサイトと異なるもの
                 </Typography>
               </Alert>
 
@@ -219,12 +254,7 @@ export default function ResetPasswordPage() {
                 )}
               </Button>
 
-              <Button
-                variant="outlined"
-                onClick={handleBackToLogin}
-                fullWidth
-                disabled={isLoading}
-              >
+              <Button variant="outlined" onClick={handleBackToLogin} fullWidth disabled={isLoading}>
                 ログインページに戻る
               </Button>
             </Box>

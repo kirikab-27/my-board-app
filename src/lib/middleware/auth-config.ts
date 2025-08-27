@@ -125,10 +125,6 @@ export const routeConfig: RouteConfig = {
       redirectTo: '/board',
       description: '新規登録ページ',
     },
-    '/auth/reset-password': {
-      redirectTo: '/dashboard',
-      description: 'パスワードリセット',
-    },
   },
 
   // 管理者専用ルート
@@ -153,6 +149,8 @@ export const routeConfig: RouteConfig = {
     '/auth/error',
     '/auth/verified',
     '/auth/verify-email',
+    '/auth/forgot-password',
+    '/auth/reset-password',
     '/unauthorized',
     '/access-denied',
     '/manifest.json',

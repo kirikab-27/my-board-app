@@ -1164,15 +1164,15 @@ SENTRY_SUPPRESS_GLOBAL_ERROR_HANDLER_FILE_WARNING=1
 
 ## API エンドポイント
 
-### 投稿関連（Phase 5 セキュリティ統合完了・XSS/NoSQL対策済み）
+### 投稿関連（Phase 6.1 管理者投稿フィルタリング完了・XSS/NoSQL対策済み）
 
-- `GET /api/posts` - 全投稿の取得（NoSQL対策・入力検証・検索サニタイゼーション）✅ **Phase 5強化完了**
+- `GET /api/posts` - 全投稿の取得（管理者投稿フィルタリング・NoSQL対策・入力検証）✅ **Phase 6.1管理者フィルタ統合**
 - `POST /api/posts` - 新しい投稿の作成（XSS検出・監査ログ記録）✅ **Phase 5強化完了**
 - `GET /api/posts/[id]` - 投稿詳細取得（ObjectID検証強化）✅ **Phase 5強化完了**
 - `PUT /api/posts/[id]` - 投稿の更新（XSS検出・監査ログ・権限チェック）✅ **Phase 5強化完了**
 - `DELETE /api/posts/[id]` - 投稿の削除（権限チェック・監査ログ）✅ **Phase 5強化完了**
 - `POST/GET/DELETE /api/posts/[id]/like` - いいね機能 ✅ **認証/匿名対応・ユーザーID管理**
-- `GET /api/posts/search` - 投稿検索（入力サニタイゼーション・NoSQL対策）✅ **Phase 5強化完了**
+- `GET /api/posts/search` - 投稿検索（管理者投稿フィルタリング・入力サニタイゼーション・NoSQL対策）✅ **Phase 6.1管理者フィルタ新規実装**
 
 ### 認証関連（Phase 2実装完了・メール認証・パスワードリセット対応済み）
 
@@ -1483,6 +1483,8 @@ interface User {
 - **メール送信エラー**: `node scripts/test-email.js` でSMTP接続確認
 - **SPF認証失敗**: `node scripts/verify-spf.js kab137lab.com` で設定確認
 - **DKIM署名問題**: `node scripts/verify-dkim.js kab137lab.com default` で検証
+- **Gmail配信問題**: さくらSMTP→Gmail間でフィルタリング。Yahoo等は正常配信。Resend移行推奨
+- **さくらIP制限**: 国外IPアドレスアクセス制限を無効化（Vercel対応）
 - **詳細解決策**: [メール認証設定チートシート](./docs/email-auth-cheatsheet.md)
 
 - **プロフィール機能**: Hydration エラー・アバター・バリデーション解決済み
@@ -1746,9 +1748,11 @@ Jest・Playwright・Sentry・Web Vitals監視基盤完備。詳細は `docs/test
 - **[Vercelデプロイエラー解決](./README-vercel-deploy-errors-phase55.md)** - 21項目の技術問題解決
 - **[認証トラブルシューティング](./README-auth-troubleshooting.md)** - NextAuth.js問題解決
 - **[メール送信設定](./docs/email-auth-cheatsheet.md)** - さくらSMTP・DKIM/SPF/DMARC
+- **[Gmail配信問題解決](./docs/troubleshooting/gmail-delivery.md)** - さくらIP制限・Gmail フィルタリング対策
 
 ### システム設計・品質管理
 
+- **[品質保証プロトコル](./docs/quality-assurance-protocol.md)** - 発表会前緊急チェック・45分フルプロセス ✨ **新規追加**
 - **[ブランチ戦略](./docs/member-branch-strategy.md)** - Git Flow・Phase別統合
 - **[テスト・品質保証](./docs/test-quality-strategy.md)** - Jest・Playwright・監視
 - **[API仕様](./docs/api-specs.md)** - エンドポイント・データ形式

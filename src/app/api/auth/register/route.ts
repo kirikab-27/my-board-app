@@ -4,7 +4,7 @@ import User from '@/models/User';
 import VerificationToken from '@/models/VerificationToken';
 import { registerSchema } from '@/lib/validations/auth';
 import { sendVerificationEmail } from '@/lib/email/react-email-sender';
-// import * as Sentry from '@sentry/nextjs'; // 一時的にコメントアウト
+import * as Sentry from '@sentry/nextjs';
 
 export async function POST(req: NextRequest) {
   try {
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     }
     console.log('✅ No existing user found');
 
-    // ユーザー作成（Phase 2: メール認証前は未認証状態）
+    // ユーザー作成（メール認証が必要）
     console.log('👤 Creating new user...');
     const user = new User({
       name,
@@ -74,13 +74,13 @@ export async function POST(req: NextRequest) {
     } catch (emailError) {
       console.error('❌ Failed to send verification email:', emailError);
       // メール送信失敗でもユーザー作成は成功とする
+      Sentry.captureException(emailError);
     }
 
     console.log('✅ User registered successfully:', email);
 
     return NextResponse.json({
-      message:
-        'アカウントを作成しました。メールに送信された認証リンクをクリックして、登録を完了してください。',
+      message: 'アカウントを作成しました。メールを確認して認証を完了してください。',
       user: {
         id: user._id,
         name: user.name,
@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
       stack: error instanceof Error ? error.stack : undefined,
     });
 
-    // Sentry.captureException(error); // 一時的にコメントアウト
+    Sentry.captureException(error);
 
     return NextResponse.json(
       {

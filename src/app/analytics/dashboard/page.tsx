@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  Typography, 
-  Alert, 
-  Box, 
+import { useEffect, useState, useCallback } from 'react';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  Typography,
+  Alert,
+  Box,
   Skeleton,
   Tabs,
   Tab,
@@ -18,7 +18,7 @@ import {
   Chip,
   LinearProgress,
   CircularProgress,
-  Grid2 as Grid
+  Grid,
 } from '@mui/material';
 import {
   TrendingUp as TrendingUpIcon,
@@ -27,35 +27,47 @@ import {
   ThumbUp as ThumbUpIcon,
   Comment as CommentIcon,
   Share as ShareIcon,
-  DevicesOther as DevicesIcon,
-  Language as LanguageIcon,
-  Timeline as TimelineIcon,
-  Analytics as AnalyticsIcon
+  Analytics as AnalyticsIcon,
 } from '@mui/icons-material';
 import dynamic from 'next/dynamic';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 // Dynamic import for Chart.js to reduce initial bundle size
-const Line = dynamic(() => import('react-chartjs-2').then(mod => ({ default: mod.Line })), {
+const Line = dynamic(() => import('react-chartjs-2').then((mod) => ({ default: mod.Line })), {
   loading: () => <Skeleton variant="rectangular" width="100%" height={200} />,
-  ssr: false
+  ssr: false,
 });
 
-const Bar = dynamic(() => import('react-chartjs-2').then(mod => ({ default: mod.Bar })), {
+const Bar = dynamic(() => import('react-chartjs-2').then((mod) => ({ default: mod.Bar })), {
   loading: () => <Skeleton variant="rectangular" width="100%" height={200} />,
-  ssr: false
+  ssr: false,
 });
 
-const Doughnut = dynamic(() => import('react-chartjs-2').then(mod => ({ default: mod.Doughnut })), {
-  loading: () => <Skeleton variant="rectangular" width="100%" height={200} />,
-  ssr: false
-});
+const Doughnut = dynamic(
+  () => import('react-chartjs-2').then((mod) => ({ default: mod.Doughnut })),
+  {
+    loading: () => <Skeleton variant="rectangular" width="100%" height={200} />,
+    ssr: false,
+  }
+);
 
 // Dynamic Chart.js registration
 const initializeChartJS = async () => {
   const chartModule = await import('chart.js');
-  const { Chart: ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend, Filler } = chartModule;
-  
+  const {
+    Chart: ChartJS,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    BarElement,
+    ArcElement,
+    Title,
+    Tooltip,
+    Legend,
+    Filler,
+  } = chartModule;
+
   ChartJS.register(
     CategoryScale,
     LinearScale,
@@ -134,9 +146,8 @@ type TimeRange = '1h' | '24h' | '7d' | '30d';
 export default function AnalyticsDashboard() {
   // 認証必須（admin権限）
   const { user, isLoading: authLoading } = useRequireAuth({
-    requireAuth: true,
-    requireRole: 'admin',
-    redirectTo: '/login'
+    requiredRole: 'admin',
+    redirectTo: '/login',
   });
 
   const [data, setData] = useState<AnalyticsDashboardData | null>(null);
@@ -149,13 +160,15 @@ export default function AnalyticsDashboard() {
 
   // Initialize Chart.js dynamically
   useEffect(() => {
-    initializeChartJS().then(() => {
-      setChartJSInitialized(true);
-    }).catch(console.error);
+    initializeChartJS()
+      .then(() => {
+        setChartJSInitialized(true);
+      })
+      .catch(console.error);
   }, []);
 
   // データ取得
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = useCallback(async () => {
     try {
       setError(null);
       const response = await fetch(`/api/analytics/dashboard?range=${timeRange}`);
@@ -170,18 +183,18 @@ export default function AnalyticsDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [timeRange]);
 
   useEffect(() => {
     if (authLoading || !user) return;
-    
+
     fetchAnalytics();
-    
+
     if (autoRefresh) {
       const interval = setInterval(fetchAnalytics, timeRange === '1h' ? 30000 : 300000);
       return () => clearInterval(interval);
     }
-  }, [timeRange, autoRefresh, user, authLoading]);
+  }, [timeRange, autoRefresh, user, authLoading, fetchAnalytics]);
 
   // 認証チェック中
   if (authLoading) {
@@ -232,9 +245,7 @@ export default function AnalyticsDashboard() {
   if (!data) {
     return (
       <Box sx={{ p: 3 }}>
-        <Alert severity="info">
-          分析データがありません。データ収集を開始してください。
-        </Alert>
+        <Alert severity="info">分析データがありません。データ収集を開始してください。</Alert>
       </Box>
     );
   }
@@ -247,10 +258,6 @@ export default function AnalyticsDashboard() {
   };
 
   const formatPercentage = (num: number): string => `${num.toFixed(1)}%`;
-  const formatDuration = (seconds: number): string => {
-    if (seconds < 60) return `${seconds}秒`;
-    return `${Math.floor(seconds / 60)}分${seconds % 60}秒`;
-  };
 
   // タブ変更ハンドラ
   const handleTabChange = (_event: React.SyntheticEvent, newValue: TabValue) => {
@@ -258,8 +265,8 @@ export default function AnalyticsDashboard() {
   };
 
   // 時間範囲変更ハンドラ
-  const handleTimeRangeChange = (event: any) => {
-    setTimeRange(event.target.value);
+  const handleTimeRangeChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setTimeRange(event.target.value as TimeRange);
   };
 
   // Overview Tab Content
@@ -281,9 +288,9 @@ export default function AnalyticsDashboard() {
               <PeopleIcon color="primary" sx={{ fontSize: 40 }} />
             </Box>
             <Box mt={2}>
-              <Chip 
+              <Chip
                 label={`+${formatPercentage(data.overview.growthRate)} 成長率`}
-                color={data.overview.growthRate > 0 ? "success" : "default"}
+                color={data.overview.growthRate > 0 ? 'success' : 'default'}
                 size="small"
               />
             </Box>
@@ -353,11 +360,11 @@ export default function AnalyticsDashboard() {
             {chartJSInitialized && (
               <Line
                 data={{
-                  labels: data.userGrowth.map(item => new Date(item.date).toLocaleDateString()),
+                  labels: data.userGrowth.map((item) => new Date(item.date).toLocaleDateString()),
                   datasets: [
                     {
                       label: '新規ユーザー',
-                      data: data.userGrowth.map(item => item.newUsers),
+                      data: data.userGrowth.map((item) => item.newUsers),
                       borderColor: 'rgb(54, 162, 235)',
                       backgroundColor: 'rgba(54, 162, 235, 0.1)',
                       fill: true,
@@ -365,12 +372,12 @@ export default function AnalyticsDashboard() {
                     },
                     {
                       label: 'アクティブユーザー',
-                      data: data.userGrowth.map(item => item.activeUsers),
+                      data: data.userGrowth.map((item) => item.activeUsers),
                       borderColor: 'rgb(255, 99, 132)',
                       backgroundColor: 'rgba(255, 99, 132, 0.1)',
                       fill: true,
                       tension: 0.4,
-                    }
+                    },
                   ],
                 }}
                 options={{
@@ -410,7 +417,11 @@ export default function AnalyticsDashboard() {
                   labels: ['デスクトップ', 'モバイル', 'タブレット'],
                   datasets: [
                     {
-                      data: [data.deviceStats.desktop, data.deviceStats.mobile, data.deviceStats.tablet],
+                      data: [
+                        data.deviceStats.desktop,
+                        data.deviceStats.mobile,
+                        data.deviceStats.tablet,
+                      ],
                       backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
                       borderWidth: 2,
                       borderColor: '#fff',
@@ -437,14 +448,30 @@ export default function AnalyticsDashboard() {
         <Card>
           <CardHeader title="コンバージョンファネル" />
           <CardContent>
-            <Box display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2}>
+            <Box
+              display="flex"
+              justifyContent="space-between"
+              alignItems="center"
+              flexWrap="wrap"
+              gap={2}
+            >
               {[
                 { label: '訪問者', value: data.conversionFunnel.visitors, color: '#e3f2fd' },
                 { label: '登録', value: data.conversionFunnel.signups, color: '#bbdefb' },
                 { label: '初回投稿', value: data.conversionFunnel.firstPost, color: '#90caf9' },
-                { label: 'アクティブユーザー', value: data.conversionFunnel.activeUsers, color: '#64b5f6' }
+                {
+                  label: 'アクティブユーザー',
+                  value: data.conversionFunnel.activeUsers,
+                  color: '#64b5f6',
+                },
               ].map((step, index) => (
-                <Box key={step.label} display="flex" flexDirection="column" alignItems="center" minWidth={120}>
+                <Box
+                  key={step.label}
+                  display="flex"
+                  flexDirection="column"
+                  alignItems="center"
+                  minWidth={120}
+                >
                   <Box
                     sx={{
                       width: 60,
@@ -454,7 +481,7 @@ export default function AnalyticsDashboard() {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      mb: 1
+                      mb: 1,
                     }}
                   >
                     <Typography variant="h6" fontWeight="bold">
@@ -466,7 +493,10 @@ export default function AnalyticsDashboard() {
                   </Typography>
                   {index < 3 && (
                     <Typography variant="caption" color="success.main">
-                      {formatPercentage((Object.values(data.conversionFunnel)[index + 1] / step.value) * 100)} 率
+                      {formatPercentage(
+                        (Object.values(data.conversionFunnel)[index + 1] / step.value) * 100
+                      )}{' '}
+                      率
                     </Typography>
                   )}
                 </Box>
@@ -508,9 +538,7 @@ export default function AnalyticsDashboard() {
                 <Typography color="textSecondary" gutterBottom>
                   いいね数
                 </Typography>
-                <Typography variant="h4">
-                  {formatNumber(data.contentEngagement.likes)}
-                </Typography>
+                <Typography variant="h4">{formatNumber(data.contentEngagement.likes)}</Typography>
               </Box>
               <ThumbUpIcon color="secondary" sx={{ fontSize: 40 }} />
             </Box>
@@ -562,22 +590,22 @@ export default function AnalyticsDashboard() {
             {chartJSInitialized && (
               <Bar
                 data={{
-                  labels: data.topPages.map(page => page.path),
+                  labels: data.topPages.map((page) => page.path),
                   datasets: [
                     {
                       label: 'ページビュー',
-                      data: data.topPages.map(page => page.views),
+                      data: data.topPages.map((page) => page.views),
                       backgroundColor: 'rgba(54, 162, 235, 0.8)',
                       borderColor: 'rgba(54, 162, 235, 1)',
                       borderWidth: 1,
                     },
                     {
                       label: 'ユニーク訪問者',
-                      data: data.topPages.map(page => page.uniqueVisitors),
+                      data: data.topPages.map((page) => page.uniqueVisitors),
                       backgroundColor: 'rgba(255, 99, 132, 0.8)',
                       borderColor: 'rgba(255, 99, 132, 1)',
                       borderWidth: 1,
-                    }
+                    },
                   ],
                 }}
                 options={{
@@ -612,25 +640,21 @@ export default function AnalyticsDashboard() {
         <Typography variant="h4" gutterBottom>
           分析ダッシュボード
         </Typography>
-        
+
         <Box display="flex" gap={2} alignItems="center">
           <FormControl size="small">
             <InputLabel>時間範囲</InputLabel>
-            <Select
-              value={timeRange}
-              label="時間範囲"
-              onChange={handleTimeRangeChange}
-            >
+            <Select value={timeRange} label="時間範囲" onChange={handleTimeRangeChange}>
               <MenuItem value="1h">過去1時間</MenuItem>
               <MenuItem value="24h">過去24時間</MenuItem>
               <MenuItem value="7d">過去7日</MenuItem>
               <MenuItem value="30d">過去30日</MenuItem>
             </Select>
           </FormControl>
-          
-          <Chip 
-            label={autoRefresh ? "自動更新中" : "手動更新"}
-            color={autoRefresh ? "success" : "default"}
+
+          <Chip
+            label={autoRefresh ? '自動更新中' : '手動更新'}
+            color={autoRefresh ? 'success' : 'default'}
             onClick={() => setAutoRefresh(!autoRefresh)}
             clickable
           />
@@ -663,8 +687,8 @@ export default function AnalyticsDashboard() {
       {/* Real-time Status */}
       <Box mt={4} p={2} bgcolor="background.paper" borderRadius={1}>
         <Typography variant="body2" color="textSecondary">
-          リアルタイムアクティブユーザー: {data.realTimeMetrics.currentUsers}人 | 
-          最終更新: {new Date().toLocaleTimeString()}
+          リアルタイムアクティブユーザー: {data.realTimeMetrics.currentUsers}人 | 最終更新:{' '}
+          {new Date().toLocaleTimeString()}
         </Typography>
       </Box>
     </Box>
