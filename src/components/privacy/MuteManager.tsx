@@ -401,8 +401,7 @@ export const MuteManager: React.FC = () => {
   }
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ja}>
-      <Box>
+    <Box>
         {message && (
           <Alert 
             severity={message.type} 
@@ -768,11 +767,12 @@ export const MuteManager: React.FC = () => {
             </FormControl>
 
             {duration === 'temporary' && (
-              <DateTimePicker
+              <TextField
                 label="ミュート解除日時"
-                value={expiresAt}
-                onChange={setExpiresAt}
-                minDateTime={new Date()}
+                type="datetime-local"
+                value={expiresAt ? expiresAt.toISOString().slice(0, 16) : ''}
+                onChange={(e) => setExpiresAt(e.target.value ? new Date(e.target.value) : null)}
+                inputProps={{ min: new Date().toISOString().slice(0, 16) }}
                 sx={{ mb: 2, width: '100%' }}
               />
             )}
@@ -950,7 +950,6 @@ export const MuteManager: React.FC = () => {
             </Button>
           </DialogActions>
         </Dialog>
-      </Box>
-    </LocalizationProvider>
+    </Box>
   );
 };
