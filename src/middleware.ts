@@ -52,7 +52,9 @@ export default withAuth(
 
     // リクエスト情報をヘッダーに追加（デバッグ用）
     response.headers.set('X-Client-IP', clientIP);
-    response.headers.set('X-Request-ID', crypto.randomUUID());
+    // Edge Runtime compatible request ID generation
+    const requestId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    response.headers.set('X-Request-ID', requestId);
 
     // ルート設定を取得
     const routeInfo = getRouteConfig(pathname);
