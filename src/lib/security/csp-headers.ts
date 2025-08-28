@@ -33,33 +33,13 @@ const productionCSP = `
   .trim();
 
 /**
- * 開発環境用のCSPヘッダー（緩い）
+ * 開発環境用のCSPヘッダー（緩い） - Edge Runtime対応のため本番環境設定に統一
+ * 元の開発環境設定（参考用）:
+ * - WebSocket接続許可（ws://localhost:*）
+ * - HTTP接続許可（http://localhost:*）
+ * - より緩い設定での開発支援
  */
-const developmentCSP = `
-  default-src 'self';
-  script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com;
-  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-  font-src 'self' https://fonts.gstatic.com data:;
-  img-src 'self' data: https: blob:;
-  media-src 'self';
-  object-src 'none';
-  base-uri 'self';
-  form-action 'self';
-  frame-ancestors 'none';
-  connect-src 'self' 
-    ws://localhost:*
-    ws://127.0.0.1:*
-    http://localhost:*
-    http://127.0.0.1:*
-    https://api.github.com 
-    https://accounts.google.com 
-    https://oauth2.googleapis.com
-    https://www.googleapis.com
-    https://res.cloudinary.com;
-`
-  .replace(/\n/g, ' ')
-  .replace(/\s+/g, ' ')
-  .trim();
+// const developmentCSP は Edge Runtime 対応のため productionCSP に統一
 
 /**
  * 包括的なセキュリティヘッダー
