@@ -1,7 +1,17 @@
 'use client';
 
 import React from 'react';
-import { Button, Menu, MenuItem, Box, Typography, IconButton, useMediaQuery, useTheme, Avatar } from '@mui/material';
+import {
+  Button,
+  Menu,
+  MenuItem,
+  Box,
+  Typography,
+  IconButton,
+  useMediaQuery,
+  useTheme,
+  Avatar,
+} from '@mui/material';
 import {
   Login as LoginIcon,
   Logout as LogoutIcon,
@@ -11,12 +21,11 @@ import {
   Person as PersonIcon,
   People as PeopleIcon,
   Timeline as TimelineIcon,
-  Notifications as NotificationsIcon,
   Tag as TagIcon,
-  Search as SearchIcon,
   Edit as EditIcon,
   Lock as LockIcon,
   Security as SecurityIcon,
+  Analytics as AnalyticsIcon,
 } from '@mui/icons-material';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -32,11 +41,11 @@ interface AuthButtonProps {
   searchResultCount?: number;
 }
 
-export const AuthButton: React.FC<AuthButtonProps> = ({ 
-  isNavigationRow = false, 
-  onSearch, 
-  onClearSearch, 
-  searchResultCount 
+export const AuthButton: React.FC<AuthButtonProps> = ({
+  isNavigationRow = false,
+  onSearch,
+  onClearSearch,
+  searchResultCount,
 }) => {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -101,19 +110,14 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
     router.push('/timeline');
   };
 
-  const handleNotifications = () => {
-    handleMenuClose();
-    router.push('/notifications');
-  };
-
   const handleHashtags = () => {
     handleMenuClose();
     router.push('/hashtags');
   };
 
-  const handleUserSearch = () => {
+  const handleAnalytics = () => {
     handleMenuClose();
-    router.push('/users/search');
+    router.push('/analytics/dashboard');
   };
 
   if (status === 'loading') {
@@ -195,8 +199,8 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
       <ThemeToggle />
       {onSearch && onClearSearch && (
-        <HeaderSearchIcon 
-          onSearch={onSearch} 
+        <HeaderSearchIcon
+          onSearch={onSearch}
           onClear={onClearSearch}
           resultCount={searchResultCount}
           placeholder="投稿を検索..."
@@ -285,7 +289,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
             <TagIcon sx={{ mr: 1 }} />
             ハッシュタグ
           </MenuItem>,
-          <Box key="divider" sx={{ borderBottom: 1, borderColor: 'divider', my: 1 }} />
+          <Box key="divider" sx={{ borderBottom: 1, borderColor: 'divider', my: 1 }} />,
         ]}
         {/* ユーザー関連メニュー */}
         <MenuItem onClick={handleProfile}>
@@ -300,6 +304,13 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
           <SecurityIcon sx={{ mr: 1 }} />
           プライバシー設定
         </MenuItem>
+        {/* 管理者限定メニュー */}
+        {session?.user?.role === 'admin' && (
+          <MenuItem onClick={handleAnalytics}>
+            <AnalyticsIcon sx={{ mr: 1 }} />
+            分析ダッシュボード
+          </MenuItem>
+        )}
         <MenuItem onClick={handlePasswordChange}>
           <LockIcon sx={{ mr: 1 }} />
           パスワード変更
