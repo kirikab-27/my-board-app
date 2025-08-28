@@ -63,20 +63,19 @@ const developmentCSP = `
 
 /**
  * 包括的なセキュリティヘッダー
+ * Edge Runtime対応 - 本番環境設定を使用
  */
 export const securityHeaders = {
-  // Content Security Policy
-  'Content-Security-Policy': process.env.NODE_ENV === 'production' ? productionCSP : developmentCSP,
+  // Content Security Policy - Edge Runtime対応（本番設定使用）
+  'Content-Security-Policy': productionCSP,
 
   // XSS保護
   'X-Content-Type-Options': 'nosniff',
   'X-Frame-Options': 'DENY',
   'X-XSS-Protection': '1; mode=block',
 
-  // HTTPS強制（本番環境のみ）
-  ...(process.env.NODE_ENV === 'production' && {
-    'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
-  }),
+  // HTTPS強制（Edge Runtime対応 - 常に有効）
+  'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
 
   // リファラー制御
   'Referrer-Policy': 'strict-origin-when-cross-origin',
@@ -103,9 +102,10 @@ export function generateCSPNonce(): string {
 
 /**
  * 動的CSPヘッダー生成（nonce対応）
+ * Edge Runtime対応 - 本番環境設定を使用
  */
 export function generateCSPWithNonce(nonce: string): string {
-  const baseCSP = process.env.NODE_ENV === 'production' ? productionCSP : developmentCSP;
+  const baseCSP = productionCSP; // Edge Runtime対応（本番設定使用）
 
   // script-srcにnonceを追加
   return baseCSP.replace("script-src 'self'", `script-src 'self' 'nonce-${nonce}'`);
@@ -113,10 +113,11 @@ export function generateCSPWithNonce(nonce: string): string {
 
 /**
  * CSP違反レポート処理用の設定
+ * Edge Runtime対応 - 本番環境設定を使用
  */
 export const cspReportingHeaders = {
   'Content-Security-Policy-Report-Only': `
-    ${process.env.NODE_ENV === 'production' ? productionCSP : developmentCSP};
+    ${productionCSP};
     report-uri /api/security/csp-report;
     report-to csp-endpoint;
   `
@@ -179,21 +180,18 @@ export interface CSPViolation {
 
 /**
  * CSP違反レポートの処理
+ * Edge Runtime対応 - 本番環境設定を使用
  */
 export function processCSPViolation(violation: CSPViolation): void {
-  // 開発環境では詳細ログ
-  if (process.env.NODE_ENV === 'development') {
-    console.warn('🛡️ CSP違反を検出:', {
-      directive: violation['violated-directive'],
-      blocked: violation['blocked-uri'],
-      source: violation['source-file'],
-      line: violation['line-number'],
-    });
-  }
-
-  // 本番環境では監視システムに送信
-  if (process.env.NODE_ENV === 'production') {
-    // TODO: Sentryやその他の監視システムに送信
-    console.error('[CSP VIOLATION]', violation);
-  }
+  // Edge Runtime対応 - 本番環境では監視システムに送信
+  // TODO: Sentryやその他の監視システムに送信
+  console.error('[CSP VIOLATION]', violation);
+  
+  // 詳細ログも出力（デバッグ用）
+  console.warn('🛡️ CSP違反を検出:', {
+    directive: violation['violated-directive'],
+    blocked: violation['blocked-uri'],
+    source: violation['source-file'],
+    line: violation['line-number'],
+  });
 }
