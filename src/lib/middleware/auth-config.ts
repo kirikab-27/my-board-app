@@ -71,6 +71,12 @@ export const routeConfig: RouteConfig = {
       redirectTo: '/login',
       description: 'プロフィール管理',
     },
+    '/profile/privacy': {
+      requiredRole: 'user',
+      requireEmailVerified: true,
+      redirectTo: '/login',
+      description: 'プライバシー設定',
+    },
     '/timeline': {
       requiredRole: 'user',
       requireEmailVerified: false,
