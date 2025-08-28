@@ -1,14 +1,8 @@
 import { withAuth } from 'next-auth/middleware';
 import { NextResponse } from 'next/server';
-import { 
-  getRouteConfig, 
-  hasRequiredRole, 
-  securityHeaders,
-} from '@/lib/middleware/auth-config';
-import { 
-  performSecurityChecks, 
-  getClientIP 
-} from '@/lib/middleware/security';
+import { getRouteConfig, hasRequiredRole } from '@/lib/middleware/auth-config';
+import { securityHeaders } from '@/lib/security/csp-headers';
+import { performSecurityChecks, getClientIP } from '@/lib/middleware/security';
 import type { UserRole } from '@/types/auth';
 
 export default withAuth(
@@ -16,35 +10,37 @@ export default withAuth(
     const { pathname } = req.nextUrl;
     const token = req.nextauth.token;
     const clientIP = getClientIP(req);
-    
+
     // セキュリティチェックを実行
     const securityResult = performSecurityChecks(req);
     if (!securityResult.allowed) {
-      console.log(`🛡️  セキュリティチェック失敗: ${pathname} (IP: ${clientIP}, 理由: ${securityResult.reason})`);
-      
+      console.log(
+        `🛡️  セキュリティチェック失敗: ${pathname} (IP: ${clientIP}, 理由: ${securityResult.reason})`
+      );
+
       // レート制限の場合は429を返す
       if (securityResult.reason?.includes('Rate limit')) {
-        const response = new Response('Too Many Requests', { 
+        const response = new Response('Too Many Requests', {
           status: 429,
           headers: {
             'Retry-After': securityResult.retryAfter?.toString() || '900',
-            ...securityHeaders
-          }
+            ...securityHeaders,
+          },
         });
         return response;
       }
-      
+
       // その他のセキュリティ違反は403を返す
-      const response = new Response('Forbidden', { 
+      const response = new Response('Forbidden', {
         status: 403,
-        headers: securityHeaders
+        headers: securityHeaders,
       });
       return response;
     }
-    
+
     // セキュリティヘッダーを追加したレスポンスを作成
     const response = NextResponse.next();
-    
+
     // セキュリティヘッダーを設定
     Object.entries(securityHeaders).forEach(([key, value]) => {
       response.headers.set(key, value);
@@ -58,7 +54,7 @@ export default withAuth(
 
     // ルート設定を取得
     const routeInfo = getRouteConfig(pathname);
-    
+
     if (!routeInfo) {
       // 設定されていないルートはデフォルトで保護
       console.warn(`⚠️  未設定ルート: ${pathname} - デフォルトで認証必須`);
@@ -114,11 +110,16 @@ export default withAuth(
       // 保護ルートの詳細チェック
       if (type === 'protected') {
         const protectedConfig = config as any;
-        
+
         // ロール権限チェック
-        if (protectedConfig.requiredRole && !hasRequiredRole(userRole, protectedConfig.requiredRole)) {
+        if (
+          protectedConfig.requiredRole &&
+          !hasRequiredRole(userRole, protectedConfig.requiredRole)
+        ) {
           const unauthorizedUrl = new URL('/unauthorized', req.url);
-          console.log(`🚫 権限不足: ${pathname} (要求: ${protectedConfig.requiredRole}, 現在: ${userRole})`);
+          console.log(
+            `🚫 権限不足: ${pathname} (要求: ${protectedConfig.requiredRole}, 現在: ${userRole})`
+          );
           return NextResponse.redirect(unauthorizedUrl);
         }
 

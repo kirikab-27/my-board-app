@@ -242,6 +242,5 @@ export const getRouteConfig = (pathname: string) => {
 
 /**
  * セキュリティヘッダー設定
- * CSP対応版のヘッダーを使用
+ * CSP対応版のヘッダーを使用 - middleware.tsから直接インポート
  */
-export { securityHeaders } from '@/lib/security/csp-headers';
