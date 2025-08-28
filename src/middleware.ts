@@ -8,7 +8,7 @@ import type { UserRole } from '@/types/auth';
 export default withAuth(
   function middleware(req) {
     const { pathname } = req.nextUrl;
-    const token = req.nextauth.token;
+    const token = req.nextauth?.token;
     const clientIP = getClientIP(req);
 
     // セキュリティチェックを実行
