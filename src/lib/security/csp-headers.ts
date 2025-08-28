@@ -71,12 +71,7 @@ export const securityHeaders = {
  * CSPのnonce生成（動的CSP用）- Edge Runtime対応
  */
 export function generateCSPNonce(): string {
-  // Web Crypto API使用（Edge Runtime対応）
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return btoa(crypto.randomUUID());
-  }
-
-  // フォールバック（開発環境など）
+  // Edge Runtime compatible fallback - avoid crypto.randomUUID()
   return btoa(Math.random().toString(36).substring(2) + Date.now().toString(36));
 }
 
@@ -166,7 +161,7 @@ export function processCSPViolation(violation: CSPViolation): void {
   // Edge Runtime対応 - 本番環境では監視システムに送信
   // TODO: Sentryやその他の監視システムに送信
   console.error('[CSP VIOLATION]', violation);
-  
+
   // 詳細ログも出力（デバッグ用）
   console.warn('🛡️ CSP違反を検出:', {
     directive: violation['violated-directive'],
