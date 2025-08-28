@@ -25,7 +25,6 @@ import {
   FormGroup,
   FormControlLabel,
   Switch,
-  Chip,
   Tabs,
   Tab,
   Pagination,
@@ -493,28 +492,52 @@ export const MuteManager: React.FC = () => {
                           <Typography variant="subtitle2">
                             {getMuteDisplayName(mute)}
                           </Typography>
-                          <Chip 
-                            label={mute.type}
-                            size="small"
-                            variant="outlined"
-                            color="primary"
-                          />
+                          <Typography 
+                            variant="caption" 
+                            sx={{ 
+                              px: 1, 
+                              py: 0.25, 
+                              bgcolor: 'primary.main', 
+                              color: 'primary.contrastText', 
+                              borderRadius: 1, 
+                              fontSize: '0.75rem' 
+                            }}
+                          >
+                            {mute.type}
+                          </Typography>
                           {mute.duration === 'temporary' && (
-                            <Chip
-                              icon={<ScheduleIcon />}
-                              label={`${new Date(mute.expiresAt!).toLocaleDateString('ja-JP')}`}
-                              size="small"
-                              variant="outlined"
-                              color="warning"
-                            />
+                            <Box 
+                              sx={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                px: 1, 
+                                py: 0.25, 
+                                bgcolor: 'warning.main', 
+                                color: 'warning.contrastText', 
+                                borderRadius: 1, 
+                                fontSize: '0.75rem' 
+                              }}
+                            >
+                              <ScheduleIcon sx={{ fontSize: 14, mr: 0.5 }} />
+                              <Typography variant="caption">
+                                {new Date(mute.expiresAt!).toLocaleDateString('ja-JP')}
+                              </Typography>
+                            </Box>
                           )}
                           {mute.type === 'keyword' && mute.isRegex && (
-                            <Chip
-                              label="正規表現"
-                              size="small"
-                              variant="outlined"
-                              color="info"
-                            />
+                            <Typography 
+                              variant="caption" 
+                              sx={{ 
+                                px: 1, 
+                                py: 0.25, 
+                                bgcolor: 'info.main', 
+                                color: 'info.contrastText', 
+                                borderRadius: 1, 
+                                fontSize: '0.75rem' 
+                              }}
+                            >
+                              正規表現
+                            </Typography>
                           )}
                         </Box>
                       }
@@ -529,17 +552,24 @@ export const MuteManager: React.FC = () => {
                             {Object.entries(mute.scope)
                               .filter(([key, value]) => value)
                               .map(([key]) => (
-                                <Chip
+                                <Typography
                                   key={key}
-                                  label={key === 'posts' ? '投稿' : 
-                                        key === 'comments' ? 'コメント' :
-                                        key === 'notifications' ? '通知' :
-                                        key === 'timeline' ? 'タイムライン' :
-                                        key === 'search' ? '検索' : key}
-                                  size="small"
-                                  variant="filled"
-                                  sx={{ fontSize: '0.7rem', height: '20px' }}
-                                />
+                                  variant="caption" 
+                                  sx={{ 
+                                    px: 1, 
+                                    py: 0.25, 
+                                    bgcolor: 'grey.200', 
+                                    color: 'text.primary', 
+                                    borderRadius: 1, 
+                                    fontSize: '0.75rem' 
+                                  }}
+                                >
+                                  {key === 'posts' ? '投稿' : 
+                                   key === 'comments' ? 'コメント' :
+                                   key === 'notifications' ? '通知' :
+                                   key === 'timeline' ? 'タイムライン' :
+                                   key === 'search' ? '検索' : key}
+                                </Typography>
                               ))
                             }
                           </Box>
