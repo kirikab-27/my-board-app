@@ -45,10 +45,10 @@ import {
   VolumeOff as VolumeOffIcon,
   NotificationsActive as NotificationsActiveIcon,
 } from '@mui/icons-material';
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { ja } from 'date-fns/locale';
+// import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+// import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+// import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+// import { ja } from 'date-fns/locale';
 
 interface NotificationSettings {
   _id?: string;
@@ -274,8 +274,7 @@ export const NotificationController: React.FC = () => {
   };
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ja}>
-      <Box sx={{ maxWidth: 800, mx: 'auto' }}>
+    <Box sx={{ maxWidth: 800, mx: 'auto' }}>
         {/* エラー・成功メッセージ */}
         {error && (
           <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
@@ -805,7 +804,6 @@ export const NotificationController: React.FC = () => {
           onTest={(result) => setTestResult(result)}
         />
       </Box>
-    </LocalizationProvider>
   );
 };
 
