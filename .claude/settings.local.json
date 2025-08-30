@@ -52,7 +52,8 @@
       "Bash(\"/c/Program Files/GitHub CLI/gh\" issue edit 39 --remove-label \"test-review\" --add-label \"complete\")",
       "Bash(\"/c/Program Files/GitHub CLI/gh\" repo view --json labels)",
       "Bash(\"/c/Program Files/GitHub CLI/gh\" issue edit 39 --remove-label \"test-review\" --add-label \"deployed-dev\")",
-      "Bash(\"/c/Program Files/GitHub CLI/gh\" issue view 39 --json number,title,state,labels)"
+      "Bash(\"/c/Program Files/GitHub CLI/gh\" issue view 39 --json number,title,state,labels)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": [],
