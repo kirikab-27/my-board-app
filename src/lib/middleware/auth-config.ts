@@ -119,6 +119,12 @@ export const routeConfig: RouteConfig = {
       redirectTo: '/login',
       description: 'メディアハッシュ計算API',
     },
+    '/api/media/signature': {
+      requiredRole: 'user',
+      requireEmailVerified: false,
+      redirectTo: '/login',
+      description: 'Cloudinary署名付きアップロードAPI',
+    },
     '/members-only': {
       requiredRole: 'user',
       requireEmailVerified: false,

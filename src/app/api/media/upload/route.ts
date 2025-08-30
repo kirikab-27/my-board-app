@@ -9,6 +9,19 @@ import { v4 as uuidv4 } from 'uuid';
 // Vercel Runtime設定: Edge Runtimeでmultipart/form-dataが制限されるため、Node.js Runtimeを強制
 export const runtime = 'nodejs';
 
+// CORS対応: OPTIONSリクエスト処理
+export async function OPTIONS(request: NextRequest) {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Max-Age': '86400',
+    },
+  });
+}
+
 // アップロード制限
 const RATE_LIMIT_WINDOW = 60 * 1000; // 1分
 const RATE_LIMIT_MAX_UPLOADS = 5; // 1分間に5回まで
@@ -73,6 +86,19 @@ export async function POST(request: NextRequest) {
 
     if (!file) {
       return NextResponse.json({ error: 'ファイルが選択されていません' }, { status: 400 });
+    }
+
+    // ファイルサイズチェック（4.5MB以下）
+    const MAX_FILE_SIZE = 4.5 * 1024 * 1024; // 4.5MB
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        { 
+          error: 'ファイルサイズが大きすぎます',
+          details: `ファイルサイズ: ${(file.size / 1024 / 1024).toFixed(2)}MB（上限: 4.5MB）`,
+          maxSize: '4.5MB'
+        },
+        { status: 413 }
+      );
     }
 
     // ファイルバリデーション

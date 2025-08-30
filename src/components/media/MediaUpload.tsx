@@ -155,7 +155,125 @@ const MediaUpload: React.FC<MediaUploadProps> = ({
     }
   };
 
-  // ファイルアップロード処理（プログレス対応）
+  // Cloudinary直接アップロード処理
+  const uploadFileDirectToCloudinary = async (
+    file: File,
+    onProgress?: (progress: number) => void
+  ): Promise<UploadedMedia> => {
+    try {
+      // 署名を取得
+      const signatureResponse = await fetch('/api/media/signature', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ type: uploadType }),
+      });
+
+      if (!signatureResponse.ok) {
+        const errorData = await signatureResponse.json();
+        throw new Error(errorData.error || '署名の取得に失敗しました');
+      }
+
+      const signatureData = await signatureResponse.json();
+      
+      // ファイルハッシュを事前計算
+      const fileHash = await calculateFileHash(file);
+      
+      // Cloudinaryに直接アップロード
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('api_key', signatureData.api_key);
+      formData.append('timestamp', signatureData.timestamp.toString());
+      formData.append('signature', signatureData.signature);
+      formData.append('public_id', signatureData.public_id);
+      formData.append('folder', signatureData.folder);
+      formData.append('tags', signatureData.tags);
+      if (signatureData.transformation) formData.append('transformation', signatureData.transformation);
+      if (signatureData.eager) formData.append('eager', signatureData.eager);
+      formData.append('eager_async', 'true');
+      formData.append('overwrite', 'false');
+      formData.append('invalidate', 'true');
+
+      const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${signatureData.cloud_name}/image/upload`;
+      
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        
+        // プログレス更新
+        xhr.upload.addEventListener('progress', (event) => {
+          if (event.lengthComputable && onProgress) {
+            const progress = (event.loaded / event.total) * 100;
+            onProgress(progress);
+          }
+        });
+
+        // 完了時の処理
+        xhr.addEventListener('load', () => {
+          if (xhr.status === 200) {
+            try {
+              const cloudinaryResponse = JSON.parse(xhr.responseText);
+              
+              // Cloudinaryレスポンスを内部形式に変換
+              const media: UploadedMedia = {
+                id: cloudinaryResponse.public_id,
+                type: file.type.startsWith('video/') ? 'video' : 'image',
+                url: cloudinaryResponse.secure_url,
+                thumbnailUrl: cloudinaryResponse.eager?.[0]?.secure_url,
+                optimizedUrl: cloudinaryResponse.eager?.[1]?.secure_url,
+                publicId: cloudinaryResponse.public_id,
+                title: file.name,
+                alt: file.name,
+                size: file.size,
+                metadata: {
+                  originalName: file.name,
+                  mimeType: file.type,
+                  width: cloudinaryResponse.width,
+                  height: cloudinaryResponse.height,
+                  duration: cloudinaryResponse.duration,
+                  hash: fileHash,
+                },
+              };
+              
+              resolve(media);
+            } catch (error) {
+              reject(new Error('Cloudinaryレスポンスの解析に失敗しました'));
+            }
+          } else {
+            try {
+              const errorData = JSON.parse(xhr.responseText);
+              reject(new Error(errorData.error?.message || 'Cloudinaryアップロードに失敗しました'));
+            } catch (error) {
+              reject(new Error(`Cloudinaryアップロードエラー: ${xhr.status}`));
+            }
+          }
+        });
+
+        // エラー時の処理
+        xhr.addEventListener('error', () => {
+          reject(new Error('Cloudinaryアップロードでネットワークエラーが発生しました'));
+        });
+
+        // タイムアウト時の処理
+        xhr.addEventListener('timeout', () => {
+          reject(new Error('Cloudinaryアップロードがタイムアウトしました'));
+        });
+
+        // タイムアウト設定（60秒 - Cloudinary直接アップロードは長めに設定）
+        xhr.timeout = 60000;
+
+        // リクエスト送信
+        xhr.open('POST', cloudinaryUrl);
+        xhr.send(formData);
+      });
+      
+    } catch (error) {
+      console.error('Cloudinary直接アップロードエラー:', error);
+      throw error;
+    }
+  };
+
+  // ファイルアップロード処理（フォールバック対応）
   const uploadFile = async (file: File, onProgress?: (progress: number) => void): Promise<UploadedMedia> => {
     // ファイルハッシュを事前計算
     const fileHash = await calculateFileHash(file);
@@ -168,60 +286,69 @@ const MediaUpload: React.FC<MediaUploadProps> = ({
       hashLength: fileHash ? fileHash.length : 0
     });
     
-    return new Promise((resolve, reject) => {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('type', uploadType);
-      formData.append('title', file.name);
-      formData.append('alt', file.name);
-      formData.append('hash', fileHash); // 元ファイルハッシュを追加
+    // 405エラー対策: まずCloudinary直接アップロードを試行
+    try {
+      console.log('🔄 Cloudinary直接アップロードを試行...');
+      return await uploadFileDirectToCloudinary(file, onProgress);
+    } catch (directUploadError) {
+      console.warn('⚠️ Cloudinary直接アップロードが失敗、内部APIフォールバック:', directUploadError);
+      
+      // フォールバック: 既存の内部API経由でアップロード
+      return new Promise((resolve, reject) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('type', uploadType);
+        formData.append('title', file.name);
+        formData.append('alt', file.name);
+        formData.append('hash', fileHash); // 元ファイルハッシュを追加
 
-      const xhr = new XMLHttpRequest();
+        const xhr = new XMLHttpRequest();
 
-      // プログレス更新
-      xhr.upload.addEventListener('progress', (event) => {
-        if (event.lengthComputable && onProgress) {
-          const progress = (event.loaded / event.total) * 100;
-          onProgress(progress);
-        }
-      });
-
-      // 完了時の処理
-      xhr.addEventListener('load', () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          try {
-            const response = JSON.parse(xhr.responseText);
-            resolve(response.media);
-          } catch (error) {
-            reject(new Error('レスポンスの解析に失敗しました'));
+        // プログレス更新
+        xhr.upload.addEventListener('progress', (event) => {
+          if (event.lengthComputable && onProgress) {
+            const progress = (event.loaded / event.total) * 100;
+            onProgress(progress);
           }
-        } else {
-          try {
-            const errorData = JSON.parse(xhr.responseText);
-            reject(new Error(errorData.error || 'アップロードに失敗しました'));
-          } catch (error) {
-            reject(new Error(`アップロードエラー: ${xhr.status}`));
+        });
+
+        // 完了時の処理
+        xhr.addEventListener('load', () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const response = JSON.parse(xhr.responseText);
+              resolve(response.media);
+            } catch (error) {
+              reject(new Error('レスポンスの解析に失敗しました'));
+            }
+          } else {
+            try {
+              const errorData = JSON.parse(xhr.responseText);
+              reject(new Error(errorData.error || 'アップロードに失敗しました'));
+            } catch (error) {
+              reject(new Error(`アップロードエラー: ${xhr.status}`));
+            }
           }
-        }
+        });
+
+        // エラー時の処理
+        xhr.addEventListener('error', () => {
+          reject(new Error('ネットワークエラーが発生しました'));
+        });
+
+        // タイムアウト時の処理
+        xhr.addEventListener('timeout', () => {
+          reject(new Error('アップロードがタイムアウトしました'));
+        });
+
+        // タイムアウト設定（30秒）
+        xhr.timeout = 30000;
+
+        // リクエスト送信
+        xhr.open('POST', '/api/media/upload');
+        xhr.send(formData);
       });
-
-      // エラー時の処理
-      xhr.addEventListener('error', () => {
-        reject(new Error('ネットワークエラーが発生しました'));
-      });
-
-      // タイムアウト時の処理
-      xhr.addEventListener('timeout', () => {
-        reject(new Error('アップロードがタイムアウトしました'));
-      });
-
-      // タイムアウト設定（30秒）
-      xhr.timeout = 30000;
-
-      // リクエスト送信
-      xhr.open('POST', '/api/media/upload');
-      xhr.send(formData);
-    });
+    }
   };
 
   // ファイルハッシュ値計算（SHA-256）
