@@ -12,7 +12,6 @@ import type { UserRole } from '@/types/auth';
 
 // MongoDBクライアント設定
 let client: MongoClient;
-let clientPromise: Promise<MongoClient>;
 
 if (!process.env.MONGODB_URI) {
   throw new Error('MONGODB_URI環境変数が設定されていません');
