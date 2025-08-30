@@ -66,15 +66,33 @@ export async function POST(req: NextRequest) {
     const verificationToken = await VerificationToken.createEmailVerificationToken(email, 24);
     console.log('✅ Verification token created:', verificationToken.token);
 
-    // 認証メール送信
+    // 認証メール送信（必須）
     console.log('📧 Sending verification email...');
     try {
       await sendVerificationEmail(email, name, verificationToken.token);
       console.log('✅ Verification email sent successfully');
     } catch (emailError) {
       console.error('❌ Failed to send verification email:', emailError);
-      // メール送信失敗でもユーザー作成は成功とする
+
+      // メール送信失敗時はユーザー作成をロールバック
+      console.log('🔄 Rolling back user creation due to email failure...');
+      await User.findByIdAndDelete(user._id);
+      await VerificationToken.deleteMany({
+        identifier: email,
+        type: 'email-verification',
+      });
+
       Sentry.captureException(emailError);
+
+      return NextResponse.json(
+        {
+          error: 'メール送信に失敗しました',
+          message: 'アカウント作成は取り消されました。しばらく時間をおいて再試行してください。',
+          details: 'SMTP接続エラーが発生しました。ネットワーク接続を確認してください。',
+          retryAvailable: true,
+        },
+        { status: 500 }
+      );
     }
 
     console.log('✅ User registered successfully:', email);

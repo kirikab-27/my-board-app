@@ -27,7 +27,7 @@ if (!globalWithMongo._mongoClientPromise) {
   client = new MongoClient(process.env.MONGODB_URI);
   globalWithMongo._mongoClientPromise = client.connect();
 }
-clientPromise = globalWithMongo._mongoClientPromise;
+const clientPromise = globalWithMongo._mongoClientPromise;
 
 export const authOptions: NextAuthOptions = {
   adapter: MongoDBAdapter(clientPromise),
@@ -54,7 +54,10 @@ export const authOptions: NextAuthOptions = {
           // バリデーション
           const validatedFields = loginSchema.safeParse(credentials);
           if (!validatedFields.success) {
-            console.log('❌ 認証失敗: バリデーションエラー', validatedFields.error.flatten().fieldErrors);
+            console.log(
+              '❌ 認証失敗: バリデーションエラー',
+              validatedFields.error.flatten().fieldErrors
+            );
             return null;
           }
 
@@ -62,7 +65,7 @@ export const authOptions: NextAuthOptions = {
 
           // データベース接続
           await connectDB();
-          
+
           // ユーザー検索
           const user = await User.findOne({ email: email.toLowerCase() });
           if (!user) {
@@ -77,14 +80,21 @@ export const authOptions: NextAuthOptions = {
             return null;
           }
 
-          // メール認証チェック（一時的に無効化）
-          // if (!user.emailVerified) {
-          //   console.log('❌ 認証失敗: メール認証が完了していません', email);
-          //   return null;
-          // }
+          // メール認証チェック（必須制御復活）
+          if (!user.emailVerified) {
+            console.log('❌ 認証失敗: メール認証が完了していません', email);
+            return null;
+          }
 
-          console.log('✅ 認証成功:', email, 'ユーザーID:', user._id, 'メール認証:', user.emailVerified ? '済み' : '未完了');
-          
+          console.log(
+            '✅ 認証成功:',
+            email,
+            'ユーザーID:',
+            user._id,
+            'メール認証:',
+            user.emailVerified ? '済み' : '未完了'
+          );
+
           // NextAuth用のユーザーオブジェクトを返す
           return {
             id: user._id.toString(),
@@ -92,7 +102,6 @@ export const authOptions: NextAuthOptions = {
             name: user.name,
             image: user.avatar || user.image || null,
           };
-
         } catch (error) {
           console.error('❌ 認証エラー:', error);
           return null;
@@ -127,7 +136,7 @@ export const authOptions: NextAuthOptions = {
       // 新規ログインまたはセッション更新でDB情報を取得
       if (user || trigger === 'update') {
         const userId = user?.id || token.id;
-        
+
         if (userId) {
           try {
             await connectDB();
@@ -148,12 +157,12 @@ export const authOptions: NextAuthOptions = {
               if (user) {
                 token.id = user.id;
               }
-              
+
               token.role = dbUser.role || 'user';
               token.emailVerified = dbUser.emailVerified;
               token.bio = dbUser.bio || '';
               token.avatar = dbUser.avatar || null; // プロフィール画像更新
-              
+
               console.log('✅ JWT callback - token updated:', {
                 trigger: trigger || 'login',
                 role: token.role,

@@ -15,6 +15,7 @@ import {
   CardContent,
   CircularProgress,
   Avatar,
+  Chip,
 } from '@mui/material';
 import {
   Forum as ForumIcon,
@@ -22,6 +23,8 @@ import {
   Person as PersonIcon,
   Speed as SpeedIcon,
   NetworkCheck as NetworkIcon,
+  CheckCircle as CheckCircleIcon,
+  Warning as WarningIcon,
 } from '@mui/icons-material';
 import { AuthButton } from '@/components/auth/AuthButton';
 import ProfileAvatar from '@/components/profile/ProfileAvatar';
@@ -32,6 +35,33 @@ export default function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [loadingButton, setLoadingButton] = useState<string | null>(null);
+  const [isResending, setIsResending] = useState(false);
+
+  // メール認証再送信ハンドラ
+  const handleResendVerification = async () => {
+    setIsResending(true);
+    try {
+      const response = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert('✅ ' + result.message + '\n\n' + result.instructions);
+      } else {
+        alert('❌ ' + result.error + '\n\n' + result.message);
+      }
+    } catch (error) {
+      console.error('❌ Resend verification error:', error);
+      alert('❌ ネットワークエラーが発生しました。接続を確認してください。');
+    } finally {
+      setIsResending(false);
+    }
+  };
 
   if (status === 'loading') {
     return <div>Loading...</div>;
@@ -51,12 +81,15 @@ export default function DashboardPage() {
           <AuthButton />
         </Toolbar>
         {/* 2段目のナビゲーション行 */}
-        <Toolbar variant="dense" sx={{ 
-          minHeight: 48, 
-          borderTop: 1, 
-          borderColor: 'rgba(255, 255, 255, 0.12)',
-          bgcolor: 'primary.main' 
-        }}>
+        <Toolbar
+          variant="dense"
+          sx={{
+            minHeight: 48,
+            borderTop: 1,
+            borderColor: 'rgba(255, 255, 255, 0.12)',
+            bgcolor: 'primary.main',
+          }}
+        >
           <AuthButton isNavigationRow={true} />
         </Toolbar>
       </AppBar>
@@ -68,7 +101,9 @@ export default function DashboardPage() {
           </Typography>
 
           <Box sx={{ mt: 2 }}>
-            <Typography variant="h6" gutterBottom>ユーザー情報</Typography>
+            <Typography variant="h6" gutterBottom>
+              ユーザー情報
+            </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mb: 2 }}>
               {session.user?.image ? (
                 <Avatar
@@ -82,10 +117,62 @@ export default function DashboardPage() {
               <Box>
                 <Typography variant="h6">{session.user?.name}</Typography>
                 <Typography color="text.secondary">{session.user?.email}</Typography>
-                <Typography variant="body2" color="text.secondary">ID: {session.user?.id}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  ID: {session.user?.id}
+                </Typography>
+                {/* メール認証状況表示 */}
+                <Box sx={{ mt: 1 }}>
+                  {session.user?.emailVerified ? (
+                    <Chip
+                      label="メール認証済み"
+                      color="success"
+                      size="small"
+                      icon={<CheckCircleIcon />}
+                    />
+                  ) : (
+                    <Chip
+                      label="メール認証待ち"
+                      color="warning"
+                      size="small"
+                      icon={<WarningIcon />}
+                    />
+                  )}
+                </Box>
               </Box>
             </Box>
           </Box>
+
+          {/* メール認証状況・再送信機能 */}
+          {!session.user?.emailVerified && (
+            <Box sx={{ mt: 3 }}>
+              <Paper sx={{ p: 3, bgcolor: 'warning.light', color: 'warning.contrastText' }}>
+                <Typography
+                  variant="h6"
+                  gutterBottom
+                  sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                >
+                  <WarningIcon />
+                  メール認証が必要です
+                </Typography>
+                <Typography variant="body2" sx={{ mb: 2 }}>
+                  アカウントのセキュリティのため、メールアドレスの認証を完了してください。
+                  メールボックスを確認して、認証リンクをクリックしてください。
+                </Typography>
+                <Button
+                  variant="contained"
+                  color="warning"
+                  onClick={handleResendVerification}
+                  disabled={isResending}
+                  sx={{ mr: 2 }}
+                >
+                  {isResending ? '送信中...' : 'メール再送信'}
+                </Button>
+                <Typography variant="caption" color="text.secondary">
+                  メールが届かない場合は、スパムフォルダもご確認ください。
+                </Typography>
+              </Paper>
+            </Box>
+          )}
 
           {/* クイックアクション */}
           <Box sx={{ mt: 4 }}>
@@ -186,7 +273,14 @@ export default function DashboardPage() {
 
               {/* Phase 7.1: 管理者専用パネル */}
               {session?.user?.role === 'admin' && (
-                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, width: '100%' }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: { xs: 'column', md: 'row' },
+                    gap: 2,
+                    width: '100%',
+                  }}
+                >
                   {/* Phase 7.1: パフォーマンス測定 */}
                   <Box sx={{ flex: 1 }}>
                     <Card>
@@ -203,7 +297,9 @@ export default function DashboardPage() {
                           onClick={async () => {
                             setLoadingButton('performance');
                             // パフォーマンス測定を実行
-                            const { default: PerformanceBaseline } = await import('@/utils/performance/baseline');
+                            const { default: PerformanceBaseline } = await import(
+                              '@/utils/performance/baseline'
+                            );
                             const baseline = new PerformanceBaseline();
                             await baseline.runMultipleMeasurements(3);
                             setLoadingButton(null);
@@ -237,13 +333,17 @@ export default function DashboardPage() {
                           onClick={async () => {
                             setLoadingButton('connection');
                             try {
-                              const response = await fetch('/api/monitoring/connection?detailed=true');
+                              const response = await fetch(
+                                '/api/monitoring/connection?detailed=true'
+                              );
                               const data = await response.json();
                               console.log('接続監視メトリクス:', data);
                               if (data.warnings?.length > 0) {
                                 alert(`警告: ${data.warnings.join(', ')}`);
                               } else {
-                                alert(`システム正常\n平均応答時間: ${data.metrics.averageResponseTime.toFixed(0)}ms\nアクティブ接続: ${data.metrics.activeConnections}`);
+                                alert(
+                                  `システム正常\n平均応答時間: ${data.metrics.averageResponseTime.toFixed(0)}ms\nアクティブ接続: ${data.metrics.activeConnections}`
+                                );
                               }
                             } catch (error) {
                               console.error('接続監視エラー:', error);
@@ -271,7 +371,7 @@ export default function DashboardPage() {
           {/* Phase 7.2: 管理者専用WebSocketクライアント */}
           {session?.user?.role === 'admin' && (
             <Box sx={{ mt: 4 }}>
-              <AdminWebSocketClient 
+              <AdminWebSocketClient
                 onNewPost={(notification) => {
                   console.log('📢 ダッシュボードで新着投稿通知受信:', notification);
                   // 必要に応じて追加の処理（例：投稿リスト更新等）
