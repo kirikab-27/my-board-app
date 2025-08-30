@@ -35,12 +35,21 @@
       "Bash(npm install)",
       "Bash(git stash show:*)",
       "Read(C:\\c\\Users\\masas\\Documents\\Projects\\my-board-app/**)",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "Bash(git merge:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" --version)",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue comment 39 --body-file phase2_report.md)",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue view 39)",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" project item-add 2 --owner kirikab-27 --url https://github.com/kirikab-27/my-board-app/issues/39)",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" project item-list 2 --owner kirikab-27 --limit 15)",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" api graphql -f query='\n{\n  repository(owner: \"\"kirikab-27\"\", name: \"\"my-board-app\"\") {\n    issue(number: 39) {\n      id\n      number\n      title\n      projectV2Items(first: 5) {\n        nodes {\n          id\n          project {\n            id\n            title\n          }\n        }\n      }\n    }\n  }\n}')",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" api graphql -f query='\n{\n  user(login: \"\"kirikab-27\"\") {\n    projectV2(number: 2) {\n      id\n      title\n      items(first: 20) {\n        nodes {\n          id\n          content {\n            ... on Issue {\n              number\n              title\n            }\n          }\n        }\n      }\n    }\n  }\n}')",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue edit 39 --remove-label \"spec-review\" --add-label \"test-review\")",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": [],
-    "additionalDirectories": [
-      "C:\\c\\Users\\masas\\Documents\\Projects\\my-board-app"
-    ]
+    "additionalDirectories": ["C:\\c\\Users\\masas\\Documents\\Projects\\my-board-app"]
   }
 }
