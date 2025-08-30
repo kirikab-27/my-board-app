@@ -31,16 +31,8 @@ define(['./workbox-f52fd911'], function (s) {
     s.clientsClaim(),
     s.precacheAndRoute(
       [
-        { url: '/_next/app-build-manifest.json', revision: 'a0684088a61e51e57a2229bc43853416' },
+        { url: '/_next/app-build-manifest.json', revision: '4c74f263da7eeab9e6926325c8d90ece' },
         { url: '/_next/dynamic-css-manifest.json', revision: 'd751713988987e9331980363e24189ce' },
-        {
-          url: '/_next/static/YsPGBDERh6wvLkYUR0Ey9/_buildManifest.js',
-          revision: '4f9cfc02f4ce67cb397c238f774f271c',
-        },
-        {
-          url: '/_next/static/YsPGBDERh6wvLkYUR0Ey9/_ssgManifest.js',
-          revision: 'b6652df95db52feb4daf4eca35380933',
-        },
         { url: '/_next/static/chunks/1322.ff7af74684a0c9a8.js', revision: 'ff7af74684a0c9a8' },
         { url: '/_next/static/chunks/152.3d8c5bbf53d3ba5b.js', revision: '3d8c5bbf53d3ba5b' },
         { url: '/_next/static/chunks/341-b2e31f848390c317.js', revision: 'b2e31f848390c317' },
@@ -580,6 +572,14 @@ define(['./workbox-f52fd911'], function (s) {
           revision: '8d2042ad87c17718',
         },
         { url: '/_next/static/chunks/webpack-cd58b8082ee27654.js', revision: 'cd58b8082ee27654' },
+        {
+          url: '/_next/static/u8GMRQAm0okBABXjvmHK3/_buildManifest.js',
+          revision: '4f9cfc02f4ce67cb397c238f774f271c',
+        },
+        {
+          url: '/_next/static/u8GMRQAm0okBABXjvmHK3/_ssgManifest.js',
+          revision: 'b6652df95db52feb4daf4eca35380933',
+        },
         { url: '/file.svg', revision: 'd09f95206c3fa0bb9bd9fefabfd0ea71' },
         { url: '/globe.svg', revision: '2aaafa6a49b6563925fe440891e32717' },
         { url: '/icons/icon-192x192.png', revision: '63f5de6a958bbf7547232b8635ede47f' },

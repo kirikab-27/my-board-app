@@ -1,5 +1,6 @@
 import { render } from '@react-email/render';
 import { sendEmail } from './sender'; // 既存のNodemailerベースの送信機能
+import { sendEmailHybrid } from './hybrid-sender'; // Issue #40: ハイブリッド送信システム
 import WelcomeEmail from '@/emails/templates/WelcomeEmail';
 import VerificationEmail from '@/emails/templates/VerificationEmail';
 import ResetPasswordEmail from '@/emails/templates/ResetPasswordEmail';
@@ -18,7 +19,7 @@ export class ReactEmailService {
 
       const emailHtml = await render(WelcomeEmail({ name, email }));
 
-      const result = await sendEmail({
+      const result = await sendEmailHybrid({
         to: email,
         subject: `🎉 ようこそ、${name}様！ - ${process.env.APP_NAME || '掲示板システム'}`,
         html: emailHtml,
@@ -59,7 +60,7 @@ export class ReactEmailService {
 
       const emailHtml = await render(VerificationEmail({ name, email, token }));
 
-      const result = await sendEmail({
+      const result = await sendEmailHybrid({
         to: email,
         subject: `【重要】アカウント認証のお願い - ${process.env.APP_NAME || '掲示板システム'}`,
         html: emailHtml,
