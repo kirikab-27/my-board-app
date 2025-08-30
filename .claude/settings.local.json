@@ -1,8 +1,46 @@
 {
   "permissions": {
-    "allow": ["Bash(git merge:*)", "Bash(git add:*)", "Bash(git commit:*)"],
+    "allow": [
+      "Bash(netstat:*)",
+      "Bash(npm run dev:*)",
+      "Bash(gh issue view:*)",
+      "Read(C:\\c\\Users\\masas\\Documents\\Projects\\my-board-app/**)",
+      "Bash(\"C:\\Users\\masas\\Documents\\Projects\\my-board-app\")",
+      "Bash(\"/c/Program Files/GitHub CLI/gh\" issue view 32)",
+      "Bash(\"C:\\Program Files\\GitHub CLI\\gh\" project item-list 2 --owner kirikab-27 --limit 30)",
+      "Bash(\"C:\\Program Files\\GitHub CLI\\gh\" issue view 32 --json title,state,assignees,labels,createdAt,updatedAt,body)",
+      "Bash(gh issue comment:*)",
+      "Bash(\"C:\\Program Files\\GitHub CLI\\gh\" issue comment 32 --body \"## Hydrationエラー修正完了（2025/08/30）\n\n### 修正した問題\n人気投稿タブでHTML構造違反によるHydrationエラーが発生していた問題を修正しました。\n\n### 修正内容\nsrc/app/analytics/dashboard/page.tsx の Material-UI Chip を Typography代替実装に変更\n- HTML構造安全化：p内divネスト問題完全解決\n- Hydrationエラー解消：React DOMエラー解消\n- 視覚的統一維持：Chip風デザイン完全再現\n\n### 動作確認結果\n- コンパイル成功\n- API正常動作\n- 人気投稿タブでのエラー完全解消\n- 視覚的デザイン維持\n\n修正完了：分析ダッシュボードは完全にエラーなく動作。残り実装項目への影響なし。\")",
+      "Bash(\"C:\\Program Files\\GitHub CLI\\gh\" issue view 32)",
+      "Bash(\"C:\\Program Files\\GitHub CLI\\gh.exe\" issue view 32 --repo kirikab-27/my-board-app)",
+      "Bash(\"C:\\Program Files\\GitHub CLI\\gh.exe\" project item-list 2 --owner kirikab-27 --limit 30)",
+      "Bash(\"C:\\Program Files\\GitHub CLI\\gh.exe\" project item-add 2 --owner kirikab-27 --url https://github.com/kirikab-27/my-board-app/issues/32)",
+      "Bash(\"C:\\Program Files\\GitHub CLI\\gh.exe\" project item-list 2 --owner kirikab-27 --limit 35)",
+      "Bash(\"C:\\Program Files\\GitHub CLI\\gh.exe\" api graphql -f query='\n{\n  node(id: \"\"PVT_kwHOB5DmjM4BAsKG\"\") {\n    ... on ProjectV2 {\n      id\n      title\n      fields(first: 20) {\n        nodes {\n          ... on ProjectV2Field {\n            id\n            name\n            dataType\n          }\n          ... on ProjectV2SingleSelectField {\n            id\n            name\n            dataType\n            options {\n              id\n              name\n            }\n          }\n        }\n      }\n    }\n  }\n}')",
+      "Bash(\"C:\\Program Files\\GitHub CLI\\gh.exe\" api graphql -f query='\n{\n  user(login: \"\"kirikab-27\"\") {\n    projectV2(number: 2) {\n      id\n      title\n      fields(first: 20) {\n        nodes {\n          ... on ProjectV2Field {\n            id\n            name\n            dataType\n          }\n          ... on ProjectV2SingleSelectField {\n            id\n            name\n            dataType\n            options {\n              id\n              name\n            }\n          }\n        }\n      }\n    }\n  }\n}')",
+      "Bash(\"C:\\Program Files\\GitHub CLI\\gh.exe\" api graphql -f query='\nmutation {\n  updateProjectV2ItemFieldValue(\n    input: {\n      projectId: \"\"PVT_kwHOB5DmjM4BAytu\"\"\n      itemId: \"\"PVTI_lAHOB5DmjM4BAytuzgeFRww\"\"\n      fieldId: \"\"PVTSSF_lAHOB5DmjM4BAytuzgzfW84\"\"\n      value: {\n        singleSelectOptionId: \"\"2b158c9c\"\"\n      }\n    }\n  ) {\n    projectV2Item {\n      id\n    }\n  }\n}')",
+      "Bash(npm run build:*)",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "Bash(git stash push:*)",
+      "Bash(git commit:*)",
+      "Bash(gh issue create:*)",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue create --title \"🐛 ダークモード対応: 2段目ヘッダーの色がライトモード固定の問題\" --body \"## 問題説明\n\n**現象**: ダークモードに切り替えても、2段目ナビゲーションヘッダーの背景色がprimary.main（ライトモード色）のまま固定されている\n\n**影響範囲**: 全ページの2段目ヘッダー（ダッシュボード・タイムライン・掲示板・ユーザー一覧・分析ダッシュボード等）\n\n**問題箇所**: AuthButton.tsx の isNavigationRow 実装部分のスタイリング\n\n## 技術詳細\n\n**現在の実装問題**:\nToolbar variant=\"\"dense\"\" で borderColor: ''primary.main'', backgroundColor: ''primary.main'', color: ''primary.contrastText'' がライトモード固定\n\n**期待される動作**:\n- ライトモード: ブルー系の背景色（現在と同じ）\n- ダークモード: ダーク系の背景色（現在は未対応）\n\n## 修正要求\n\n1. **テーマ切り替え対応**: Material-UIテーマシステムを活用したダークモード対応色設定\n2. **統一性確保**: 1段目ヘッダーとの色調和・視覚的一貫性\n3. **全ページ適用**: 2段目ヘッダーを使用する全ページでの統一修正\n4. **アクセシビリティ**: ダークモードでのコントラスト比確保・視認性向上\n\n## 受け入れ条件\n\n- [ ] ダークモード切り替え時に2段目ヘッダーの色が適切に変更される\n- [ ] ライトモード・ダークモード両方で十分なコントラスト比を確保\n- [ ] 全ページ（dashboard・timeline・board・users・analytics等）で統一動作\n- [ ] 既存の機能・レイアウトに影響を与えない\n\n## 優先度・ラベル\n\n- **優先度**: Medium（UI/UX品質向上）\n- **ラベル**: bug, ui/ux, theme\n- **影響**: 全ユーザー・全ページ（視覚的品質問題）\" --label \"bug\" --label \"ui/ux\" --label \"theme\")",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue create --title \"🐛 ダークモード対応: 2段目ヘッダーの色がライトモード固定の問題\" --body \"## 問題説明\n\n**現象**: ダークモードに切り替えても、2段目ナビゲーションヘッダーの背景色がprimary.main（ライトモード色）のまま固定されている\n\n**影響範囲**: 全ページの2段目ヘッダー（ダッシュボード・タイムライン・掲示板・ユーザー一覧・分析ダッシュボード等）\n\n**問題箇所**: AuthButton.tsx の isNavigationRow 実装部分のスタイリング\n\n## 技術詳細\n\n**現在の実装問題**:\nToolbar variant=\"\"dense\"\" で borderColor: ''primary.main'', backgroundColor: ''primary.main'', color: ''primary.contrastText'' がライトモード固定\n\n**期待される動作**:\n- ライトモード: ブルー系の背景色（現在と同じ）\n- ダークモード: ダーク系の背景色（現在は未対応）\n\n## 修正要求\n\n1. **テーマ切り替え対応**: Material-UIテーマシステムを活用したダークモード対応色設定\n2. **統一性確保**: 1段目ヘッダーとの色調和・視覚的一貫性\n3. **全ページ適用**: 2段目ヘッダーを使用する全ページでの統一修正\n4. **アクセシビリティ**: ダークモードでのコントラスト比確保・視認性向上\n\n## 受け入れ条件\n\n- [ ] ダークモード切り替え時に2段目ヘッダーの色が適切に変更される\n- [ ] ライトモード・ダークモード両方で十分なコントラスト比を確保\n- [ ] 全ページ（dashboard・timeline・board・users・analytics等）で統一動作\n- [ ] 既存の機能・レイアウトに影響を与えない\n\n## 優先度・ラベル\n\n- **優先度**: Medium（UI/UX品質向上）\n- **ラベル**: bug, improvement\n- **影響**: 全ユーザー・全ページ（視覚的品質問題）\" --label \"bug\" --label \"improvement\")",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" project item-add 2 --owner kirikab-27 --url https://github.com/kirikab-27/my-board-app/issues/38)",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" api graphql -f query='{\n  user(login: \"\"kirikab-27\"\") {\n    projectV2(number: 2) {\n      id\n      fields(first: 20) {\n        nodes {\n          ... on ProjectV2SingleSelectField {\n            id\n            name\n            options {\n              id\n              name\n            }\n          }\n        }\n      }\n      items(last: 5) {\n        nodes {\n          id\n          content {\n            ... on Issue {\n              number\n              title\n            }\n          }\n        }\n      }\n    }\n  }\n}')",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" api graphql -f query='mutation {\n  updateProjectV2ItemFieldValue(\n    input: {\n      projectId: \"\"PVT_kwHOB5DmjM4BAytu\"\"\n      itemId: \"\"PVTI_lAHOB5DmjM4BAytuzgeMLoI\"\"\n      fieldId: \"\"PVTSSF_lAHOB5DmjM4BAytuzgzfW84\"\"\n      value: {\n        singleSelectOptionId: \"\"f75ad846\"\"\n      }\n    }\n  ) {\n    projectV2Item {\n      id\n    }\n  }\n}')",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" project item-list 2 --owner kirikab-27 --limit 10)",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue view 38)",
+      "Bash(npm install)",
+      "Bash(git stash show:*)",
+      "Read(C:\\c\\Users\\masas\\Documents\\Projects\\my-board-app/**)",
+      "Bash(powershell:*)"
+    ],
     "deny": [],
     "ask": [],
-    "additionalDirectories": ["C:\\c\\Users\\masas\\Documents\\Projects\\my-board-app"]
+    "additionalDirectories": [
+      "C:\\c\\Users\\masas\\Documents\\Projects\\my-board-app"
+    ]
   }
 }

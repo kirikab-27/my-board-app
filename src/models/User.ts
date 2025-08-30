@@ -217,8 +217,7 @@ UserSchema.methods.toPublicProfile = function (): Partial<IUser> {
 };
 
 // パフォーマンス最適化インデックス
-UserSchema.index({ email: 1 }, { unique: true });
-UserSchema.index({ username: 1 }, { unique: true });
+// email、usernameはスキーマのunique: trueで自動作成されるため削除
 UserSchema.index({ 'stats.followersCount': -1 }); // 人気ユーザー検索用
 UserSchema.index({ lastSeen: -1 }); // アクティブユーザー検索用
 UserSchema.index({ isOnline: 1 }); // オンラインユーザー検索用

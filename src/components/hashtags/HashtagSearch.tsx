@@ -103,9 +103,11 @@ export default function HashtagSearch({
 
   // 検索履歴を localStorage から読み込み
   useEffect(() => {
-    const savedHistory = localStorage.getItem('hashtag-search-history');
-    if (savedHistory) {
-      setSearchHistory(JSON.parse(savedHistory));
+    if (typeof window !== 'undefined') {
+      const savedHistory = localStorage.getItem('hashtag-search-history');
+      if (savedHistory) {
+        setSearchHistory(JSON.parse(savedHistory));
+      }
     }
   }, []);
 
