@@ -35,12 +35,11 @@
       "Bash(npm install)",
       "Bash(git stash show:*)",
       "Read(C:\\c\\Users\\masas\\Documents\\Projects\\my-board-app/**)",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "Bash(git merge:*)"
     ],
     "deny": [],
     "ask": [],
-    "additionalDirectories": [
-      "C:\\c\\Users\\masas\\Documents\\Projects\\my-board-app"
-    ]
+    "additionalDirectories": ["C:\\c\\Users\\masas\\Documents\\Projects\\my-board-app"]
   }
 }
