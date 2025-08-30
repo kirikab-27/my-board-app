@@ -192,6 +192,7 @@ SECURITY_API_TOKEN=your_security_admin_token_here
 ## API エンドポイント
 
 ### 投稿関連
+
 - `GET /api/posts` - 投稿一覧取得
 - `POST /api/posts` - 投稿作成
 - `GET /api/posts/[id]` - 投稿詳細
@@ -201,6 +202,7 @@ SECURITY_API_TOKEN=your_security_admin_token_here
 - `GET /api/posts/search` - 投稿検索
 
 ### 認証関連
+
 - `GET/POST /api/auth/[...nextauth]` - NextAuth.js統合認証
 - `POST /api/auth/register` - ユーザー登録・メール認証送信
 - `GET /api/auth/verify-email` - メール認証確認
@@ -208,12 +210,14 @@ SECURITY_API_TOKEN=your_security_admin_token_here
 - `POST /api/auth/reset-password/confirm` - パスワードリセット確定
 
 ### SNS関連
+
 - `GET/POST/DELETE /api/follow` - フォロー機能
 - `GET /api/timeline` - タイムライン取得
 - `GET /api/users` - ユーザー一覧・検索
 - `GET/POST/PATCH /api/notifications` - 通知システム
 
 ### セキュリティ関連
+
 - `GET /api/security/stats` - 攻撃統計
 - `POST /api/security/unblock` - ブロック解除
 - `GET/POST/PATCH /api/security/audit` - 監査ログ
@@ -223,21 +227,25 @@ SECURITY_API_TOKEN=your_security_admin_token_here
 ## よくある問題と解決策
 
 ### 開発サーバーが起動しない
+
 1. `npm install` で依存関係を再インストール
 2. MongoDB接続を確認
 3. ポート競合確認（`npm run dev -- -p 3012`等で回避）
 
 ### TypeScriptビルドエラー
+
 1. `npm run build` でエラー確認
 2. `npm run type-check` でTypeScript型チェック
 3. 実装→ビルド→修正→完了フロー厳守
 
 ### 認証・ログイン問題
+
 1. CredentialsProvider有効確認
 2. 環境変数同期（APP_URL・NEXTAUTH_URL）
 3. `node scripts/update-user-roles.js` でrole設定
 
 ### メール送信エラー
+
 1. さくらSMTP設定確認
 2. DKIM/SPF/DMARC設定確認
 3. 国外IPアクセス制限無効化（Vercel対応）
@@ -249,9 +257,11 @@ SECURITY_API_TOKEN=your_security_admin_token_here
 **プロジェクト**: Week3 SNS Development - 5段階カンバンボード管理
 
 ### ワークフロー（確定版）
+
 **新機能・改善**: Issue作成→Review(spec)→Backlog→Today→In Progress→Review(test)→**ユーザー確認→コミット実行**→Done
 
 ### ⚠️ 重要ルール（厳守必須）
+
 - **全問題はIssue作成必須**: 発見→即修正禁止
 - **🚨 実装ファーストの癖を矯正**: ユーザー要望受領→手を止める→Issue更新→ステータス移動→実装許可→実装開始
 - **💾 コミットタイミング厳守**: ユーザー動作確認完了→コミット実行→Done移動（確認前コミット禁止）
@@ -266,6 +276,7 @@ main (本番環境)
 ```
 
 **デプロイフロー**:
+
 ```
 Issue完了 → Review確認 → develop マージ → deployed-dev ラベル
      ↓
@@ -274,26 +285,34 @@ Issue完了 → Review確認 → develop マージ → deployed-dev ラベル
 
 **本番環境**: https://kab137lab.com (Vercel + MongoDB Atlas + Cloudflare DNS)
 
+## ⚠️ **重要: GitHub API操作安全プロトコル**
+
+- **[🚨 GitHub API操作安全プロトコル](./docs/GITHUB_API_SAFETY_PROTOCOL.md)** - 重大インシデント防止・プライバシー保護・厳格遵守必須 ⚠️ **最重要・GitHub操作前必読**
+
 ## 参考ドキュメント
 
 ### 主要実装ガイド
+
 - **[🚨 実装規律強化ガイド](./README-implementation-discipline.md)** - 実装ファースト癖矯正・フロー厳守・信頼回復戦略 ⚠️ **最重要・必読**
 - **[💾 GitHub Projects コミットワークフロー](./README-github-projects-commit-workflow.md)** - ユーザー確認後コミット・品質保証フロー ✨ **最新確定版**
 - **[Issue実装履歴アーカイブ](./docs/issue-history-archive.md)** - 全Issue詳細実装履歴
 - **[API詳細仕様](./docs/api-detailed-specs.md)** - エンドポイント・データ形式詳細
 
 ### Phase別実装手順
+
 - **[Phase 0-2](./README-phase-1-2.md)** - テスト・監視・認証基盤
 - **[Phase 3-5](./README-phase-3-5.md)** - 会員機能・権限・セキュリティ
 - **[Phase 6.0: SNS機能](./README-phase-6-sns-schema.md)** - MongoDB拡張スキーマ
 - **[Phase 6.1: タイムライン機能](./README-phase-6.1-timeline.md)** - フォロー・タイムライン完全ガイド
 
 ### システム設計・品質管理
+
 - **[品質保証プロトコル](./docs/quality-assurance-protocol.md)** - 発表会前緊急チェック・45分フルプロセス
 - **[ブランチ戦略](./docs/member-branch-strategy.md)** - Git Flow・Phase別統合
 - **[テスト・品質保証](./docs/test-quality-strategy.md)** - Jest・Playwright・監視
 
 ### トラブルシューティング
+
 - **[Vercelデプロイエラー解決](./README-vercel-deploy-errors-phase55.md)** - 21項目の技術問題解決
 - **[認証トラブルシューティング](./README-auth-troubleshooting.md)** - NextAuth.js問題解決
 - **[メール送信設定](./docs/email-auth-cheatsheet.md)** - さくらSMTP・DKIM/SPF/DMARC

@@ -107,6 +107,18 @@ export const routeConfig: RouteConfig = {
       redirectTo: '/login',
       description: '個人分析ダッシュボード',
     },
+    '/api/media/upload': {
+      requiredRole: 'user',
+      requireEmailVerified: false,
+      redirectTo: '/login',
+      description: 'メディアアップロードAPI',
+    },
+    '/api/media/hash': {
+      requiredRole: 'user',
+      requireEmailVerified: false,
+      redirectTo: '/login',
+      description: 'メディアハッシュ計算API',
+    },
     '/members-only': {
       requiredRole: 'user',
       requireEmailVerified: false,
