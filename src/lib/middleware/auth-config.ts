@@ -95,6 +95,12 @@ export const routeConfig: RouteConfig = {
       redirectTo: '/login',
       description: '通知',
     },
+    '/analytics/dashboard': {
+      requiredRole: 'user',
+      requireEmailVerified: false,
+      redirectTo: '/login',
+      description: '個人分析ダッシュボード',
+    },
     '/members-only': {
       requiredRole: 'user',
       requireEmailVerified: false,

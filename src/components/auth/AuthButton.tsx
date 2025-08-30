@@ -17,6 +17,7 @@ import {
   Edit as EditIcon,
   Lock as LockIcon,
   Security as SecurityIcon,
+  Analytics as AnalyticsIcon,
 } from '@mui/icons-material';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -111,6 +112,11 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
     router.push('/hashtags');
   };
 
+  const handleAnalytics = () => {
+    handleMenuClose();
+    router.push('/analytics/dashboard');
+  };
+
   const handleUserSearch = () => {
     handleMenuClose();
     router.push('/users/search');
@@ -183,6 +189,14 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
             sx={{ color: 'inherit' }}
           >
             ハッシュタグ
+          </Button>
+          <Button
+            variant="text"
+            startIcon={<AnalyticsIcon />}
+            onClick={handleAnalytics}
+            sx={{ color: 'inherit' }}
+          >
+            分析
           </Button>
         </Box>
       );
@@ -284,6 +298,10 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
           <MenuItem key="hashtags" onClick={handleHashtags}>
             <TagIcon sx={{ mr: 1 }} />
             ハッシュタグ
+          </MenuItem>,
+          <MenuItem key="analytics" onClick={handleAnalytics}>
+            <AnalyticsIcon sx={{ mr: 1 }} />
+            分析ダッシュボード
           </MenuItem>,
           <Box key="divider" sx={{ borderBottom: 1, borderColor: 'divider', my: 1 }} />
         ]}
