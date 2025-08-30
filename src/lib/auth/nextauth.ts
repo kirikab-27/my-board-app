@@ -12,28 +12,21 @@ import type { UserRole } from '@/types/auth';
 
 // MongoDBクライアント設定
 let client: MongoClient;
-let clientPromise: Promise<MongoClient>;
 
 if (!process.env.MONGODB_URI) {
   throw new Error('MONGODB_URI環境変数が設定されていません');
 }
 
-if (process.env.NODE_ENV === 'development') {
-  // 開発環境では既存のクライアントを再利用
-  const globalWithMongo = global as typeof globalThis & {
-    _mongoClientPromise?: Promise<MongoClient>;
-  };
+// Edge Runtime compatible - use production settings for stability
+const globalWithMongo = global as typeof globalThis & {
+  _mongoClientPromise?: Promise<MongoClient>;
+};
 
-  if (!globalWithMongo._mongoClientPromise) {
-    client = new MongoClient(process.env.MONGODB_URI);
-    globalWithMongo._mongoClientPromise = client.connect();
-  }
-  clientPromise = globalWithMongo._mongoClientPromise;
-} else {
-  // 本番環境では新しいクライアントを作成
+if (!globalWithMongo._mongoClientPromise) {
   client = new MongoClient(process.env.MONGODB_URI);
-  clientPromise = client.connect();
+  globalWithMongo._mongoClientPromise = client.connect();
 }
+const clientPromise = globalWithMongo._mongoClientPromise;
 
 export const authOptions: NextAuthOptions = {
   adapter: MongoDBAdapter(clientPromise),
@@ -220,5 +213,5 @@ export const authOptions: NextAuthOptions = {
     brandColor: '#1976d2', // MUIのプライマリカラー
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === 'development',
+  debug: false, // Edge Runtime compatible - disabled for production stability
 };

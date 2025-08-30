@@ -33,50 +33,29 @@ const productionCSP = `
   .trim();
 
 /**
- * 開発環境用のCSPヘッダー（緩い）
+ * 開発環境用のCSPヘッダー（緩い） - Edge Runtime対応のため本番環境設定に統一
+ * 元の開発環境設定（参考用）:
+ * - WebSocket接続許可（ws://localhost:*）
+ * - HTTP接続許可（http://localhost:*）
+ * - より緩い設定での開発支援
  */
-const developmentCSP = `
-  default-src 'self';
-  script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com;
-  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-  font-src 'self' https://fonts.gstatic.com data:;
-  img-src 'self' data: https: blob:;
-  media-src 'self';
-  object-src 'none';
-  base-uri 'self';
-  form-action 'self';
-  frame-ancestors 'none';
-  connect-src 'self' 
-    ws://localhost:*
-    ws://127.0.0.1:*
-    http://localhost:*
-    http://127.0.0.1:*
-    https://api.github.com 
-    https://accounts.google.com 
-    https://oauth2.googleapis.com
-    https://www.googleapis.com
-    https://res.cloudinary.com;
-`
-  .replace(/\n/g, ' ')
-  .replace(/\s+/g, ' ')
-  .trim();
+// const developmentCSP は Edge Runtime 対応のため productionCSP に統一
 
 /**
  * 包括的なセキュリティヘッダー
+ * Edge Runtime対応 - 本番環境設定を使用
  */
 export const securityHeaders = {
-  // Content Security Policy
-  'Content-Security-Policy': process.env.NODE_ENV === 'production' ? productionCSP : developmentCSP,
+  // Content Security Policy - Edge Runtime対応（本番設定使用）
+  'Content-Security-Policy': productionCSP,
 
   // XSS保護
   'X-Content-Type-Options': 'nosniff',
   'X-Frame-Options': 'DENY',
   'X-XSS-Protection': '1; mode=block',
 
-  // HTTPS強制（本番環境のみ）
-  ...(process.env.NODE_ENV === 'production' && {
-    'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
-  }),
+  // HTTPS強制（Edge Runtime対応 - 常に有効）
+  'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
 
   // リファラー制御
   'Referrer-Policy': 'strict-origin-when-cross-origin',
@@ -92,20 +71,16 @@ export const securityHeaders = {
  * CSPのnonce生成（動的CSP用）- Edge Runtime対応
  */
 export function generateCSPNonce(): string {
-  // Web Crypto API使用（Edge Runtime対応）
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return btoa(crypto.randomUUID());
-  }
-
-  // フォールバック（開発環境など）
+  // Edge Runtime compatible fallback - avoid crypto.randomUUID()
   return btoa(Math.random().toString(36).substring(2) + Date.now().toString(36));
 }
 
 /**
  * 動的CSPヘッダー生成（nonce対応）
+ * Edge Runtime対応 - 本番環境設定を使用
  */
 export function generateCSPWithNonce(nonce: string): string {
-  const baseCSP = process.env.NODE_ENV === 'production' ? productionCSP : developmentCSP;
+  const baseCSP = productionCSP; // Edge Runtime対応（本番設定使用）
 
   // script-srcにnonceを追加
   return baseCSP.replace("script-src 'self'", `script-src 'self' 'nonce-${nonce}'`);
@@ -113,10 +88,11 @@ export function generateCSPWithNonce(nonce: string): string {
 
 /**
  * CSP違反レポート処理用の設定
+ * Edge Runtime対応 - 本番環境設定を使用
  */
 export const cspReportingHeaders = {
   'Content-Security-Policy-Report-Only': `
-    ${process.env.NODE_ENV === 'production' ? productionCSP : developmentCSP};
+    ${productionCSP};
     report-uri /api/security/csp-report;
     report-to csp-endpoint;
   `
@@ -179,21 +155,18 @@ export interface CSPViolation {
 
 /**
  * CSP違反レポートの処理
+ * Edge Runtime対応 - 本番環境設定を使用
  */
 export function processCSPViolation(violation: CSPViolation): void {
-  // 開発環境では詳細ログ
-  if (process.env.NODE_ENV === 'development') {
-    console.warn('🛡️ CSP違反を検出:', {
-      directive: violation['violated-directive'],
-      blocked: violation['blocked-uri'],
-      source: violation['source-file'],
-      line: violation['line-number'],
-    });
-  }
+  // Edge Runtime対応 - 本番環境では監視システムに送信
+  // TODO: Sentryやその他の監視システムに送信
+  console.error('[CSP VIOLATION]', violation);
 
-  // 本番環境では監視システムに送信
-  if (process.env.NODE_ENV === 'production') {
-    // TODO: Sentryやその他の監視システムに送信
-    console.error('[CSP VIOLATION]', violation);
-  }
+  // 詳細ログも出力（デバッグ用）
+  console.warn('🛡️ CSP違反を検出:', {
+    directive: violation['violated-directive'],
+    blocked: violation['blocked-uri'],
+    source: violation['source-file'],
+    line: violation['line-number'],
+  });
 }

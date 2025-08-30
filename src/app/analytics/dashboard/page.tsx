@@ -28,12 +28,9 @@ import {
   TrendingUp as TrendingUpIcon,
   TrendingDown as TrendingDownIcon,
   People as PeopleIcon,
-  Visibility as VisibilityIcon,
   ThumbUp as ThumbUpIcon,
-  Comment as CommentIcon,
   Analytics as AnalyticsIcon,
   PostAdd as PostAddIcon,
-  PersonAdd as PersonAddIcon,
 } from '@mui/icons-material';
 import dynamic from 'next/dynamic';
 import { useRequireAuth } from '@/hooks/useRequireAuth';

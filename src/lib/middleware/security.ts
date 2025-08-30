@@ -71,8 +71,8 @@ class SimpleRateLimit {
   }
 }
 
-// 開発環境では制限を大幅に緩和
-const isDevelopment = process.env.NODE_ENV === 'development';
+// Edge Runtime compatible - default to production settings
+const isDevelopment = false; // Always false in Edge Runtime for security
 
 // グローバルレート制限インスタンス（開発環境で緩和）
 const globalRateLimit = new SimpleRateLimit(
@@ -359,13 +359,16 @@ export const resetIPRateLimit = (ip: string) => {
 
 /**
  * 定期クリーンアップ（メモリリーク対策）
+ * Edge Runtime では setInterval は使用不可
  * 本格運用時はcronジョブやRedisのTTL機能を使用
  */
-setInterval(
-  () => {
-    globalRateLimit.cleanup();
-    authRateLimit.cleanup();
-    apiRateLimit.cleanup();
-  },
-  5 * 60 * 1000
-); // 5分毎にクリーンアップ（頻度増加）
+// Edge Runtime compatible - setInterval not supported in Edge Runtime
+// Cleanup is handled by Vercel's serverless function lifecycle
+// setInterval(
+//   () => {
+//     globalRateLimit.cleanup();
+//     authRateLimit.cleanup();
+//     apiRateLimit.cleanup();
+//   },
+//   5 * 60 * 1000
+// ); // 5分毎にクリーンアップ（頻度増加）

@@ -11,9 +11,7 @@ import {
   Person as PersonIcon,
   People as PeopleIcon,
   Timeline as TimelineIcon,
-  Notifications as NotificationsIcon,
   Tag as TagIcon,
-  Search as SearchIcon,
   Edit as EditIcon,
   Lock as LockIcon,
   Security as SecurityIcon,
@@ -102,11 +100,6 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
     router.push('/timeline');
   };
 
-  const handleNotifications = () => {
-    handleMenuClose();
-    router.push('/notifications');
-  };
-
   const handleHashtags = () => {
     handleMenuClose();
     router.push('/hashtags');
@@ -115,11 +108,6 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
   const handleAnalytics = () => {
     handleMenuClose();
     router.push('/analytics/dashboard');
-  };
-
-  const handleUserSearch = () => {
-    handleMenuClose();
-    router.push('/users/search');
   };
 
   if (status === 'loading') {

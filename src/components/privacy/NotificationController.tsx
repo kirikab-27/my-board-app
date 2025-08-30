@@ -14,15 +14,11 @@ import {
   Switch,
   TextField,
   Button,
-  Chip,
-  Divider,
-  Grid,
   Alert,
   CircularProgress,
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Slider,
   Select,
   MenuItem,
   InputLabel,
@@ -31,10 +27,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
 } from '@mui/material';
 import {
   ExpandMore as ExpandMoreIcon,
@@ -49,10 +41,10 @@ import {
   VolumeOff as VolumeOffIcon,
   NotificationsActive as NotificationsActiveIcon,
 } from '@mui/icons-material';
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { ja } from 'date-fns/locale';
+// import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+// import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+// import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+// import { ja } from 'date-fns/locale';
 
 interface NotificationSettings {
   _id?: string;
@@ -278,8 +270,7 @@ export const NotificationController: React.FC = () => {
   };
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ja}>
-      <Box sx={{ maxWidth: 800, mx: 'auto' }}>
+    <Box sx={{ maxWidth: 800, mx: 'auto' }}>
         {/* エラー・成功メッセージ */}
         {error && (
           <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
@@ -478,7 +469,9 @@ export const NotificationController: React.FC = () => {
               <Typography variant="h6">
                 内容フィルタ
                 {settings.contentFilter.enabled && (
-                  <Chip size="small" label="有効" color="primary" sx={{ ml: 1 }} />
+                  <Typography variant="caption" sx={{ ml: 1, px: 1, py: 0.5, bgcolor: 'primary.main', color: 'primary.contrastText', borderRadius: 1, fontSize: '0.75rem' }}>
+                    有効
+                  </Typography>
                 )}
               </Typography>
             </Box>
@@ -529,13 +522,29 @@ export const NotificationController: React.FC = () => {
                   
                   <Box display="flex" flexWrap="wrap" gap={1} mb={2}>
                     {settings.contentFilter.keywords.map((keyword, index) => (
-                      <Chip
+                      <Box
                         key={index}
-                        label={keyword}
-                        onDelete={() => removeKeyword(index)}
-                        deleteIcon={<DeleteIcon />}
-                        size="small"
-                      />
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          px: 1,
+                          py: 0.5,
+                          bgcolor: 'grey.100',
+                          borderRadius: 1,
+                          fontSize: '0.875rem'
+                        }}
+                      >
+                        <Typography variant="body2" sx={{ mr: 0.5 }}>
+                          {keyword}
+                        </Typography>
+                        <IconButton
+                          size="small"
+                          onClick={() => removeKeyword(index)}
+                          sx={{ p: 0.25, ml: 0.5 }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Box>
                     ))}
                   </Box>
                 </Box>
@@ -591,7 +600,9 @@ export const NotificationController: React.FC = () => {
               <Typography variant="h6">
                 時間帯制御
                 {settings.timeControl.enabled && (
-                  <Chip size="small" label="有効" color="primary" sx={{ ml: 1 }} />
+                  <Typography variant="caption" sx={{ ml: 1, px: 1, py: 0.5, bgcolor: 'primary.main', color: 'primary.contrastText', borderRadius: 1, fontSize: '0.75rem' }}>
+                    有効
+                  </Typography>
                 )}
               </Typography>
             </Box>
@@ -789,7 +800,6 @@ export const NotificationController: React.FC = () => {
           onTest={(result) => setTestResult(result)}
         />
       </Box>
-    </LocalizationProvider>
   );
 };
 

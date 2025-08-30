@@ -71,6 +71,12 @@ export const routeConfig: RouteConfig = {
       redirectTo: '/login',
       description: 'プロフィール管理',
     },
+    '/profile/privacy': {
+      requiredRole: 'user',
+      requireEmailVerified: true,
+      redirectTo: '/login',
+      description: 'プライバシー設定',
+    },
     '/timeline': {
       requiredRole: 'user',
       requireEmailVerified: false,
@@ -100,6 +106,18 @@ export const routeConfig: RouteConfig = {
       requireEmailVerified: false,
       redirectTo: '/login',
       description: '個人分析ダッシュボード',
+    },
+    '/api/media/upload': {
+      requiredRole: 'user',
+      requireEmailVerified: false,
+      redirectTo: '/login',
+      description: 'メディアアップロードAPI',
+    },
+    '/api/media/hash': {
+      requiredRole: 'user',
+      requireEmailVerified: false,
+      redirectTo: '/login',
+      description: 'メディアハッシュ計算API',
     },
     '/members-only': {
       requiredRole: 'user',
@@ -242,6 +260,5 @@ export const getRouteConfig = (pathname: string) => {
 
 /**
  * セキュリティヘッダー設定
- * CSP対応版のヘッダーを使用
+ * CSP対応版のヘッダーを使用 - middleware.tsから直接インポート
  */
-export { securityHeaders } from '@/lib/security/csp-headers';

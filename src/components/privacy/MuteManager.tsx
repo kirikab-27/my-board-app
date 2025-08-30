@@ -25,7 +25,6 @@ import {
   FormGroup,
   FormControlLabel,
   Switch,
-  Chip,
   Tabs,
   Tab,
   Pagination,
@@ -33,7 +32,6 @@ import {
   CircularProgress,
   Divider,
   Paper,
-  Grid,
   Tooltip,
 } from '@mui/material';
 import {
@@ -49,10 +47,10 @@ import {
   Settings as SettingsIcon,
 } from '@mui/icons-material';
 import { useSession } from 'next-auth/react';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { ja } from 'date-fns/locale';
+// import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+// import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+// import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+// import { ja } from 'date-fns/locale';
 
 interface MuteItem {
   _id: string;
@@ -403,8 +401,7 @@ export const MuteManager: React.FC = () => {
   }
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ja}>
-      <Box>
+    <Box>
         {message && (
           <Alert 
             severity={message.type} 
@@ -494,28 +491,52 @@ export const MuteManager: React.FC = () => {
                           <Typography variant="subtitle2">
                             {getMuteDisplayName(mute)}
                           </Typography>
-                          <Chip 
-                            label={mute.type}
-                            size="small"
-                            variant="outlined"
-                            color="primary"
-                          />
+                          <Typography 
+                            variant="caption" 
+                            sx={{ 
+                              px: 1, 
+                              py: 0.25, 
+                              bgcolor: 'primary.main', 
+                              color: 'primary.contrastText', 
+                              borderRadius: 1, 
+                              fontSize: '0.75rem' 
+                            }}
+                          >
+                            {mute.type}
+                          </Typography>
                           {mute.duration === 'temporary' && (
-                            <Chip
-                              icon={<ScheduleIcon />}
-                              label={`${new Date(mute.expiresAt!).toLocaleDateString('ja-JP')}`}
-                              size="small"
-                              variant="outlined"
-                              color="warning"
-                            />
+                            <Box 
+                              sx={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                px: 1, 
+                                py: 0.25, 
+                                bgcolor: 'warning.main', 
+                                color: 'warning.contrastText', 
+                                borderRadius: 1, 
+                                fontSize: '0.75rem' 
+                              }}
+                            >
+                              <ScheduleIcon sx={{ fontSize: 14, mr: 0.5 }} />
+                              <Typography variant="caption">
+                                {new Date(mute.expiresAt!).toLocaleDateString('ja-JP')}
+                              </Typography>
+                            </Box>
                           )}
                           {mute.type === 'keyword' && mute.isRegex && (
-                            <Chip
-                              label="正規表現"
-                              size="small"
-                              variant="outlined"
-                              color="info"
-                            />
+                            <Typography 
+                              variant="caption" 
+                              sx={{ 
+                                px: 1, 
+                                py: 0.25, 
+                                bgcolor: 'info.main', 
+                                color: 'info.contrastText', 
+                                borderRadius: 1, 
+                                fontSize: '0.75rem' 
+                              }}
+                            >
+                              正規表現
+                            </Typography>
                           )}
                         </Box>
                       }
@@ -530,17 +551,24 @@ export const MuteManager: React.FC = () => {
                             {Object.entries(mute.scope)
                               .filter(([key, value]) => value)
                               .map(([key]) => (
-                                <Chip
+                                <Typography
                                   key={key}
-                                  label={key === 'posts' ? '投稿' : 
-                                        key === 'comments' ? 'コメント' :
-                                        key === 'notifications' ? '通知' :
-                                        key === 'timeline' ? 'タイムライン' :
-                                        key === 'search' ? '検索' : key}
-                                  size="small"
-                                  variant="filled"
-                                  sx={{ fontSize: '0.7rem', height: '20px' }}
-                                />
+                                  variant="caption" 
+                                  sx={{ 
+                                    px: 1, 
+                                    py: 0.25, 
+                                    bgcolor: 'grey.200', 
+                                    color: 'text.primary', 
+                                    borderRadius: 1, 
+                                    fontSize: '0.75rem' 
+                                  }}
+                                >
+                                  {key === 'posts' ? '投稿' : 
+                                   key === 'comments' ? 'コメント' :
+                                   key === 'notifications' ? '通知' :
+                                   key === 'timeline' ? 'タイムライン' :
+                                   key === 'search' ? '検索' : key}
+                                </Typography>
                               ))
                             }
                           </Box>
@@ -739,11 +767,12 @@ export const MuteManager: React.FC = () => {
             </FormControl>
 
             {duration === 'temporary' && (
-              <DateTimePicker
+              <TextField
                 label="ミュート解除日時"
-                value={expiresAt}
-                onChange={setExpiresAt}
-                minDateTime={new Date()}
+                type="datetime-local"
+                value={expiresAt ? expiresAt.toISOString().slice(0, 16) : ''}
+                onChange={(e) => setExpiresAt(e.target.value ? new Date(e.target.value) : null)}
+                inputProps={{ min: new Date().toISOString().slice(0, 16) }}
                 sx={{ mb: 2, width: '100%' }}
               />
             )}
@@ -921,7 +950,6 @@ export const MuteManager: React.FC = () => {
             </Button>
           </DialogActions>
         </Dialog>
-      </Box>
-    </LocalizationProvider>
+    </Box>
   );
 };
