@@ -16,13 +16,18 @@ import {
   Container,
   Divider,
   LinearProgress,
+  IconButton,
+  InputAdornment,
 } from '@mui/material';
 import GoogleIcon from '@mui/icons-material/Google';
 import GitHubIcon from '@mui/icons-material/GitHub';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { registerSchema, RegisterSchema } from '@/lib/validations/auth';
 import { signIn } from 'next-auth/react';
+import { usePasswordVisibility } from '@/hooks/usePasswordVisibility';
 
 export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -31,6 +36,10 @@ export default function RegisterPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [password, setPassword] = useState('');
   // const router = useRouter(); // 現在未使用
+  
+  // Issue #42 Phase 2: パスワード表示切り替え機能
+  const passwordVisibility = usePasswordVisibility();
+  const confirmPasswordVisibility = usePasswordVisibility();
 
   // OAuth設定の有効性をチェック（開発中のため無効化）
   const isGoogleAuthEnabled = false; // 開発中のため無効化
@@ -217,7 +226,7 @@ export default function RegisterPage() {
 
                 <TextField
                   {...register('password')}
-                  type="password"
+                  type={passwordVisibility.inputType}
                   label="パスワード"
                   error={!!errors.password}
                   helperText={errors.password?.message}
@@ -227,6 +236,20 @@ export default function RegisterPage() {
                   onChange={(e) => {
                     setPassword(e.target.value);
                     register('password').onChange(e);
+                  }}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label={passwordVisibility.ariaLabel}
+                          onClick={passwordVisibility.toggleVisibility}
+                          edge="end"
+                          disabled={isLoading}
+                        >
+                          {passwordVisibility.isVisible ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
                   }}
                 />
 
@@ -279,13 +302,27 @@ export default function RegisterPage() {
 
                 <TextField
                   {...register('confirmPassword')}
-                  type="password"
+                  type={confirmPasswordVisibility.inputType}
                   label="パスワード（確認）"
                   error={!!errors.confirmPassword}
                   helperText={errors.confirmPassword?.message}
                   fullWidth
                   required
                   disabled={isLoading}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label={confirmPasswordVisibility.ariaLabel}
+                          onClick={confirmPasswordVisibility.toggleVisibility}
+                          edge="end"
+                          disabled={isLoading}
+                        >
+                          {confirmPasswordVisibility.isVisible ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
                 />
 
                 <Button

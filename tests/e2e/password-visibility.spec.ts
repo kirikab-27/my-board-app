@@ -3,6 +3,7 @@ import { test, expect } from '@playwright/test';
 /**
  * Issue #42: パスワード表示・非表示切り替え機能のE2Eテスト
  * テスト重視方針：ユーザーフローの完全検証
+ * Phase 1: ログイン画面 + Phase 2: 新規登録画面
  */
 
 test.describe('パスワード表示切り替え機能', () => {
@@ -123,5 +124,103 @@ test.describe('パスワード表示切り替え機能', () => {
     
     const hideButton = page.locator('[aria-label="パスワードを非表示にする"]');
     await expect(hideButton).toHaveAttribute('aria-label', 'パスワードを非表示にする');
+  });
+});
+
+// Phase 2: 新規登録画面のテスト
+test.describe('新規登録画面 - パスワード表示切り替え機能', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/register');
+  });
+
+  test('初期状態：パスワード・確認パスワード両方が非表示', async ({ page }) => {
+    const passwordField = page.locator('input[name="password"]');
+    const confirmPasswordField = page.locator('input[name="confirmPassword"]');
+    
+    // 両方ともtype="password"
+    await expect(passwordField).toHaveAttribute('type', 'password');
+    await expect(confirmPasswordField).toHaveAttribute('type', 'password');
+    
+    // 両方に表示ボタンが存在
+    const passwordVisibilityButtons = page.locator('[aria-label="パスワードを表示する"]');
+    await expect(passwordVisibilityButtons).toHaveCount(2);
+  });
+
+  test('独立切り替え：パスワードとパスワード確認が個別操作可能', async ({ page }) => {
+    const passwordField = page.locator('input[name="password"]');
+    const confirmPasswordField = page.locator('input[name="confirmPassword"]');
+    
+    // パスワードフィールドの表示切り替え
+    const passwordToggle = passwordField.locator('..').locator('[aria-label="パスワードを表示する"]');
+    await passwordToggle.click();
+    
+    // パスワードのみ表示状態
+    await expect(passwordField).toHaveAttribute('type', 'text');
+    await expect(confirmPasswordField).toHaveAttribute('type', 'password'); // 確認は非表示のまま
+    
+    // パスワード確認の表示切り替え
+    const confirmPasswordToggle = confirmPasswordField.locator('..').locator('[aria-label="パスワードを表示する"]');
+    await confirmPasswordToggle.click();
+    
+    // 両方とも表示状態
+    await expect(passwordField).toHaveAttribute('type', 'text');
+    await expect(confirmPasswordField).toHaveAttribute('type', 'text');
+  });
+
+  test('パスワード強度表示との連携', async ({ page }) => {
+    const passwordField = page.locator('input[name="password"]');
+    const passwordToggle = passwordField.locator('..').locator('[aria-label="パスワードを表示する"]');
+    
+    // パスワード入力
+    await passwordField.fill('WeakPass');
+    
+    // パスワード強度インジケーターが表示される
+    const strengthIndicator = page.locator('text=パスワード強度');
+    await expect(strengthIndicator).toBeVisible();
+    
+    // 表示切り替えしても強度表示は維持
+    await passwordToggle.click();
+    await expect(strengthIndicator).toBeVisible();
+    
+    // パスワードが見える状態で強度確認
+    await expect(passwordField).toHaveValue('WeakPass');
+    await expect(passwordField).toHaveAttribute('type', 'text');
+  });
+
+  test('フォーム送信時のセキュリティ：表示状態でも正常送信', async ({ page }) => {
+    // 全フィールド入力
+    await page.fill('input[name="name"]', 'テストユーザー');
+    await page.fill('input[name="email"]', 'test@example.com');
+    await page.fill('input[name="password"]', 'TestPassword123');
+    await page.fill('input[name="confirmPassword"]', 'TestPassword123');
+    
+    // パスワードを表示状態にする
+    const passwordField = page.locator('input[name="password"]');
+    const passwordToggle = passwordField.locator('..').locator('[aria-label="パスワードを表示する"]');
+    await passwordToggle.click();
+    
+    // 表示状態でフォーム送信
+    const submitButton = page.locator('button[type="submit"]');
+    await submitButton.click();
+    
+    // ローディング状態の確認（送信が実行された証拠）
+    await expect(submitButton).toBeDisabled();
+  });
+
+  test('アクセシビリティ：複数パスワードフィールドでのTab順序', async ({ page }) => {
+    // Tab順序確認：名前→メール→パスワード→パスワード表示→確認パスワード→確認表示→送信
+    await page.keyboard.press('Tab'); // 名前
+    await page.keyboard.press('Tab'); // メール
+    await page.keyboard.press('Tab'); // パスワード
+    await page.keyboard.press('Tab'); // パスワード表示切り替え
+    
+    const passwordToggle = page.locator('input[name="password"]').locator('..').locator('[aria-label="パスワードを表示する"]');
+    await expect(passwordToggle).toBeFocused();
+    
+    await page.keyboard.press('Tab'); // 確認パスワード
+    await page.keyboard.press('Tab'); // 確認パスワード表示切り替え
+    
+    const confirmPasswordToggle = page.locator('input[name="confirmPassword"]').locator('..').locator('[aria-label="パスワードを表示する"]');
+    await expect(confirmPasswordToggle).toBeFocused();
   });
 });
