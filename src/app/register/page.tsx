@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useId } from 'react';
 // import { useRouter } from 'next/navigation'; // 開発中で未使用
 import {
   Card,
@@ -39,7 +39,9 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   // const router = useRouter(); // 現在未使用
   
-  // Issue #42 Phase 2: パスワード表示切り替え機能（useIsomorphicLayoutEffect使用）
+  // Issue #42 Phase 2: パスワード表示切り替え機能（React 18 useId使用）
+  const passwordFieldId = useId();
+  const confirmPasswordFieldId = useId();
   const passwordVisibility = usePasswordVisibility();
   const confirmPasswordVisibility = usePasswordVisibility();
 
@@ -228,7 +230,7 @@ export default function RegisterPage() {
 
                 <TextField
                   {...register('password')}
-                  id="register-password-field"
+                  id={passwordFieldId}
                   type={passwordVisibility.inputType}
                   label="パスワード"
                   error={!!errors.password}
@@ -305,7 +307,7 @@ export default function RegisterPage() {
 
                 <TextField
                   {...register('confirmPassword')}
-                  id="register-confirm-password-field"
+                  id={confirmPasswordFieldId}
                   type={confirmPasswordVisibility.inputType}
                   label="パスワード（確認）"
                   error={!!errors.confirmPassword}

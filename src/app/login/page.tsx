@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useId } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Card,
@@ -74,7 +74,8 @@ export default function LoginPage() {
   ];
   const isEmergencyUser = watchedEmail && emergencyUsers.includes(watchedEmail.toLowerCase());
   
-  // Issue #42: パスワード表示切り替え機能（useIsomorphicLayoutEffect使用）
+  // Issue #42: パスワード表示切り替え機能（React 18 useId使用）
+  const passwordFieldId = useId();
   const { isVisible, toggleVisibility, inputType, ariaLabel, showToggle } = usePasswordVisibility();
 
   // レート制限情報を取得
@@ -266,7 +267,7 @@ export default function LoginPage() {
                 
                 <TextField
                   {...register('password')}
-                  id="login-password-field"
+                  id={passwordFieldId}
                   type={inputType}
                   label="パスワード"
                   error={!!errors.password}
