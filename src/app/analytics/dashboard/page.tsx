@@ -725,13 +725,7 @@ export default function AnalyticsDashboard() {
           <AuthButton />
         </Toolbar>
         {/* 2段目のナビゲーション行 */}
-        <Toolbar variant="dense" sx={{ 
-          minHeight: 48, 
-          borderTop: 1, 
-          borderColor: 'primary.main',
-          backgroundColor: 'primary.main',
-          color: 'primary.contrastText'
-        }}>
+        <Toolbar variant="dense" sx={getNavigationHeaderStyles(theme)}>
           <AuthButton isNavigationRow />
         </Toolbar>
       </AppBar>

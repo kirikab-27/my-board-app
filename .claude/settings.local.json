@@ -93,7 +93,9 @@
       "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" api graphql -f query='\n{\n  user(login: \"\"kirikab-27\"\") {\n    projectV2(number: 2) {\n      id\n      fields(first: 10) {\n        nodes {\n          ... on ProjectV2SingleSelectField {\n            id\n            name\n            options {\n              id\n              name\n            }\n          }\n        }\n      }\n      items(last: 5) {\n        nodes {\n          id\n          content {\n            ... on Issue {\n              number\n              title\n            }\n          }\n        }\n      }\n    }\n  }\n}')",
       "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" api graphql -f query='\nmutation {\n  updateProjectV2ItemFieldValue(input: {\n    projectId: \"\"PVT_kwHOB5DmjM4BAytu\"\"\n    itemId: \"\"PVTI_lAHOB5DmjM4BAytuzgeMdtk\"\"\n    fieldId: \"\"PVTSSF_lAHOB5DmjM4BAytuzgzfW84\"\"\n    value: {\n      singleSelectOptionId: \"\"98236657\"\"\n    }\n  }) {\n    projectV2Item {\n      id\n    }\n  }\n}')",
       "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue view 42 --json number,title,comments --jq '.comments | length')",
-      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue comment 38 --body-file issue38_implementation_plan.md)"
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue comment 38 --body-file issue38_implementation_plan.md)",
+      "Bash(find:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": [],
