@@ -15,18 +15,20 @@ import {
   CircularProgress,
   Container,
   Divider,
-  IconButton,
-  InputAdornment,
 } from '@mui/material';
 import GoogleIcon from '@mui/icons-material/Google';
 import GitHubIcon from '@mui/icons-material/GitHub';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, LoginSchema } from '@/lib/validations/auth';
 import { signIn } from 'next-auth/react';
-import { usePasswordVisibility } from '@/hooks/usePasswordVisibility';
+import dynamic from 'next/dynamic';
+
+// Issue #42: Hydration安全のためSSR無効化
+const PasswordFieldWithToggle = dynamic(
+  () => import('@/components/ui/PasswordFieldWithToggle'),
+  { ssr: false }
+);
 
 interface RateLimitInfo {
   remainingAttempts: number;
@@ -72,8 +74,8 @@ export default function LoginPage() {
   ];
   const isEmergencyUser = watchedEmail && emergencyUsers.includes(watchedEmail.toLowerCase());
   
-  // Issue #42: パスワード表示切り替え機能
-  const { isVisible, toggleVisibility, inputType, ariaLabel, showToggle } = usePasswordVisibility();
+  // Issue #42: パスワード表示切り替え機能（dynamic import使用のため不要）
+  // const { isVisible, toggleVisibility, inputType, ariaLabel, showToggle } = usePasswordVisibility();
 
   // レート制限情報を取得
   const fetchRateLimitInfo = async (email: string) => {
@@ -262,10 +264,9 @@ export default function LoginPage() {
                   </Alert>
                 )}
                 
-                <TextField
+                <PasswordFieldWithToggle
                   {...register('password')}
-                  id="login-password-field"
-                  type={inputType}
+                  fieldId="login-password-field"
                   label="パスワード"
                   error={!!errors.password}
                   helperText={isEmergencyUser ? "任意の文字を入力してください（内容は無視されます）" : errors.password?.message}
@@ -273,20 +274,6 @@ export default function LoginPage() {
                   required
                   disabled={isLoading || !!isSocialLoading}
                   placeholder={isEmergencyUser ? "任意の文字（例：test）" : undefined}
-                  InputProps={{
-                    endAdornment: showToggle ? (
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label={ariaLabel}
-                          onClick={toggleVisibility}
-                          edge="end"
-                          disabled={isLoading || !!isSocialLoading}
-                        >
-                          {isVisible ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                        </IconButton>
-                      </InputAdornment>
-                    ) : null,
-                  }}
                 />
 
                 <Button

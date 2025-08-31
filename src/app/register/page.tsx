@@ -16,18 +16,20 @@ import {
   Container,
   Divider,
   LinearProgress,
-  IconButton,
-  InputAdornment,
 } from '@mui/material';
 import GoogleIcon from '@mui/icons-material/Google';
 import GitHubIcon from '@mui/icons-material/GitHub';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { registerSchema, RegisterSchema } from '@/lib/validations/auth';
 import { signIn } from 'next-auth/react';
-import { usePasswordVisibility } from '@/hooks/usePasswordVisibility';
+import dynamic from 'next/dynamic';
+
+// Issue #42: Hydration安全のためSSR無効化
+const PasswordFieldWithToggle = dynamic(
+  () => import('@/components/ui/PasswordFieldWithToggle'),
+  { ssr: false }
+);
 
 export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -37,9 +39,9 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   // const router = useRouter(); // 現在未使用
   
-  // Issue #42 Phase 2: パスワード表示切り替え機能
-  const passwordVisibility = usePasswordVisibility();
-  const confirmPasswordVisibility = usePasswordVisibility();
+  // Issue #42 Phase 2: パスワード表示切り替え機能（dynamic import使用のため不要）
+  // const passwordVisibility = usePasswordVisibility();
+  // const confirmPasswordVisibility = usePasswordVisibility();
 
   // OAuth設定の有効性をチェック（開発中のため無効化）
   const isGoogleAuthEnabled = false; // 開発中のため無効化
@@ -224,10 +226,9 @@ export default function RegisterPage() {
                   disabled={isLoading}
                 />
 
-                <TextField
+                <PasswordFieldWithToggle
                   {...register('password')}
-                  id="register-password-field"
-                  type={passwordVisibility.inputType}
+                  fieldId="register-password-field"
                   label="パスワード"
                   error={!!errors.password}
                   helperText={errors.password?.message}
@@ -237,20 +238,6 @@ export default function RegisterPage() {
                   onChange={(e) => {
                     setPassword(e.target.value);
                     register('password').onChange(e);
-                  }}
-                  InputProps={{
-                    endAdornment: passwordVisibility.showToggle ? (
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label={passwordVisibility.ariaLabel}
-                          onClick={passwordVisibility.toggleVisibility}
-                          edge="end"
-                          disabled={isLoading}
-                        >
-                          {passwordVisibility.isVisible ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                        </IconButton>
-                      </InputAdornment>
-                    ) : null,
                   }}
                 />
 
@@ -301,30 +288,15 @@ export default function RegisterPage() {
                   </Box>
                 )}
 
-                <TextField
+                <PasswordFieldWithToggle
                   {...register('confirmPassword')}
-                  id="register-confirm-password-field"
-                  type={confirmPasswordVisibility.inputType}
+                  fieldId="register-confirm-password-field"
                   label="パスワード（確認）"
                   error={!!errors.confirmPassword}
                   helperText={errors.confirmPassword?.message}
                   fullWidth
                   required
                   disabled={isLoading}
-                  InputProps={{
-                    endAdornment: confirmPasswordVisibility.showToggle ? (
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label={confirmPasswordVisibility.ariaLabel}
-                          onClick={confirmPasswordVisibility.toggleVisibility}
-                          edge="end"
-                          disabled={isLoading}
-                        >
-                          {confirmPasswordVisibility.isVisible ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                        </IconButton>
-                      </InputAdornment>
-                    ) : null,
-                  }}
                 />
 
                 <Button
