@@ -48,6 +48,18 @@ const checkRateLimit = (userId: string): boolean => {
 
 export async function POST(request: NextRequest) {
   try {
+    // 🔍 内部API環境変数詳細デバッグ
+    console.log('🚨 Internal API Raw env vars:', {
+      CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
+      API_KEY_EXISTS: !!process.env.CLOUDINARY_API_KEY,
+      API_SECRET_EXISTS: !!process.env.CLOUDINARY_API_SECRET,
+      ALL_ENV_KEYS_COUNT: Object.keys(process.env).length,
+      CLOUDINARY_KEYS: Object.keys(process.env).filter(k => k.includes('CLOUDINARY')),
+      NODE_ENV: process.env.NODE_ENV,
+      VERCEL: process.env.VERCEL,
+      RUNTIME: 'nodejs'
+    });
+
     // 認証チェック
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {

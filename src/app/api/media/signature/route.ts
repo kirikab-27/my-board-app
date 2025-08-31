@@ -13,6 +13,18 @@ export const runtime = 'nodejs';
  */
 export async function POST(request: NextRequest) {
   try {
+    // 🔍 Vercel環境変数詳細デバッグ
+    console.log('🚨 Raw env vars debug:', {
+      NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+      CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
+      API_KEY_PREVIEW: process.env.CLOUDINARY_API_KEY?.substring(0, 5) + '***',
+      API_SECRET_PREVIEW: process.env.CLOUDINARY_API_SECRET?.substring(0, 5) + '***',
+      ALL_CLOUDINARY_KEYS: Object.keys(process.env).filter(k => k.includes('CLOUD')),
+      ALL_CLOUDINARY_VARS: Object.keys(process.env).filter(k => k.includes('CLOUDINARY')),
+      NODE_ENV: process.env.NODE_ENV,
+      VERCEL_ENV: process.env.VERCEL_ENV
+    });
+
     // 認証チェック
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
