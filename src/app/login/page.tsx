@@ -73,7 +73,7 @@ export default function LoginPage() {
   const isEmergencyUser = watchedEmail && emergencyUsers.includes(watchedEmail.toLowerCase());
   
   // Issue #42: パスワード表示切り替え機能
-  const { isVisible, toggleVisibility, inputType, ariaLabel } = usePasswordVisibility();
+  const { isVisible, toggleVisibility, inputType, ariaLabel, showToggle } = usePasswordVisibility();
 
   // レート制限情報を取得
   const fetchRateLimitInfo = async (email: string) => {
@@ -273,7 +273,7 @@ export default function LoginPage() {
                   disabled={isLoading || !!isSocialLoading}
                   placeholder={isEmergencyUser ? "任意の文字（例：test）" : undefined}
                   InputProps={{
-                    endAdornment: (
+                    endAdornment: showToggle ? (
                       <InputAdornment position="end">
                         <IconButton
                           aria-label={ariaLabel}
@@ -284,7 +284,7 @@ export default function LoginPage() {
                           {isVisible ? <VisibilityOffIcon /> : <VisibilityIcon />}
                         </IconButton>
                       </InputAdornment>
-                    ),
+                    ) : null,
                   }}
                 />
 

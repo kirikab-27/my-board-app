@@ -238,7 +238,7 @@ export default function RegisterPage() {
                     register('password').onChange(e);
                   }}
                   InputProps={{
-                    endAdornment: (
+                    endAdornment: passwordVisibility.showToggle ? (
                       <InputAdornment position="end">
                         <IconButton
                           aria-label={passwordVisibility.ariaLabel}
@@ -249,7 +249,7 @@ export default function RegisterPage() {
                           {passwordVisibility.isVisible ? <VisibilityOffIcon /> : <VisibilityIcon />}
                         </IconButton>
                       </InputAdornment>
-                    ),
+                    ) : null,
                   }}
                 />
 
@@ -310,7 +310,7 @@ export default function RegisterPage() {
                   required
                   disabled={isLoading}
                   InputProps={{
-                    endAdornment: (
+                    endAdornment: confirmPasswordVisibility.showToggle ? (
                       <InputAdornment position="end">
                         <IconButton
                           aria-label={confirmPasswordVisibility.ariaLabel}
@@ -321,7 +321,7 @@ export default function RegisterPage() {
                           {confirmPasswordVisibility.isVisible ? <VisibilityOffIcon /> : <VisibilityIcon />}
                         </IconButton>
                       </InputAdornment>
-                    ),
+                    ) : null,
                   }}
                 />
 
