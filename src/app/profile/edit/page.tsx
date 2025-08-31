@@ -16,6 +16,7 @@ import {
   AppBar,
   Toolbar,
   InputAdornment,
+  useTheme,
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -24,9 +25,11 @@ import { AuthButton } from '@/components/auth/AuthButton';
 import OptimizedImage from '@/components/ui/OptimizedImage';
 import MediaUpload, { UploadedMedia } from '@/components/media/MediaUpload';
 import Link from 'next/link';
+import { getNavigationHeaderStyles } from '@/styles/navigationHeaderStyles';
 
 export default function ProfileEditPage() {
   const router = useRouter();
+  const theme = useTheme(); // Issue #38: ダークモード対応
   const { data: session, status, update } = useSession();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -344,11 +347,7 @@ export default function ProfileEditPage() {
             </Typography>
             <AuthButton />
           </Toolbar>
-          <Toolbar variant="dense" sx={{ 
-            borderTop: 1, 
-            borderColor: 'divider',
-            bgcolor: 'primary.main' 
-          }}>
+          <Toolbar variant="dense" sx={getNavigationHeaderStyles(theme)}>
             <AuthButton isNavigationRow />
           </Toolbar>
         </AppBar>
