@@ -21,17 +21,39 @@ export async function POST(request: NextRequest) {
 
     const { type = 'image' } = await request.json();
 
-    // Cloudinary環境変数チェック
+    // Cloudinary環境変数チェック（詳細デバッグ情報付き）
+    const cloudinaryConfig = {
+      cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+      apiKey: process.env.CLOUDINARY_API_KEY,
+      apiSecret: process.env.CLOUDINARY_API_SECRET,
+    };
+
+    console.log('🔍 Cloudinary環境変数確認:', {
+      cloudName: cloudinaryConfig.cloudName ? '設定済み' : '未設定',
+      apiKey: cloudinaryConfig.apiKey ? '設定済み' : '未設定',
+      apiSecret: cloudinaryConfig.apiSecret ? '設定済み' : '未設定',
+      isDefaultValue: cloudinaryConfig.cloudName === 'your_cloud_name_here'
+    });
+
     if (
-      !process.env.CLOUDINARY_CLOUD_NAME ||
-      !process.env.CLOUDINARY_API_KEY ||
-      !process.env.CLOUDINARY_API_SECRET ||
-      process.env.CLOUDINARY_CLOUD_NAME === 'your_cloud_name_here'
+      !cloudinaryConfig.cloudName ||
+      !cloudinaryConfig.apiKey ||
+      !cloudinaryConfig.apiSecret ||
+      cloudinaryConfig.cloudName === 'your_cloud_name_here'
     ) {
+      console.error('❌ Cloudinary設定エラー:', {
+        missingCloudName: !cloudinaryConfig.cloudName,
+        missingApiKey: !cloudinaryConfig.apiKey,
+        missingApiSecret: !cloudinaryConfig.apiSecret,
+        isDefaultValue: cloudinaryConfig.cloudName === 'your_cloud_name_here'
+      });
+
       return NextResponse.json(
         {
-          error: 'Cloudinary設定が未完了です。実際のCloudinary認証情報を設定してください。',
-          details: 'CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRETを設定してください。',
+          error: 'Cloudinary直接アップロードが利用できません',
+          message: 'フォールバック機能により、内部API経由でアップロードを継続します',
+          details: 'Cloudinary環境変数（CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET）をVercel環境で設定してください',
+          fallbackAvailable: true
         },
         { status: 503 }
       );

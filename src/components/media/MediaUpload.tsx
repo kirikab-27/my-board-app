@@ -162,6 +162,13 @@ const MediaUpload: React.FC<MediaUploadProps> = ({
 
       if (!signatureResponse.ok) {
         const errorData = await signatureResponse.json();
+        
+        // 503エラー（Cloudinary設定問題）の場合は親切なメッセージ
+        if (signatureResponse.status === 503 && errorData.fallbackAvailable) {
+          console.log('ℹ️ Cloudinary直接アップロード不可、内部API使用:', errorData.message);
+          throw new Error('Cloudinary設定問題により内部API経由でアップロードします');
+        }
+        
         throw new Error(errorData.error || '署名の取得に失敗しました');
       }
 
