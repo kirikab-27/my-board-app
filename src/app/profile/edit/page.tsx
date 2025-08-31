@@ -372,7 +372,7 @@ export default function ProfileEditPage() {
           </Typography>
           <AuthButton />
         </Toolbar>
-        <Toolbar variant="dense" sx={{ borderTop: 1, borderColor: 'divider' }}>
+        <Toolbar variant="dense" sx={getNavigationHeaderStyles(theme)}>
           <AuthButton isNavigationRow />
         </Toolbar>
       </AppBar>
