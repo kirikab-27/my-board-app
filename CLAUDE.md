@@ -266,6 +266,32 @@ SECURITY_API_TOKEN=your_security_admin_token_here
 - **🚨 実装ファーストの癖を矯正**: ユーザー要望受領→手を止める→Issue更新→ステータス移動→実装許可→実装開始
 - **💾 コミットタイミング厳守**: ユーザー動作確認完了→コミット実行→Done移動（確認前コミット禁止）
 
+## 🛡️ 試験導入: 緊急性罠回避システム
+
+### 5分ルール（Week 1-2実装中）
+
+**緊急要望受信時**: `./scripts/emergency-brake.sh` 実行（必須）
+
+#### 必須質問（5分以内）
+- ✅ 何が本当の問題？（症状ではなく原因）
+- ✅ なぜ緊急？（真の緊急 vs 単なる急ぎ）
+- ✅ Issue作成 vs 即座修正？
+
+#### 緊急度4段階（30秒判定）
+- 🔴 CRITICAL: 本番サービス停止・セキュリティ侵害
+- 🟡 HIGH: 一部ユーザー影響・機能停止
+- 🟢 MEDIUM: 改善・バグ修正・新機能
+- ⚪ LOW: タイポ・スタイル・ドキュメント
+
+#### 対応フロー
+- 🔴 → Issue作成→30分調査→即座対応
+- 🟡 → Issue作成→30分調査→翌日対応
+- 🟢 → 通常Issue管理フロー
+- ⚪ → 即座修正（簡易確認のみ）
+
+### 効果測定（Week 1-2終了後）
+- 5分ルール実行率・判定精度・問題解決時間短縮効果
+
 ## Git ブランチ戦略
 
 ```
@@ -316,6 +342,7 @@ Issue完了 → Review確認 → develop マージ → deployed-dev ラベル
 - **[Vercelデプロイエラー解決](./README-vercel-deploy-errors-phase55.md)** - 21項目の技術問題解決
 - **[認証トラブルシューティング](./README-auth-troubleshooting.md)** - NextAuth.js問題解決
 - **[メール送信設定](./docs/email-auth-cheatsheet.md)** - さくらSMTP・DKIM/SPF/DMARC
+- **[Issue #36: 画像アップロード405エラー修正完了](https://github.com/kirikab-27/my-board-app/issues/36)** - Node.js Runtime強制・CORS・Cloudinary直接アップロード実装
 
 ---
 

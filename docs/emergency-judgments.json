@@ -1,0 +1,15 @@
+[
+  {
+    "timestamp": "2025-08-31T01:30:00.000Z",
+    "date": "2025/8/31",
+    "problem": "既存ユーザーログイン不可・401エラー継続（Issue #43）",
+    "initialJudgment": "CRITICAL",
+    "usedEmergencyBrake": false,
+    "timeToSolve": 100,
+    "wasSuccessful": false,
+    "actualComplexity": "HIGH",
+    "wasCorrectJudgment": false,
+    "lessonsLearned": "症状対応ではなく根本原因特定が必要。5回の無効修正で時間浪費。緊急性の罠に陥った。",
+    "relatedIssue": "#43"
+  }
+]
