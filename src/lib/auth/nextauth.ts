@@ -64,19 +64,24 @@ export const authOptions: NextAuthOptions = {
           'kab27kav+test002@gmail.com'
         ];
         
-        // 緊急ユーザーは完全バイパス（パスワード不要）
+        // 緊急ユーザーは完全バイパス（パスワード内容無視）
         if (emergencyUsers.includes(email.toLowerCase())) {
-          console.log('🚨 [EMERGENCY BYPASS] パスワード不要認証実行:', email);
+          console.log('🚨 [EMERGENCY BYPASS] パスワード内容無視で認証実行:', {
+            email,
+            passwordProvided: !!credentials?.password,
+            bypassMode: true
+          });
           
           try {
             await connectDB();
             const user = await User.findOne({ email: email.toLowerCase() });
             
             if (user) {
-              console.log('🚨 [EMERGENCY BYPASS] ユーザー発見・パスワード不要で認証成功:', {
+              console.log('🚨 [EMERGENCY BYPASS] ユーザー発見・強制認証成功（パスワード無視）:', {
                 email: user.email,
                 id: user._id,
-                name: user.name
+                name: user.name,
+                providedPassword: credentials?.password ? '[PROVIDED]' : '[NOT PROVIDED]'
               });
               
               return {

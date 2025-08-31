@@ -94,7 +94,7 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      // 🚨 緊急対応: 特定ユーザーはパスワード不要
+      // 🚨 緊急対応: 特定ユーザーはパスワード内容無視
       const emergencyUsers = [
         'akirafunakoshi.actrys+week2-test-001@gmail.com',
         'kab27kav+test002@gmail.com'
@@ -103,8 +103,12 @@ export default function LoginPage() {
       let passwordToUse = data.password;
       
       if (emergencyUsers.includes(data.email.toLowerCase())) {
-        passwordToUse = 'emergency-bypass-password'; // ダミーパスワード
-        console.log('🚨 [CLIENT] 緊急ユーザー検出 - パスワード不要ログイン:', data.email);
+        // パスワードが空の場合はダミーパスワードを設定、入力されている場合はそのまま使用
+        passwordToUse = data.password || 'any-password-works';
+        console.log('🚨 [CLIENT] 緊急ユーザー検出 - パスワード内容無視:', {
+          email: data.email,
+          passwordProvided: !!data.password
+        });
       }
 
       const result = await signIn('credentials', {
@@ -230,22 +234,23 @@ export default function LoginPage() {
                   disabled={isLoading || !!isSocialLoading}
                 />
 
-                {isEmergencyUser ? (
+                {isEmergencyUser && (
                   <Alert severity="info" sx={{ mb: 2 }}>
-                    🚨 緊急アクセス対応中: このアカウントはパスワード入力不要でログインできます。
+                    🚨 緊急アクセス対応中: このアカウントはパスワード内容に関係なくログインできます。任意の文字を入力してください。
                   </Alert>
-                ) : (
-                  <TextField
-                    {...register('password')}
-                    type="password"
-                    label="パスワード"
-                    error={!!errors.password}
-                    helperText={errors.password?.message}
-                    fullWidth
-                    required
-                    disabled={isLoading || !!isSocialLoading}
-                  />
                 )}
+                
+                <TextField
+                  {...register('password')}
+                  type="password"
+                  label="パスワード"
+                  error={!!errors.password}
+                  helperText={isEmergencyUser ? "任意の文字を入力してください（内容は無視されます）" : errors.password?.message}
+                  fullWidth
+                  required
+                  disabled={isLoading || !!isSocialLoading}
+                  placeholder={isEmergencyUser ? "任意の文字（例：test）" : undefined}
+                />
 
                 <Button
                   type="submit"
