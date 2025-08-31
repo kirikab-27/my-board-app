@@ -285,6 +285,7 @@ SECURITY_API_TOKEN=your_security_admin_token_here
 - ✅ 何が本当の問題？（症状ではなく原因）
 - ✅ なぜ緊急？（真の緊急 vs 単なる急ぎ）
 - ✅ Issue作成 vs 即座修正？
+- ✅ 適切なブランチで作業しているか？
 
 #### 緊急度4段階（30秒判定）
 - 🔴 CRITICAL: 本番サービス停止・セキュリティ侵害
@@ -292,11 +293,11 @@ SECURITY_API_TOKEN=your_security_admin_token_here
 - 🟢 MEDIUM: 改善・バグ修正・新機能
 - ⚪ LOW: タイポ・スタイル・ドキュメント
 
-#### 対応フロー
-- 🔴 → Issue作成→30分調査→即座対応
-- 🟡 → Issue作成→30分調査→翌日対応
-- 🟢 → 通常Issue管理フロー
-- ⚪ → 即座修正（簡易確認のみ）
+#### 対応フロー（ブランチ戦略統合）
+- 🔴 CRITICAL → hotfixブランチ→30分調査→即座対応→main直接マージ
+- 🟡 HIGH → hotfixブランチ→30分調査→対応→main直接マージ
+- 🟢 MEDIUM → featureブランチ→通常Issue管理フロー→develop→main
+- ⚪ LOW → mainブランチ→即座修正（簡易確認のみ）
 
 ### 効果測定（Week 1-2終了後）
 - 5分ルール実行率・判定精度・問題解決時間短縮効果
@@ -313,9 +314,13 @@ main (本番環境)
 **デプロイフロー**:
 
 ```
-Issue完了 → Review確認 → develop マージ → deployed-dev ラベル
+【機能開発】
+feature/issue-xx-xxx → 実装・テスト → develop マージ → deployed-dev ラベル
      ↓
-週次まとめ → main マージ → 本番デプロイ → deployed-prod ラベル
+動作確認完了 → main マージ → 本番デプロイ → deployed-prod ラベル
+
+【緊急修正】  
+hotfix/xxx → 実装・確認 → main 直接マージ → 本番デプロイ → deployed-prod ラベル
 ```
 
 **本番環境**: https://kab137lab.com (Vercel + MongoDB Atlas + Cloudflare DNS)
