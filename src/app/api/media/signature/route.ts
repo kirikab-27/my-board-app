@@ -41,8 +41,17 @@ export async function POST(request: NextRequest) {
     const publicId = `${type}_${session.user.id}_${uuidv4()}`;
     const timestamp = Math.round(new Date().getTime() / 1000);
 
-    // アップロードパラメータ
-    const uploadParams = {
+    // アップロードパラメータ（型安全対応）
+    const uploadParams: {
+      public_id: string;
+      folder: string;
+      timestamp: number;
+      tags: string;
+      overwrite: boolean;
+      invalidate: boolean;
+      transformation?: string;
+      eager?: string;
+    } = {
       public_id: publicId,
       folder: type === 'avatar' ? 'board-app/avatars' : 'board-app/images',
       timestamp: timestamp,
