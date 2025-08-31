@@ -92,41 +92,30 @@ export default function PostList({
 
   console.log('PostList レンダリング:', posts.length, '件の投稿');
 
-  // 投稿のいいね状態と最新いいね数を取得
+  // 投稿のいいね状態と最新いいね数を取得（無限ループ修正）
   React.useEffect(() => {
-    const fetchLikeStates = async () => {
+    // 🚨 緊急修正: 無限レンダリングループ防止のため一時的に無効化
+    // TODO: いいね状態取得の最適化実装が必要
+    console.log('PostList useEffect実行（一時的に無効化中）:', posts.length, '件');
+    
+    // 初期いいね数のみ設定（API呼び出しなし）
+    const likeCountMap = new Map<string, number>();
+    posts.forEach(post => {
+      likeCountMap.set(post._id, post.likes);
+    });
+    setPostLikeCounts(likeCountMap);
+    
+    // いいね状態は投稿データから初期化（likedBy配列から判定）
+    if (session?.user?.id) {
       const likedSet = new Set<string>();
-      const likeCountMap = new Map<string, number>();
-
-      for (const post of posts) {
-        try {
-          const response = await fetch(`/api/posts/${post._id}/like`);
-          if (response.ok) {
-            const data = await response.json();
-            if (data.liked) {
-              likedSet.add(post._id);
-            }
-            // 最新のいいね数を保存
-            likeCountMap.set(post._id, data.likes);
-          } else {
-            // API エラーの場合は初期値を使用
-            likeCountMap.set(post._id, post.likes);
-          }
-        } catch (error) {
-          console.error(`Failed to fetch like state for post ${post._id}:`, error);
-          // エラーの場合は初期値を使用
-          likeCountMap.set(post._id, post.likes);
+      posts.forEach(post => {
+        if (post.likedBy?.includes(session.user.id)) {
+          likedSet.add(post._id);
         }
-      }
-
+      });
       setLikedPosts(likedSet);
-      setPostLikeCounts(likeCountMap);
-    };
-
-    if (posts.length > 0) {
-      fetchLikeStates();
     }
-  }, [posts]);
+  }, [posts.length, session?.user?.id]); // 依存関係を投稿数とユーザーIDのみに限定
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>, post: Post) => {
     console.log('メニューがクリックされました:', post._id);
