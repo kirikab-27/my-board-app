@@ -44,6 +44,7 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
+        console.log('🔥🔥🔥 [AUTHORIZE FUNCTION CALLED] authorize関数が実行されました！');
         console.log('🚨🚨🚨 [ULTIMATE EMERGENCY] 最強緊急認証モード - 全認証チェック無効化');
         console.log('🔍 [DEBUG] 入力情報:', {
           hasEmail: !!credentials?.email,

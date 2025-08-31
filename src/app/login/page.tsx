@@ -111,10 +111,24 @@ export default function LoginPage() {
         });
       }
 
+      console.log('🔍 [CLIENT DEBUG] signIn実行開始:', {
+        email: data.email,
+        isEmergencyUser: emergencyUsers.includes(data.email.toLowerCase()),
+        passwordLength: passwordToUse?.length || 0
+      });
+
       const result = await signIn('credentials', {
         email: data.email,
         password: passwordToUse,
         redirect: false,
+      });
+
+      console.log('🔍 [CLIENT DEBUG] signIn結果:', {
+        ok: result?.ok,
+        error: result?.error,
+        status: result?.status,
+        url: result?.url,
+        fullResult: result
       });
 
       if (result?.error) {
