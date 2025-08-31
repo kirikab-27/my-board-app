@@ -284,5 +284,5 @@ export const authOptions: NextAuthOptions = {
     brandColor: '#1976d2', // MUIのプライマリカラー
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: false, // Edge Runtime compatible - disabled for production stability
+  debug: true, // 緊急調査のため一時的に有効化
 };
