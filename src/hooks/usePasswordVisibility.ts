@@ -1,16 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect';
 
 /**
  * パスワード表示・非表示切り替え用カスタムフック
  * Issue #42: UI改善 - パスワード入力時の表示切り替え機能
- * Hydration安全対応: SSR/CSR間での不整合回避
+ * Hydration安全対応: useIsomorphicLayoutEffectでSSR/CSR同期
  */
 export const usePasswordVisibility = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
-  // Hydration完了後に表示切り替え機能を有効化
-  useEffect(() => {
+  // SSR安全なレイアウトエフェクト使用
+  useIsomorphicLayoutEffect(() => {
     setIsMounted(true);
   }, []);
 
