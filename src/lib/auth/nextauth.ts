@@ -170,11 +170,12 @@ export const authOptions: NextAuthOptions = {
           console.log('🔍 [DEBUG] 返却するユーザーオブジェクト:', userResponse);
           return userResponse;
         } catch (error) {
+          const err = error as Error;
           console.error('❌ [CRITICAL] 認証中に予期しないエラーが発生:', {
-            error: error.message,
-            stack: error.stack,
+            error: err.message || String(error),
+            stack: err.stack,
             email: credentials?.email,
-            type: error.constructor.name
+            type: err.constructor?.name || 'Unknown'
           });
           return null;
         }
