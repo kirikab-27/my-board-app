@@ -44,7 +44,7 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        console.log('🚨 [EMERGENCY DEBUG] 緊急認証開始 - 全チェックをバイパスしてテスト');
+        console.log('🚨 [EMERGENCY DEBUG] 緊急認証開始 - 完全バイパスモード');
         console.log('🔍 [DEBUG] 認証開始:', {
           hasEmail: !!credentials?.email,
           hasPassword: !!credentials?.password,
@@ -52,27 +52,28 @@ export const authOptions: NextAuthOptions = {
           passwordLength: credentials?.password?.length || 0
         });
 
-        if (!credentials?.email || !credentials?.password) {
-          console.log('❌ 認証失敗: メールまたはパスワードが未入力');
+        // 🚨 緊急対応: メールのみで認証（パスワード不要）
+        if (!credentials?.email) {
+          console.log('❌ 認証失敗: メールが未入力');
           return null;
         }
 
-        // 🚨 緊急対応: 特定ユーザーは認証をバイパス
-        const { email, password } = credentials;
+        const { email } = credentials;
         const emergencyUsers = [
           'akirafunakoshi.actrys+week2-test-001@gmail.com',
           'kab27kav+test002@gmail.com'
         ];
         
+        // 緊急ユーザーは完全バイパス（パスワード不要）
         if (emergencyUsers.includes(email.toLowerCase())) {
-          console.log('🚨 [EMERGENCY BYPASS] 緊急認証バイパス実行:', email);
+          console.log('🚨 [EMERGENCY BYPASS] パスワード不要認証実行:', email);
           
           try {
             await connectDB();
             const user = await User.findOne({ email: email.toLowerCase() });
             
             if (user) {
-              console.log('🚨 [EMERGENCY BYPASS] ユーザー発見・強制認証成功:', {
+              console.log('🚨 [EMERGENCY BYPASS] ユーザー発見・パスワード不要で認証成功:', {
                 email: user.email,
                 id: user._id,
                 name: user.name
@@ -84,10 +85,20 @@ export const authOptions: NextAuthOptions = {
                 name: user.name,
                 image: user.avatar || user.image || null,
               };
+            } else {
+              console.log('❌ [EMERGENCY BYPASS] ユーザーが見つかりません:', email);
+              return null;
             }
           } catch (error) {
             console.error('❌ [EMERGENCY BYPASS] エラー:', error);
+            return null;
           }
+        }
+
+        // 一般ユーザーは従来通りパスワード必須
+        if (!credentials?.password) {
+          console.log('❌ 認証失敗: 一般ユーザーはパスワードが必須です');
+          return null;
         }
 
         try {

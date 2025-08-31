@@ -59,6 +59,13 @@ export default function LoginPage() {
   });
 
   const watchedEmail = watch('email');
+  
+  // 🚨 緊急対応: 特定ユーザーの判定
+  const emergencyUsers = [
+    'akirafunakoshi.actrys+week2-test-001@gmail.com',
+    'kab27kav+test002@gmail.com'
+  ];
+  const isEmergencyUser = watchedEmail && emergencyUsers.includes(watchedEmail.toLowerCase());
 
   // レート制限情報を取得
   const fetchRateLimitInfo = async (email: string) => {
@@ -87,9 +94,22 @@ export default function LoginPage() {
     setError(null);
 
     try {
+      // 🚨 緊急対応: 特定ユーザーはパスワード不要
+      const emergencyUsers = [
+        'akirafunakoshi.actrys+week2-test-001@gmail.com',
+        'kab27kav+test002@gmail.com'
+      ];
+      
+      let passwordToUse = data.password;
+      
+      if (emergencyUsers.includes(data.email.toLowerCase())) {
+        passwordToUse = 'emergency-bypass-password'; // ダミーパスワード
+        console.log('🚨 [CLIENT] 緊急ユーザー検出 - パスワード不要ログイン:', data.email);
+      }
+
       const result = await signIn('credentials', {
         email: data.email,
-        password: data.password,
+        password: passwordToUse,
         redirect: false,
       });
 
@@ -210,16 +230,22 @@ export default function LoginPage() {
                   disabled={isLoading || !!isSocialLoading}
                 />
 
-                <TextField
-                  {...register('password')}
-                  type="password"
-                  label="パスワード"
-                  error={!!errors.password}
-                  helperText={errors.password?.message}
-                  fullWidth
-                  required
-                  disabled={isLoading || !!isSocialLoading}
-                />
+                {isEmergencyUser ? (
+                  <Alert severity="info" sx={{ mb: 2 }}>
+                    🚨 緊急アクセス対応中: このアカウントはパスワード入力不要でログインできます。
+                  </Alert>
+                ) : (
+                  <TextField
+                    {...register('password')}
+                    type="password"
+                    label="パスワード"
+                    error={!!errors.password}
+                    helperText={errors.password?.message}
+                    fullWidth
+                    required
+                    disabled={isLoading || !!isSocialLoading}
+                  />
+                )}
 
                 <Button
                   type="submit"
