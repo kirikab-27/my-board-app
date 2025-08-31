@@ -29,16 +29,17 @@ if (!globalWithMongo._mongoClientPromise) {
 const clientPromise = globalWithMongo._mongoClientPromise;
 
 export const authOptions: NextAuthOptions = {
-  adapter: MongoDBAdapter(clientPromise),
+  // 🔥 緊急修正: MongoDB Adapter一時無効化でCredentials Provider問題を特定
+  // adapter: MongoDBAdapter(clientPromise),
   session: {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30日
   },
   providers: [
-    // メール・パスワード認証
+    // 🔥 緊急修正: Credentials Provider最優先配置・設定完全再初期化
     CredentialsProvider({
       id: 'credentials',
-      name: 'credentials',
+      name: 'Email and Password',
       credentials: {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
