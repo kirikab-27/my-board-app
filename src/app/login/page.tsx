@@ -15,13 +15,18 @@ import {
   CircularProgress,
   Container,
   Divider,
+  IconButton,
+  InputAdornment,
 } from '@mui/material';
 import GoogleIcon from '@mui/icons-material/Google';
 import GitHubIcon from '@mui/icons-material/GitHub';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, LoginSchema } from '@/lib/validations/auth';
 import { signIn } from 'next-auth/react';
+import { usePasswordVisibility } from '@/hooks/usePasswordVisibility';
 
 interface RateLimitInfo {
   remainingAttempts: number;
@@ -66,6 +71,9 @@ export default function LoginPage() {
     'kab27kav+test002@gmail.com'
   ];
   const isEmergencyUser = watchedEmail && emergencyUsers.includes(watchedEmail.toLowerCase());
+  
+  // Issue #42: パスワード表示切り替え機能
+  const { isVisible, toggleVisibility, inputType, ariaLabel } = usePasswordVisibility();
 
   // レート制限情報を取得
   const fetchRateLimitInfo = async (email: string) => {
@@ -256,7 +264,7 @@ export default function LoginPage() {
                 
                 <TextField
                   {...register('password')}
-                  type="password"
+                  type={inputType}
                   label="パスワード"
                   error={!!errors.password}
                   helperText={isEmergencyUser ? "任意の文字を入力してください（内容は無視されます）" : errors.password?.message}
@@ -264,6 +272,20 @@ export default function LoginPage() {
                   required
                   disabled={isLoading || !!isSocialLoading}
                   placeholder={isEmergencyUser ? "任意の文字（例：test）" : undefined}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label={ariaLabel}
+                          onClick={toggleVisibility}
+                          edge="end"
+                          disabled={isLoading || !!isSocialLoading}
+                        >
+                          {isVisible ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
                 />
 
                 <Button
