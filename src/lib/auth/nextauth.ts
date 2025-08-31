@@ -44,6 +44,13 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
+        console.log('🔍 [DEBUG] 認証開始:', {
+          hasEmail: !!credentials?.email,
+          hasPassword: !!credentials?.password,
+          email: credentials?.email,
+          passwordLength: credentials?.password?.length || 0
+        });
+
         if (!credentials?.email || !credentials?.password) {
           console.log('❌ 認証失敗: メールまたはパスワードが未入力');
           return null;
@@ -51,6 +58,7 @@ export const authOptions: NextAuthOptions = {
 
         try {
           // バリデーション
+          console.log('🔍 [DEBUG] バリデーション開始');
           const validatedFields = loginSchema.safeParse(credentials);
           if (!validatedFields.success) {
             console.log(
@@ -61,19 +69,36 @@ export const authOptions: NextAuthOptions = {
           }
 
           const { email, password } = validatedFields.data;
+          console.log('🔍 [DEBUG] バリデーション成功:', {
+            email,
+            passwordLength: password.length
+          });
 
           // データベース接続
+          console.log('🔍 [DEBUG] データベース接続開始');
           await connectDB();
+          console.log('🔍 [DEBUG] データベース接続完了');
 
           // ユーザー検索
+          console.log('🔍 [DEBUG] ユーザー検索開始:', { searchEmail: email.toLowerCase() });
           const user = await User.findOne({ email: email.toLowerCase() });
+          console.log('🔍 [DEBUG] ユーザー検索結果:', {
+            found: !!user,
+            userId: user?._id,
+            userEmail: user?.email,
+            hasPassword: !!user?.password
+          });
+          
           if (!user) {
             console.log('❌ 認証失敗: ユーザーが見つかりません', email);
             return null;
           }
 
           // パスワード確認
+          console.log('🔍 [DEBUG] パスワード確認開始');
           const isPasswordValid = await user.comparePassword(password);
+          console.log('🔍 [DEBUG] パスワード確認結果:', { isValid: isPasswordValid });
+          
           if (!isPasswordValid) {
             console.log('❌ 認証失敗: パスワードが間違っています', email);
             return null;
