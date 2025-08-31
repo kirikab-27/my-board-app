@@ -23,6 +23,7 @@ import {
   AppBar,
   Toolbar,
   Container,
+  useTheme,
 } from '@mui/material';
 import {
   TrendingUp as TrendingUpIcon,
@@ -36,6 +37,7 @@ import dynamic from 'next/dynamic';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useRouter } from 'next/navigation';
 import { AuthButton } from '@/components/auth/AuthButton';
+import { getNavigationHeaderStyles } from '@/styles/navigationHeaderStyles';
 
 // Dynamic import for Chart.js to reduce initial bundle size
 const Line = dynamic(() => import('react-chartjs-2').then((mod) => ({ default: mod.Line })), {
@@ -123,6 +125,7 @@ export default function AnalyticsDashboard() {
   });
   
   const router = useRouter();
+  const theme = useTheme(); // Issue #38: ダークモード対応
 
   const [analytics, setAnalytics] = useState<UserAnalytics | null>(null);
   const [loading, setLoading] = useState(true);

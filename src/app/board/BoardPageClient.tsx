@@ -11,6 +11,7 @@ import {
   Button,
   Fab,
   Paper,
+  useTheme,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { useRouter } from 'next/navigation';
@@ -19,6 +20,7 @@ import { SortOption } from '@/components/SortSelector';
 import { AuthButton } from '@/components/auth/AuthButton';
 import { AuthGuard } from '@/components/auth/AuthGuardImproved';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import { getNavigationHeaderStyles } from '@/styles/navigationHeaderStyles';
 // Phase 5: Total Blocking Time削減 - React.lazy遅延読み込み
 import { LazyPostList, LazySortSelector, LazyInfiniteScrollContainer } from '@/components/lazy/LazyBoardComponents';
 import performanceConfig from '@/config/performance';
@@ -33,6 +35,7 @@ interface BoardPageClientProps {
 
 export default function BoardPageClient({ initialData }: BoardPageClientProps) {
   const router = useRouter();
+  const theme = useTheme(); // Issue #38: ダークモード対応
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('createdAt_desc');
   
@@ -158,12 +161,7 @@ export default function BoardPageClient({ initialData }: BoardPageClientProps) {
             />
           </Toolbar>
           {/* 2段目のナビゲーション行 */}
-          <Toolbar variant="dense" sx={{ 
-            minHeight: 48, 
-            borderTop: 1, 
-            borderColor: 'rgba(255, 255, 255, 0.12)',
-            bgcolor: 'primary.main' 
-          }}>
+          <Toolbar variant="dense" sx={getNavigationHeaderStyles(theme)}>
             <AuthButton isNavigationRow={true} />
           </Toolbar>
         </AppBar>

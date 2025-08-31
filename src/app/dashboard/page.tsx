@@ -16,6 +16,7 @@ import {
   CircularProgress,
   Avatar,
   Chip,
+  useTheme,
 } from '@mui/material';
 import {
   Forum as ForumIcon,
@@ -30,9 +31,11 @@ import { AuthButton } from '@/components/auth/AuthButton';
 import ProfileAvatar from '@/components/profile/ProfileAvatar';
 import { useRouter } from 'next/navigation';
 import AdminWebSocketClient from '@/components/websocket/AdminWebSocketClient';
+import { getNavigationHeaderStyles } from '@/styles/navigationHeaderStyles';
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
+  const theme = useTheme(); // Issue #38: ダークモード対応
   const router = useRouter();
   const [loadingButton, setLoadingButton] = useState<string | null>(null);
   const [isResending, setIsResending] = useState(false);
@@ -83,12 +86,7 @@ export default function DashboardPage() {
         {/* 2段目のナビゲーション行 */}
         <Toolbar
           variant="dense"
-          sx={{
-            minHeight: 48,
-            borderTop: 1,
-            borderColor: 'rgba(255, 255, 255, 0.12)',
-            bgcolor: 'primary.main',
-          }}
+          sx={getNavigationHeaderStyles(theme)}
         >
           <AuthButton isNavigationRow={true} />
         </Toolbar>

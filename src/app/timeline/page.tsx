@@ -43,6 +43,7 @@ import InfiniteScrollContainer from '@/components/InfiniteScrollContainer';
 import OptimizedImage from '@/components/ui/OptimizedImage';
 import Link from 'next/link';
 import performanceConfig from '@/config/performance';
+import { getNavigationHeaderStyles } from '@/styles/navigationHeaderStyles';
 
 export default function TimelinePage() {
   const { data: session } = useSession();
@@ -124,12 +125,7 @@ export default function TimelinePage() {
           <AuthButton />
         </Toolbar>
         {/* 2段目のナビゲーション行 */}
-        <Toolbar variant="dense" sx={{ 
-          minHeight: 48, 
-          borderTop: 1, 
-          borderColor: 'rgba(255, 255, 255, 0.12)',
-          bgcolor: 'primary.main' 
-        }}>
+        <Toolbar variant="dense" sx={getNavigationHeaderStyles(theme)}>
           <AuthButton isNavigationRow={true} />
         </Toolbar>
       </AppBar>
