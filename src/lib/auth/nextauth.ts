@@ -79,10 +79,16 @@ export const authOptions: NextAuthOptions = {
             return null;
           }
 
-          // メール認証チェック（必須制御復活）
+          // メール認証チェック（一時的に無効化 - 既存ユーザー緊急対応）
+          // if (!user.emailVerified) {
+          //   console.log('❌ 認証失敗: メール認証が完了していません', email);
+          //   return null;
+          // }
+          
+          // 緊急対応: 既存ユーザーログイン問題のため一時的にメール認証チェック無効化
+          // TODO: 既存ユーザー問題解決後にメール認証チェックを復活すること
           if (!user.emailVerified) {
-            console.log('❌ 認証失敗: メール認証が完了していません', email);
-            return null;
+            console.log('⚠️ 警告: メール認証未完了ですがログインを許可（緊急対応モード）', email);
           }
 
           console.log(
