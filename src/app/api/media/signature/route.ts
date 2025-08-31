@@ -13,16 +13,20 @@ export const runtime = 'nodejs';
  */
 export async function POST(request: NextRequest) {
   try {
-    // 🔍 Vercel環境変数詳細デバッグ
-    console.log('🚨 Raw env vars debug:', {
-      NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+    // 🔍 Vercel環境変数詳細デバッグ（修正版）
+    console.log('🚨 Raw env vars debug (corrected):', {
       CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
       API_KEY_PREVIEW: process.env.CLOUDINARY_API_KEY?.substring(0, 5) + '***',
       API_SECRET_PREVIEW: process.env.CLOUDINARY_API_SECRET?.substring(0, 5) + '***',
-      ALL_CLOUDINARY_KEYS: Object.keys(process.env).filter(k => k.includes('CLOUD')),
       ALL_CLOUDINARY_VARS: Object.keys(process.env).filter(k => k.includes('CLOUDINARY')),
+      ENV_KEYS_COUNT: Object.keys(process.env).length,
       NODE_ENV: process.env.NODE_ENV,
-      VERCEL_ENV: process.env.VERCEL_ENV
+      VERCEL_ENV: process.env.VERCEL_ENV,
+      ACTUAL_VALUES: {
+        cloudName_exists: !!process.env.CLOUDINARY_CLOUD_NAME,
+        apiKey_exists: !!process.env.CLOUDINARY_API_KEY,
+        apiSecret_exists: !!process.env.CLOUDINARY_API_SECRET
+      }
     });
 
     // 認証チェック
