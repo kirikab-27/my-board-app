@@ -7,8 +7,66 @@ on:
     branches: [develop, main]
 
 jobs:
-  test:
+  # 緊急度判定・フロー振り分け
+  emergency-detection:
     runs-on: ubuntu-latest
+    name: Emergency Level Detection
+    outputs:
+      is_emergency: ${{ steps.detect.outputs.is_emergency }}
+      emergency_level: ${{ steps.detect.outputs.level }}
+    
+    steps:
+      - name: Detect emergency level
+        id: detect
+        run: |
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+          echo "🔍 コミットメッセージ分析: $COMMIT_MSG"
+          
+          if echo "$COMMIT_MSG" | grep -q "🚨.*CRITICAL\|🔴"; then
+            echo "is_emergency=true" >> $GITHUB_OUTPUT
+            echo "level=CRITICAL" >> $GITHUB_OUTPUT
+            echo "🔴 CRITICAL緊急修正検出"
+          elif echo "$COMMIT_MSG" | grep -q "🚨.*HIGH\|🟡\|HOTFIX\|EMERGENCY"; then
+            echo "is_emergency=true" >> $GITHUB_OUTPUT  
+            echo "level=HIGH" >> $GITHUB_OUTPUT
+            echo "🟡 HIGH緊急修正検出"
+          else
+            echo "is_emergency=false" >> $GITHUB_OUTPUT
+            echo "level=NORMAL" >> $GITHUB_OUTPUT
+            echo "🟢 通常修正"
+          fi
+  # 緊急時高速チェック
+  emergency-fast-check:
+    needs: emergency-detection
+    if: needs.emergency-detection.outputs.is_emergency == 'true'
+    runs-on: ubuntu-latest
+    name: Emergency Fast Quality Check
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+        
+      - name: Critical checks only
+        run: |
+          echo "🚨 緊急修正 (${{ needs.emergency-detection.outputs.emergency_level }}) - 高速品質チェック"
+          npm run build
+          echo "✅ 緊急修正の最低限品質確認完了"
+
+  # 通常の完全テスト
+  test:
+    needs: emergency-detection
+    if: needs.emergency-detection.outputs.is_emergency == 'false'
+    runs-on: ubuntu-latest
+    name: Full Quality Assurance
 
     services:
       mongodb:

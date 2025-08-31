@@ -8,25 +8,15 @@ import {
   LinearProgress,
   Alert,
   IconButton,
-  // Chip,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
-  // Card,
-  CardMedia,
-  CardContent,
-  CardActions,
-  Fade,
-  Paper
+  TextField
 } from '@mui/material';
 import {
   CloudUpload,
-  Delete,
-  Preview,
   Image as ImageIcon,
-  VideoLibrary,
   Close,
   ZoomIn,
   DeleteOutline,

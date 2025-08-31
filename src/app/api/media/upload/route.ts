@@ -10,7 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 export const runtime = 'nodejs';
 
 // CORS対応: OPTIONSリクエスト処理
-export async function OPTIONS(request: NextRequest) {
+export async function OPTIONS() {
   return new NextResponse(null, {
     status: 200,
     headers: {
