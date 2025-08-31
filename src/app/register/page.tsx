@@ -226,6 +226,7 @@ export default function RegisterPage() {
 
                 <TextField
                   {...register('password')}
+                  id="register-password-field"
                   type={passwordVisibility.inputType}
                   label="パスワード"
                   error={!!errors.password}
@@ -302,6 +303,7 @@ export default function RegisterPage() {
 
                 <TextField
                   {...register('confirmPassword')}
+                  id="register-confirm-password-field"
                   type={confirmPasswordVisibility.inputType}
                   label="パスワード（確認）"
                   error={!!errors.confirmPassword}

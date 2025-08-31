@@ -264,6 +264,7 @@ export default function LoginPage() {
                 
                 <TextField
                   {...register('password')}
+                  id="login-password-field"
                   type={inputType}
                   label="パスワード"
                   error={!!errors.password}
