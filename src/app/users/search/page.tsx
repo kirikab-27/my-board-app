@@ -375,7 +375,10 @@ export default function UserSearchPage() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             ユーザー検索
           </Typography>
-          <AuthButton />
+          <AuthButton 
+            onSearch={handleSearch}
+            onClearSearch={handleClearSearch}
+          />
         </Toolbar>
       </AppBar>
 
