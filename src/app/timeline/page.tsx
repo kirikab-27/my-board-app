@@ -51,6 +51,15 @@ export default function TimelinePage() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [sortBy, setSortBy] = useState<SortOption>('createdAt_desc');
+
+  // Issue #35: 検索機能ハンドラー（HeaderSearchIcon表示のため）
+  const handleSearch = (query: string) => {
+    router.push(`/board?search=${encodeURIComponent(query)}`);
+  };
+
+  const handleClearSearch = () => {
+    // timelineページでのクリア処理（特に何もしない）
+  };
   
   // 認証必須
   useRequireAuth({ redirectTo: '/login' });
@@ -122,7 +131,10 @@ export default function TimelinePage() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             タイムライン
           </Typography>
-          <AuthButton />
+          <AuthButton 
+            onSearch={handleSearch}
+            onClearSearch={handleClearSearch}
+          />
         </Toolbar>
         {/* 2段目のナビゲーション行 */}
         <Toolbar variant="dense" sx={getNavigationHeaderStyles(theme)}>

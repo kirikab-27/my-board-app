@@ -55,6 +55,16 @@ export default function DashboardPage() {
   const isModerator = session?.user?.role === 'moderator';
   const isAdminOrModerator = isAdmin || isModerator;
 
+  // Issue #35: 検索機能ハンドラー（HeaderSearchIcon表示のため）
+  const handleSearch = (query: string) => {
+    // ダッシュボードでは検索結果表示なし・他ページに遷移
+    router.push(`/board?search=${encodeURIComponent(query)}`);
+  };
+
+  const handleClearSearch = () => {
+    // ダッシュボードでのクリア処理（特に何もしない）
+  };
+
   // メール認証再送信ハンドラ
   const handleResendVerification = async () => {
     setIsResending(true);
@@ -96,7 +106,10 @@ export default function DashboardPage() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             ダッシュボード
           </Typography>
-          <AuthButton />
+          <AuthButton 
+            onSearch={handleSearch}
+            onClearSearch={handleClearSearch}
+          />
         </Toolbar>
         {/* 2段目のナビゲーション行 */}
         <Toolbar
