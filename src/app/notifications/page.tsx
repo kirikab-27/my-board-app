@@ -72,7 +72,10 @@ export default function NotificationsPage() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             通知センター
           </Typography>
-          <AuthButton />
+          <AuthButton 
+            onSearch={handleSearch}
+            onClearSearch={handleClearSearch}
+          />
         </Toolbar>
       </AppBar>
 
