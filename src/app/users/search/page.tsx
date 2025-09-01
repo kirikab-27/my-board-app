@@ -82,6 +82,15 @@ export default function UserSearchPage() {
   const searchParams = useSearchParams();
   const { data: session } = useSession();
   
+  // Issue #35: 検索機能ハンドラー（HeaderSearchIcon表示のため）
+  const handleSearch = (query: string) => {
+    router.push(`/board?search=${encodeURIComponent(query)}`);
+  };
+
+  const handleClearSearch = () => {
+    // ユーザー検索ページでのクリア処理（特に何もしない）
+  };
+  
   const [searchQuery, setSearchQuery] = useState(searchParams?.get('q') || '');
   const [users, setUsers] = useState<User[]>([]);
   const [suggestedUsers, setSuggestedUsers] = useState<User[]>([]);
@@ -335,7 +344,10 @@ export default function UserSearchPage() {
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               ユーザー検索
             </Typography>
-            <AuthButton />
+            <AuthButton 
+              onSearch={handleSearch}
+              onClearSearch={handleClearSearch}
+            />
           </Toolbar>
         </AppBar>
         <Container maxWidth="md" sx={{ mt: { xs: 14, sm: 16, md: 16 } }}>
