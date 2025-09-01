@@ -31,6 +31,15 @@ export default function ProfileEditPage() {
   const router = useRouter();
   const theme = useTheme(); // Issue #38: ダークモード対応
   const { data: session, status, update } = useSession();
+
+  // Issue #35: 検索機能ハンドラー（HeaderSearchIcon表示のため）
+  const handleSearch = (query: string) => {
+    router.push(`/board?search=${encodeURIComponent(query)}`);
+  };
+
+  const handleClearSearch = () => {
+    // プロフィール編集ページでのクリア処理（特に何もしない）
+  };
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -345,7 +354,10 @@ export default function ProfileEditPage() {
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               プロフィール編集
             </Typography>
-            <AuthButton />
+            <AuthButton 
+              onSearch={handleSearch}
+              onClearSearch={handleClearSearch}
+            />
           </Toolbar>
           <Toolbar variant="dense" sx={getNavigationHeaderStyles(theme)}>
             <AuthButton isNavigationRow />
