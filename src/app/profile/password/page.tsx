@@ -30,6 +30,16 @@ import Link from 'next/link';
 export default function PasswordChangePage() {
   const router = useRouter();
   const { data: session, status } = useSession();
+
+  // Issue #35: 検索機能ハンドラー（HeaderSearchIcon表示のため）
+  const handleSearch = (query: string) => {
+    router.push(`/board?search=${encodeURIComponent(query)}`);
+  };
+
+  const handleClearSearch = () => {
+    // パスワード変更ページでのクリア処理（特に何もしない）
+  };
+
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -187,7 +197,10 @@ export default function PasswordChangePage() {
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               パスワード変更
             </Typography>
-            <AuthButton />
+            <AuthButton 
+              onSearch={handleSearch}
+              onClearSearch={handleClearSearch}
+            />
           </Toolbar>
         </AppBar>
 
