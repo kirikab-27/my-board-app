@@ -99,7 +99,11 @@
       "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" api graphql -f query='\n{\n  user(login: \"\"kirikab-27\"\") {\n    projectV2(number: 2) {\n      id\n      fields(first: 10) {\n        nodes {\n          ... on ProjectV2SingleSelectField {\n            id\n            name\n            options {\n              id\n              name\n            }\n          }\n        }\n      }\n      items(last: 10) {\n        nodes {\n          id\n          content {\n            ... on Issue {\n              number\n              title\n            }\n          }\n        }\n      }\n    }\n  }\n}')",
       "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" api graphql -f query='\nmutation {\n  updateProjectV2ItemFieldValue(input: {\n    projectId: \"\"PVT_kwHOB5DmjM4BAytu\"\"\n    itemId: \"\"PVTI_lAHOB5DmjM4BAytuzgeMLoI\"\"\n    fieldId: \"\"PVTSSF_lAHOB5DmjM4BAytuzgzfW84\"\"\n    value: {\n      singleSelectOptionId: \"\"98236657\"\"\n    }\n  }) {\n    projectV2Item {\n      id\n    }\n  }\n}')",
       "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue view 36)",
-      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue view 36 --json comments --jq '.comments[0].body')"
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue view 36 --json comments --jq '.comments[0].body')",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" api graphql -f query='\nmutation {\n  updateProjectV2ItemFieldValue(input: {\n    projectId: \"\"PVT_kwHOB5DmjM4BAytu\"\"\n    itemId: \"\"PVTI_lAHOB5DmjM4BAytuzgeIpow\"\"\n    fieldId: \"\"PVTSSF_lAHOB5DmjM4BAytuzgzfW84\"\"\n    value: {\n      singleSelectOptionId: \"\"98236657\"\"\n    }\n  }) {\n    projectV2Item {\n      id\n    }\n  }\n}')",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue comment 37 --body-file issue37_completion_report.md)",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue view 35)",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue comment 35 --body-file issue35_implementation_plan.md)"
     ],
     "deny": [],
     "ask": [],

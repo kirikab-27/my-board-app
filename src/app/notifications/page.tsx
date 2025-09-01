@@ -9,15 +9,26 @@ import {
   Box,
   Paper,
 } from '@mui/material';
+import { useRouter } from 'next/navigation';
 import { AuthButton } from '@/components/auth/AuthButton';
 import { NotificationList } from '@/components/notifications/NotificationList';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 export default function NotificationsPage() {
+  const router = useRouter();
   const { isLoading } = useRequireAuth({
     redirectTo: '/login',
     requiredRole: 'user',
   });
+
+  // Issue #35: 検索機能ハンドラー（HeaderSearchIcon表示のため）
+  const handleSearch = (query: string) => {
+    router.push(`/board?search=${encodeURIComponent(query)}`);
+  };
+
+  const handleClearSearch = () => {
+    // 通知ページでのクリア処理（特に何もしない）
+  };
 
   const handleNotificationClick = (notification: any) => {
     // 通知のタイプに応じてページ遷移
@@ -39,7 +50,10 @@ export default function NotificationsPage() {
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               通知センター
             </Typography>
-            <AuthButton />
+            <AuthButton 
+              onSearch={handleSearch}
+              onClearSearch={handleClearSearch}
+            />
           </Toolbar>
         </AppBar>
         <Container maxWidth="md" sx={{ mt: { xs: 10, sm: 12, md: 12 } }}>

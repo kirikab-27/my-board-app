@@ -127,6 +127,15 @@ export default function AnalyticsDashboard() {
   const router = useRouter();
   const theme = useTheme(); // Issue #38: ダークモード対応
 
+  // Issue #35: 検索機能ハンドラー（HeaderSearchIcon表示のため）
+  const handleSearch = (query: string) => {
+    router.push(`/board?search=${encodeURIComponent(query)}`);
+  };
+
+  const handleClearSearch = () => {
+    // 分析ページでのクリア処理（特に何もしない）
+  };
+
   const [analytics, setAnalytics] = useState<UserAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -179,7 +188,10 @@ export default function AnalyticsDashboard() {
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               個人分析ダッシュボード
             </Typography>
-            <AuthButton />
+            <AuthButton 
+              onSearch={handleSearch}
+              onClearSearch={handleClearSearch}
+            />
           </Toolbar>
           {/* 2段目のナビゲーション行 */}
           <Toolbar variant="dense" sx={getNavigationHeaderStyles(theme)}>
@@ -207,7 +219,10 @@ export default function AnalyticsDashboard() {
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               個人分析ダッシュボード
             </Typography>
-            <AuthButton />
+            <AuthButton 
+              onSearch={handleSearch}
+              onClearSearch={handleClearSearch}
+            />
           </Toolbar>
           {/* 2段目のナビゲーション行 */}
           <Toolbar variant="dense" sx={getNavigationHeaderStyles(theme)}>
@@ -242,7 +257,10 @@ export default function AnalyticsDashboard() {
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               個人分析ダッシュボード
             </Typography>
-            <AuthButton />
+            <AuthButton 
+              onSearch={handleSearch}
+              onClearSearch={handleClearSearch}
+            />
           </Toolbar>
           {/* 2段目のナビゲーション行 */}
           <Toolbar variant="dense" sx={getNavigationHeaderStyles(theme)}>
@@ -272,7 +290,10 @@ export default function AnalyticsDashboard() {
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               個人分析ダッシュボード
             </Typography>
-            <AuthButton />
+            <AuthButton 
+              onSearch={handleSearch}
+              onClearSearch={handleClearSearch}
+            />
           </Toolbar>
           {/* 2段目のナビゲーション行 */}
           <Toolbar variant="dense" sx={getNavigationHeaderStyles(theme)}>
