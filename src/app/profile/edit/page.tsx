@@ -382,7 +382,10 @@ export default function ProfileEditPage() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             プロフィール編集
           </Typography>
-          <AuthButton />
+          <AuthButton 
+            onSearch={handleSearch}
+            onClearSearch={handleClearSearch}
+          />
         </Toolbar>
         <Toolbar variant="dense" sx={getNavigationHeaderStyles(theme)}>
           <AuthButton isNavigationRow />
