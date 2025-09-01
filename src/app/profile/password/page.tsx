@@ -227,7 +227,10 @@ export default function PasswordChangePage() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             パスワード変更
           </Typography>
-          <AuthButton />
+          <AuthButton 
+            onSearch={handleSearch}
+            onClearSearch={handleClearSearch}
+          />
         </Toolbar>
       </AppBar>
 
