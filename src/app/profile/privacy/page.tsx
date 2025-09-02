@@ -22,6 +22,7 @@ import {
 } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { AuthButton } from '@/components/auth/AuthButton';
 import { PrivacySettingsForm } from '@/components/privacy/PrivacySettingsForm';
 import { BlockedUsersManager } from '@/components/privacy/BlockedUsersManager';
 import { MuteManager } from '@/components/privacy/MuteManager';
@@ -30,6 +31,15 @@ import { NotificationController } from '@/components/privacy/NotificationControl
 export default function PrivacySettingsPage() {
   const router = useRouter();
   const [currentTab, setCurrentTab] = React.useState(0);
+
+  // Issue #35: 検索機能ハンドラー（HeaderSearchIcon表示のため）
+  const handleSearch = (query: string) => {
+    router.push(`/board?search=${encodeURIComponent(query)}`);
+  };
+
+  const handleClearSearch = () => {
+    // プライバシー設定ページでのクリア処理（特に何もしない）
+  };
 
   // 認証必須
   const { isLoading } = useRequireAuth({
@@ -63,6 +73,10 @@ export default function PrivacySettingsPage() {
           <Typography variant="h6" component="h1" sx={{ flexGrow: 1 }}>
             プライバシー設定
           </Typography>
+          <AuthButton 
+            onSearch={handleSearch}
+            onClearSearch={handleClearSearch}
+          />
         </Toolbar>
       </AppBar>
 
