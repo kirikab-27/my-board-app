@@ -87,7 +87,7 @@ export default function AdminDashboardPage() {
       {/* クイックアクション */}
       <Grid container spacing={3}>
         {/* ユーザー管理 */}
-        <Grid item xs={12} md={6} lg={4}>
+        <Grid size={{ xs: 12, md: 6, lg: 4 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -105,7 +105,7 @@ export default function AdminDashboardPage() {
         </Grid>
 
         {/* 投稿管理 */}
-        <Grid item xs={12} md={6} lg={4}>
+        <Grid size={{ xs: 12, md: 6, lg: 4 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -123,7 +123,7 @@ export default function AdminDashboardPage() {
         </Grid>
 
         {/* 分析機能 */}
-        <Grid item xs={12} md={6} lg={4}>
+        <Grid size={{ xs: 12, md: 6, lg: 4 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -142,7 +142,7 @@ export default function AdminDashboardPage() {
 
         {/* システム設定（管理者のみ） */}
         {isAdmin && (
-          <Grid item xs={12} md={6} lg={4}>
+          <Grid size={{ xs: 12, md: 6, lg: 4 }}>
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
