@@ -250,6 +250,41 @@ SECURITY_API_TOKEN=your_security_admin_token_here
 2. DKIM/SPF/DMARC設定確認
 3. 国外IPアクセス制限無効化（Vercel対応）
 
+### Next.js環境破損問題（重要・再発防止）
+
+#### 症状
+- `Cannot find module 'next/dist/bin/next'` エラー
+- `pages-manifest.json` 欠損エラー
+- 開発サーバー完全起動不可
+
+#### 原因（Issue #45で発生）
+1. **不完全な環境操作**: .next削除中に稼働プロセスが存在
+2. **複数プロセス競合**: npm install中の複数Node.jsプロセス
+3. **中途半端な削除**: node_modules部分破損・依存関係不整合
+4. **npm installタイムアウト**: 不完全インストール・モジュール欠損
+
+#### 緊急解決手順
+```bash
+# 1. 全Node.jsプロセス確認・終了
+tasklist | findstr node
+taskkill /F /IM node.exe  # 必要時のみ
+
+# 2. 完全クリーンアップ
+rm -rf node_modules package-lock.json .next
+
+# 3. クリーンインストール
+npm install --legacy-peer-deps
+
+# 4. 開発サーバー起動確認
+npm run dev
+```
+
+#### 再発防止策
+1. **環境操作前**: 全Node.jsプロセス終了確認
+2. **段階的操作**: .next削除→プロセス確認→npm install
+3. **完了確認**: Next.jsバイナリ存在確認（node_modules/next/dist/bin/next）
+4. **緊急スクリプト**: `./scripts/emergency-env-reset.sh` 使用
+
 詳細なトラブルシューティングは参考ドキュメント参照。
 
 ## GitHub Projects タスク管理
