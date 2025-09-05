@@ -164,6 +164,17 @@ export default function DashboardPage() {
                     />
                   )}
                 </Box>
+                
+                {/* 🔧 緊急デバッグ: セッション情報確認 */}
+                <Box sx={{ mt: 2 }}>
+                  <Alert severity="info">
+                    🔍 セッション確認: 
+                    ユーザー: {session?.user?.name || 'なし'} | 
+                    メール: {session?.user?.email || 'なし'} | 
+                    権限: {session?.user?.role || 'undefined'} |
+                    ID: {session?.user?.id || 'なし'}
+                  </Alert>
+                </Box>
               </Box>
             </Box>
           </Box>
