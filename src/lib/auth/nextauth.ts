@@ -239,7 +239,17 @@ export const authOptions: NextAuthOptions = {
                 token.id = user.id;
               }
 
-              token.role = dbUser.role || 'user';
+              // 🔧 権限情報強制更新（Issue #47対応）
+              const newRole = dbUser.role || 'user';
+              console.log('🔧 JWT権限更新:', {
+                email: dbUser.email,
+                oldRole: token.role,
+                newRole: newRole,
+                dbRole: dbUser.role,
+                forceUpdate: true
+              });
+              
+              token.role = newRole;
               token.emailVerified = dbUser.emailVerified;
               token.bio = dbUser.bio || '';
               token.avatar = dbUser.avatar || null; // プロフィール画像更新
