@@ -548,8 +548,42 @@ export default function DashboardPage() {
                 </Card>
               </Grid>
 
-              {/* Phase 7.1: 管理者専用パネル */}
-              {session?.user?.role === 'admin' && (
+              {/* Issue #47: 管理者機能アクセス（admin・moderator・super_admin） */}
+              {(session?.user?.role === 'admin' || session?.user?.role === 'moderator' || session?.user?.role === 'super_admin') && (
+                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Card sx={{ border: 2, borderColor: 'error.main', backgroundColor: 'error.light' }}>
+                    <CardContent>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <AdminPanelSettings sx={{ mr: 1, color: 'error.main' }} />
+                        <Typography variant="h6" color="error.main">管理者パネル</Typography>
+                      </Box>
+                      <Typography color="error.main" sx={{ mb: 2 }}>
+                        🛡️ 管理者機能・ユーザー管理・システム管理
+                      </Typography>
+                      <Button
+                        variant="contained"
+                        color="error"
+                        onClick={async () => {
+                          setLoadingButton('admin-panel');
+                          router.push('/admin/dashboard');
+                          setTimeout(() => setLoadingButton(null), 2000);
+                        }}
+                        fullWidth
+                        disabled={loadingButton === 'admin-panel'}
+                      >
+                        {loadingButton === 'admin-panel' ? (
+                          <CircularProgress size={24} color="inherit" />
+                        ) : (
+                          '🔐 管理者パネルへ'
+                        )}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              )}
+
+              {/* Phase 7.1: 管理者専用パネル（既存・削除予定） */}
+              {false && session?.user?.role === 'admin' && (
                 <Box
                   sx={{
                     display: 'flex',
