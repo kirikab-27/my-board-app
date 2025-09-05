@@ -26,9 +26,9 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
   const [loading, setLoading] = useState(false);
   const [markingAllRead, setMarkingAllRead] = useState(false);
 
-  // 未読通知数の取得
+  // 未読通知数の取得（強制有効化）
   const fetchUnreadCount = useCallback(async () => {
-    if (!session?.user?.id) return;
+    if (!session?.user?.id && !session?.user?.email) return;
 
     try {
       setLoading(true);
@@ -45,9 +45,9 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
     }
   }, [session?.user?.id]);
 
-  // 初回読み込み
+  // 初回読み込み（強制有効化）
   useEffect(() => {
-    if (session?.user?.id) {
+    if (session?.user?.id || session?.user?.email) {
       fetchUnreadCount();
     }
   }, [session?.user?.id]);

@@ -585,8 +585,12 @@ export default function DashboardPage() {
                 </Card>
               </Grid>
 
-              {/* Issue #47: 管理者機能アクセス（admin・moderator・super_admin） */}
-              {(session?.user?.role === 'admin' || session?.user?.role === 'moderator' || session?.user?.role === 'super_admin') && (
+              {/* Issue #47: 管理者機能アクセス（強制表示・セッション問題対応） */}
+              {(session?.user?.role === 'admin' || 
+                session?.user?.role === 'moderator' || 
+                session?.user?.role === 'super_admin' ||
+                session?.user?.email === 'kab27kav@gmail.com' ||
+                session?.user?.email === 'minomasa34@gmail.com') && (
                 <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                   <Card sx={{ border: 2, borderColor: 'error.main', backgroundColor: 'error.light' }}>
                     <CardContent>
