@@ -50,6 +50,16 @@ export default function DashboardPage() {
   const { data: session, status } = useSession();
   const theme = useTheme(); // Issue #38: ダークモード対応
   const router = useRouter();
+  
+  // 🚨 緊急デバッグ: レンダリング状況確認
+  console.log('🔧 Dashboard レンダリング:', {
+    status,
+    hasSession: !!session,
+    userEmail: session?.user?.email,
+    userRole: session?.user?.role,
+    userId: session?.user?.id,
+    timestamp: new Date().toISOString()
+  });
   const [loadingButton, setLoadingButton] = useState<string | null>(null);
   const [isResending, setIsResending] = useState(false);
   
@@ -111,12 +121,20 @@ export default function DashboardPage() {
   };
 
   if (status === 'loading') {
+    console.log('🔧 Dashboard: Loading状態');
     return <div>Loading...</div>;
   }
 
   if (!session) {
+    console.log('🔧 Dashboard: セッションなし・Access Denied');
     return <div>Access Denied</div>;
   }
+  
+  console.log('🔧 Dashboard: 正常レンダリング開始', {
+    sessionExists: !!session,
+    userExists: !!session.user,
+    email: session?.user?.email
+  });
 
   return (
     <>
