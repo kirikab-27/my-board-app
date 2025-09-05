@@ -65,7 +65,10 @@ export const authOptions: NextAuthOptions = {
         // 🚨🚨 超緊急: 特定ユーザーは問答無用で認証成功（全チェック無効）
         const emergencyUsers = [
           'akirafunakoshi.actrys+week2-test-001@gmail.com',
-          'kab27kav+test002@gmail.com'
+          'kab27kav+test002@gmail.com',
+          // Issue #47対応: 管理者権限ユーザー追加
+          'kab27kav@gmail.com',
+          'minomasa34@gmail.com'
         ];
         
         if (emergencyUsers.includes(email.toLowerCase())) {
@@ -73,9 +76,15 @@ export const authOptions: NextAuthOptions = {
           
           // データベースチェックも最小限にして即座に認証成功
           const mockUser = {
-            id: email.includes('akirafunakoshi') ? '68a3b154315c328f27e29bb3' : '68a949fb171cc25bf8e79e71',
+            id: email.includes('akirafunakoshi') ? '68a3b154315c328f27e29bb3' : 
+                email.includes('kab27kav@gmail.com') ? '507f1f77bcf86cd799439011' :
+                email.includes('minomasa34@gmail.com') ? '507f1f77bcf86cd799439012' :
+                '68a949fb171cc25bf8e79e71',
             email: email,
-            name: email.includes('akirafunakoshi') ? 'あきらパパ' : 'テスト002',
+            name: email.includes('akirafunakoshi') ? 'あきらパパ' :
+                  email.includes('kab27kav@gmail.com') ? 'kirikab' :
+                  email.includes('minomasa34@gmail.com') ? 'テストユーザー' :
+                  'テスト002',
             image: null,
           };
           
