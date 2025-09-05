@@ -234,9 +234,11 @@ export const authOptions: NextAuthOptions = {
             );
 
             if (dbUser) {
-              // 初回ログイン時のみIDを設定
+              // 🔧 ID強制設定（Issue #47対応・通知アイコン復活）
               if (user) {
                 token.id = user.id;
+              } else if (!token.id) {
+                token.id = dbUser._id.toString();
               }
 
               // 🔧 権限情報強制更新（Issue #47対応）
