@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Button, Menu, MenuItem, Box, Typography, IconButton, useMediaQuery, useTheme, Avatar } from '@mui/material';
+import { Button, Menu, MenuItem, Box, Typography, IconButton, useMediaQuery, useTheme, Avatar, Badge } from '@mui/material';
 import {
   Login as LoginIcon,
   Logout as LogoutIcon,
@@ -16,6 +16,7 @@ import {
   Lock as LockIcon,
   Security as SecurityIcon,
   Analytics as AnalyticsIcon,
+  Notifications as NotificationsIcon,
 } from '@mui/icons-material';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -204,7 +205,12 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
           placeholder="投稿を検索..."
         />
       )}
-      <NotificationBell />
+      {/* 🚨 緊急テスト: 通知アイコン単純化 */}
+      <IconButton color="inherit" title="通知">
+        <Badge badgeContent={3} color="error">
+          <NotificationsIcon />
+        </Badge>
+      </IconButton>
       <IconButton
         onClick={handleMenuOpen}
         sx={{ p: 0 }}
