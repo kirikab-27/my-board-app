@@ -17,6 +17,8 @@ import {
   Avatar,
   Chip,
   Alert,
+  IconButton,
+  Badge,
   useTheme,
 } from '@mui/material';
 import {
@@ -123,6 +125,12 @@ export default function DashboardPage() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             ダッシュボード
           </Typography>
+          {/* 🚨 緊急修正：通知アイコン直接配置 */}
+          <IconButton color="inherit" title="通知">
+            <Badge badgeContent={3} color="error">
+              <Notifications />
+            </Badge>
+          </IconButton>
           <AuthButton 
             onSearch={handleSearch}
             onClearSearch={handleClearSearch}
