@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useSession } from 'next-auth/react';
+import { useSession, getSession } from 'next-auth/react';
 import {
   Container,
   Typography,
@@ -50,6 +50,22 @@ export default function DashboardPage() {
   const router = useRouter();
   const [loadingButton, setLoadingButton] = useState<string | null>(null);
   const [isResending, setIsResending] = useState(false);
+  
+  // Issue #47: セッション更新機能
+  const [updatingSession, setUpdatingSession] = useState(false);
+  
+  const handleUpdateSession = async () => {
+    setUpdatingSession(true);
+    try {
+      // セッション強制更新
+      await getSession();
+      // ページリロードで最新セッション取得
+      window.location.reload();
+    } catch (error) {
+      console.error('セッション更新エラー:', error);
+    }
+    setUpdatingSession(false);
+  };
 
   // Issue #37: 権限制御システム実装
   const isAdmin = session?.user?.role === 'admin';
@@ -174,6 +190,15 @@ export default function DashboardPage() {
                     メール: {session?.user?.email || 'なし'} | 
                     権限: {session?.user?.role || 'undefined'} |
                     ID: {session?.user?.id || 'なし'}
+                    <Button 
+                      variant="outlined" 
+                      size="small" 
+                      sx={{ ml: 2 }}
+                      onClick={handleUpdateSession}
+                      disabled={updatingSession}
+                    >
+                      {updatingSession ? '更新中...' : '🔄 セッション更新'}
+                    </Button>
                   </Alert>
                 </Box>
               </Box>
