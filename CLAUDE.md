@@ -131,7 +131,7 @@
 
 ```bash
 # 開発サーバーの起動
-npm run dev                  # デフォルトポート3010
+npm run dev                  # デフォルトポート3010（推奨）
 npm run dev -- -p 3030      # カスタムポート指定
 npm run dev -- --port 3012  # Issue #29対応ポート
 
@@ -148,6 +148,28 @@ npm run lint
 npm run build         # 実装中・コミット前に必ず実行
 npm run type-check    # TypeScript厳格チェック
 ```
+
+### ポート問題対策（重要・再発防止）
+
+#### 症状
+- 複数ポート使用による混乱・アクセス先不明
+- ポート占有・競合・開発サーバー起動不可
+- Issue #29・Issue #45・Issue #47等で繰り返し発生
+
+#### 標準ポート（厳守）
+```bash
+# 🔧 標準開発ポート（変更禁止）
+http://localhost:3010  # 開発環境・デバッグ・テスト
+
+# 🚨 緊急時のみ使用
+npm run dev -- --port 3012  # ポート3010占有時のみ
+```
+
+#### 再発防止策
+1. **ポート3010厳守**: 原則として3010以外使用しない
+2. **プロセス確認**: `netstat -ano | findstr :3010` で占有確認
+3. **プロセス終了**: `taskkill /PID [PID] /F` またはプロセス管理
+4. **緊急スクリプト**: `./scripts/emergency-env-reset.sh` 使用
 
 ## 環境設定
 
