@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Container,
   Typography,
@@ -12,6 +12,14 @@ import {
   Card,
   CardContent,
   Alert,
+  CircularProgress,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemAvatar,
+  Avatar,
+  Chip,
+  Divider,
 } from '@mui/material';
 import {
   AdminPanelSettings,
@@ -19,15 +27,22 @@ import {
   Article,
   Analytics,
   Security,
+  TrendingUp,
+  PersonAdd,
+  ThumbUp,
 } from '@mui/icons-material';
+import { AdminLayout } from '@/components/admin/AdminLayout';
 
 /**
  * 管理者ダッシュボード
- * Issue #45 Phase 3: 基本構造実装
+ * Issue #51: 管理者ページ基本機能実装
  */
 export default function AdminDashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const [stats, setStats] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // 管理者権限チェック
   useEffect(() => {
@@ -39,148 +54,269 @@ export default function AdminDashboardPage() {
     }
 
     // 管理者・モデレーター権限チェック
-    if (!['admin', 'moderator'].includes(session.user.role || '')) {
+    if (!['admin', 'moderator'].includes((session.user as any).role || '')) {
       router.push('/dashboard?error=insufficient-permissions');
       return;
     }
   }, [session, status, router]);
 
-  if (status === 'loading') {
+  // 統計情報取得
+  useEffect(() => {
+    if (session?.user) {
+      fetchStats();
+    }
+  }, [session]);
+
+  const fetchStats = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/admin/stats');
+      if (!response.ok) {
+        throw new Error('統計情報の取得に失敗しました');
+      }
+      const data = await response.json();
+      setStats(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '予期しないエラーが発生しました');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (status === 'loading' || loading) {
     return (
-      <Container maxWidth="lg" sx={{ mt: 4 }}>
-        <Box display="flex" justifyContent="center">
-          <Typography>認証確認中...</Typography>
+      <AdminLayout title="管理者ダッシュボード">
+        <Box display="flex" justifyContent="center" mt={4}>
+          <CircularProgress />
         </Box>
-      </Container>
+      </AdminLayout>
     );
   }
 
-  if (!session?.user || !['admin', 'moderator'].includes(session.user.role || '')) {
+  if (!session?.user || !['admin', 'moderator'].includes((session.user as any).role || '')) {
     return null; // リダイレクト処理中
   }
 
-  const isAdmin = session.user.role === 'admin';
+  const isAdmin = (session.user as any).role === 'admin';
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      {/* ヘッダー */}
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <AdminPanelSettings color="primary" />
-          管理者ダッシュボード
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          システム管理・ユーザー管理・コンテンツモデレーション
-        </Typography>
-      </Box>
-
-      {/* 権限表示 */}
-      <Alert 
-        severity={isAdmin ? 'info' : 'warning'} 
-        sx={{ mb: 3 }}
-      >
-        現在のアクセス権限: <strong>{session.user.role === 'admin' ? '管理者' : 'モデレーター'}</strong>
-        {isAdmin && ' - 全機能にアクセス可能'}
-        {!isAdmin && ' - ユーザー・投稿管理のみ'}
-      </Alert>
-
-      {/* クイックアクション */}
-      <Grid container spacing={3}>
-        {/* ユーザー管理 */}
-        <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-          <Card>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <People sx={{ mr: 1, color: 'primary.main' }} />
-                <Typography variant="h6">ユーザー管理</Typography>
-              </Box>
-              <Typography color="text.secondary" sx={{ mb: 2 }}>
-                ユーザー一覧・詳細管理・権限制御
-              </Typography>
-              <Typography variant="body2" color="primary">
-                実装予定: Phase 2
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* 投稿管理 */}
-        <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-          <Card>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Article sx={{ mr: 1, color: 'secondary.main' }} />
-                <Typography variant="h6">投稿管理</Typography>
-              </Box>
-              <Typography color="text.secondary" sx={{ mb: 2 }}>
-                投稿モデレーション・一括操作・スパム対策
-              </Typography>
-              <Typography variant="body2" color="primary">
-                実装予定: Phase 2
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* 分析機能 */}
-        <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-          <Card>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Analytics sx={{ mr: 1, color: 'success.main' }} />
-                <Typography variant="h6">分析・統計</Typography>
-              </Box>
-              <Typography color="text.secondary" sx={{ mb: 2 }}>
-                トレンド分析・レポート・KPI管理
-              </Typography>
-              <Typography variant="body2" color="primary">
-                実装予定: Phase 3
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* システム設定（管理者のみ） */}
-        {isAdmin && (
-          <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-            <Card>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <Security sx={{ mr: 1, color: 'error.main' }} />
-                  <Typography variant="h6">システム設定</Typography>
-                </Box>
-                <Typography color="text.secondary" sx={{ mb: 2 }}>
-                  セキュリティ設定・監査ログ・システム管理
-                </Typography>
-                <Typography variant="body2" color="primary">
-                  実装予定: Phase 3
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
+    <AdminLayout title="管理者ダッシュボード">
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        {/* エラー表示 */}
+        {error && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
+          </Alert>
         )}
-      </Grid>
 
-      {/* 開発ステータス */}
-      <Paper sx={{ p: 3, mt: 4, backgroundColor: 'background.default' }}>
-        <Typography variant="h6" gutterBottom>
-          開発ステータス - Issue #45
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-          <Typography variant="body2" sx={{ color: 'success.main' }}>
-            ✅ Phase 1: Git環境構築完了
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'success.main' }}>
-            ✅ Phase 2: 設定ファイル実装完了
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'warning.main' }}>
-            🔄 Phase 3: ディレクトリ構造構築中
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            ⏳ Phase 4: 動作確認予定
-          </Typography>
-        </Box>
-      </Paper>
-    </Container>
+        {/* 統計カード */}
+        {stats && (
+          <>
+            <Grid container spacing={3} sx={{ mb: 4 }}>
+              {/* 総ユーザー数 */}
+              <Grid item xs={12} sm={6} md={3}>
+                <Card>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Box>
+                        <Typography color="text.secondary" gutterBottom>
+                          総ユーザー数
+                        </Typography>
+                        <Typography variant="h4">
+                          {stats.users.total}
+                        </Typography>
+                        <Typography variant="body2" color="success.main">
+                          +{stats.summary.newUsersThisWeek} 今週
+                        </Typography>
+                      </Box>
+                      <People sx={{ fontSize: 40, color: 'primary.main', opacity: 0.7 }} />
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              {/* アクティブユーザー */}
+              <Grid item xs={12} sm={6} md={3}>
+                <Card>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Box>
+                        <Typography color="text.secondary" gutterBottom>
+                          アクティブユーザー
+                        </Typography>
+                        <Typography variant="h4">
+                          {stats.users.active}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          過去7日間
+                        </Typography>
+                      </Box>
+                      <TrendingUp sx={{ fontSize: 40, color: 'success.main', opacity: 0.7 }} />
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              {/* 総投稿数 */}
+              <Grid item xs={12} sm={6} md={3}>
+                <Card>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Box>
+                        <Typography color="text.secondary" gutterBottom>
+                          総投稿数
+                        </Typography>
+                        <Typography variant="h4">
+                          {stats.posts.total}
+                        </Typography>
+                        <Typography variant="body2" color="info.main">
+                          +{stats.posts.today} 今日
+                        </Typography>
+                      </Box>
+                      <Article sx={{ fontSize: 40, color: 'secondary.main', opacity: 0.7 }} />
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              {/* エンゲージメント率 */}
+              <Grid item xs={12} sm={6} md={3}>
+                <Card>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Box>
+                        <Typography color="text.secondary" gutterBottom>
+                          エンゲージメント率
+                        </Typography>
+                        <Typography variant="h4">
+                          {stats.summary.engagementRate}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          いいね率
+                        </Typography>
+                      </Box>
+                      <ThumbUp sx={{ fontSize: 40, color: 'warning.main', opacity: 0.7 }} />
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+
+            {/* 詳細情報 */}
+            <Grid container spacing={3}>
+              {/* ユーザー分布 */}
+              <Grid item xs={12} md={4}>
+                <Paper sx={{ p: 3, height: '100%' }}>
+                  <Typography variant="h6" gutterBottom>
+                    ユーザー分布
+                  </Typography>
+                  <Box sx={{ mt: 2 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                      <Typography variant="body2">管理者</Typography>
+                      <Chip label={stats.users.byRole.admin} color="error" size="small" />
+                    </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                      <Typography variant="body2">モデレーター</Typography>
+                      <Chip label={stats.users.byRole.moderator} color="warning" size="small" />
+                    </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <Typography variant="body2">一般ユーザー</Typography>
+                      <Chip label={stats.users.byRole.user} color="primary" size="small" />
+                    </Box>
+                  </Box>
+                  <Divider sx={{ my: 2 }} />
+                  <Typography variant="body2" color="text.secondary">
+                    今週の新規登録: {stats.summary.newUsersThisWeek}人
+                  </Typography>
+                </Paper>
+              </Grid>
+
+              {/* 最近のユーザー */}
+              <Grid item xs={12} md={4}>
+                <Paper sx={{ p: 3, height: '100%' }}>
+                  <Typography variant="h6" gutterBottom>
+                    最近のユーザー登録
+                  </Typography>
+                  <List dense>
+                    {stats.users.recent.map((user: any) => (
+                      <ListItem key={user.id}>
+                        <ListItemAvatar>
+                          <Avatar sx={{ width: 32, height: 32 }}>
+                            <PersonAdd fontSize="small" />
+                          </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={user.name}
+                          secondary={user.email}
+                        />
+                        <Chip 
+                          label={user.role} 
+                          size="small" 
+                          color={user.role === 'admin' ? 'error' : user.role === 'moderator' ? 'warning' : 'default'}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </Paper>
+              </Grid>
+
+              {/* 最近の投稿 */}
+              <Grid item xs={12} md={4}>
+                <Paper sx={{ p: 3, height: '100%' }}>
+                  <Typography variant="h6" gutterBottom>
+                    最近の投稿
+                  </Typography>
+                  <List dense>
+                    {stats.posts.recent.map((post: any) => (
+                      <ListItem key={post.id}>
+                        <ListItemText
+                          primary={post.content}
+                          secondary={
+                            <>
+                              {post.author?.name || '匿名'} • ♥ {post.likes}
+                            </>
+                          }
+                          primaryTypographyProps={{
+                            noWrap: true,
+                            style: { fontSize: '0.875rem' }
+                          }}
+                          secondaryTypographyProps={{
+                            component: 'span'
+                          }}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </Paper>
+              </Grid>
+            </Grid>
+
+            {/* 今週のサマリー */}
+            <Paper sx={{ p: 3, mt: 3 }}>
+              <Typography variant="h6" gutterBottom>
+                今週のサマリー
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={4}>
+                  <Alert severity="info" icon={<People />}>
+                    新規ユーザー: {stats.summary.newUsersThisWeek}人
+                  </Alert>
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <Alert severity="success" icon={<Article />}>
+                    新規投稿: {stats.summary.postsThisWeek}件
+                  </Alert>
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <Alert severity="warning" icon={<Analytics />}>
+                    エンゲージメント: {stats.summary.engagementRate}
+                  </Alert>
+                </Grid>
+              </Grid>
+            </Paper>
+          </>
+        )}
+      </Container>
+    </AdminLayout>
   );
 }

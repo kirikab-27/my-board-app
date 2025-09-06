@@ -4,6 +4,7 @@ import { sendEmailHybrid } from './hybrid-sender'; // Issue #40: ハイブリッ
 import WelcomeEmail from '@/emails/templates/WelcomeEmail';
 import VerificationEmail from '@/emails/templates/VerificationEmail';
 import ResetPasswordEmail from '@/emails/templates/ResetPasswordEmail';
+import VerificationCodeEmail from '@/emails/templates/VerificationCodeEmail';
 import * as Sentry from '@sentry/nextjs';
 
 /**
@@ -132,8 +133,79 @@ export class ReactEmailService {
       throw new Error('パスワードリセットメールの送信に失敗しました');
     }
   }
+
+  /**
+   * 検証コードメール送信
+   */
+  static async sendVerificationCodeEmail(
+    email: string,
+    code: string,
+    type: 'admin_registration' | 'password_reset' | '2fa' | 'email_verification',
+    name?: string
+  ) {
+    try {
+      console.log('📧 Sending verification code email to:', email, 'Type:', type);
+
+      const emailHtml = await render(VerificationCodeEmail({ 
+        email, 
+        code, 
+        type, 
+        name,
+        expiresInMinutes: 10 
+      }));
+
+      const getSubject = () => {
+        switch (type) {
+          case 'admin_registration':
+            return '🔐 管理者登録用認証コード';
+          case 'password_reset':
+            return '🔑 パスワードリセット用認証コード';
+          case '2fa':
+            return '🛡️ 2段階認証コード';
+          case 'email_verification':
+            return '✉️ メールアドレス認証コード';
+          default:
+            return '認証コード';
+        }
+      };
+
+      const result = await sendEmailHybrid({
+        to: email,
+        subject: `${getSubject()} - ${process.env.APP_NAME || '掲示板システム'}`,
+        html: emailHtml,
+        text: `認証コード: ${code}\n\nこのコードは10分間有効です。`,
+      });
+
+      if (result.success) {
+        console.log('✅ Verification code email sent successfully:', result.messageId);
+
+        // 分析用イベント
+        Sentry.addBreadcrumb({
+          category: 'email',
+          message: 'Verification code email sent',
+          level: 'info',
+          data: { email, type, messageId: result.messageId },
+        });
+      }
+
+      return result;
+    } catch (error) {
+      console.error('❌ Failed to send verification code email:', error);
+
+      Sentry.captureException(error, {
+        tags: { operation: 'send-verification-code-email' },
+        extra: { email, type },
+      });
+
+      throw new Error('認証コードメールの送信に失敗しました');
+    }
+  }
 }
 
 // 便利な関数エクスポート
-export const { sendWelcomeEmail, sendVerificationEmail, sendPasswordResetEmail } =
-  ReactEmailService;
+export const { 
+  sendWelcomeEmail, 
+  sendVerificationEmail, 
+  sendPasswordResetEmail,
+  sendVerificationCodeEmail 
+} = ReactEmailService;

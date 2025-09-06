@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Button, Menu, MenuItem, Box, Typography, IconButton, useMediaQuery, useTheme, Avatar, Badge } from '@mui/material';
+import { Button, Menu, MenuItem, Box, Typography, IconButton, useMediaQuery, useTheme, Avatar, Badge, Divider } from '@mui/material';
 import {
   Login as LoginIcon,
   Logout as LogoutIcon,
@@ -17,6 +17,7 @@ import {
   Security as SecurityIcon,
   Analytics as AnalyticsIcon,
   Notifications as NotificationsIcon,
+  AdminPanelSettings as AdminPanelSettingsIcon,
 } from '@mui/icons-material';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -311,6 +312,17 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
           <LockIcon sx={{ mr: 1 }} />
           パスワード変更
         </MenuItem>
+        {/* 管理者メニュー */}
+        {['admin', 'moderator'].includes((session?.user as any)?.role || '') && (
+          <Divider />
+        )}
+        {['admin', 'moderator'].includes((session?.user as any)?.role || '') && (
+          <MenuItem onClick={() => router.push('/admin/dashboard')}>
+            <AdminPanelSettingsIcon sx={{ mr: 1, color: 'warning.main' }} />
+            管理者パネル
+          </MenuItem>
+        )}
+        <Divider />
         <MenuItem onClick={handleLogout}>
           <LogoutIcon sx={{ mr: 1 }} />
           ログアウト

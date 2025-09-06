@@ -305,7 +305,7 @@ export default function AdminLogsPage() {
               </TableHead>
               <TableBody>
                 {logs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((log) => (
-                  <TableRow key={log._id} hover>
+                  <TableRow key={String(log._id)} hover>
                     <TableCell>
                       <Typography variant="caption">
                         {log.timestamp.toLocaleString('ja-JP')}

@@ -93,8 +93,8 @@ export interface AdminUserView {
   role: string;
   isVerified: boolean;
   isOnline: boolean;
-  lastSeen: Date;
-  createdAt: Date;
+  lastSeen: Date | string;
+  createdAt: Date | string;
   stats: {
     postsCount: number;
     followersCount: number;

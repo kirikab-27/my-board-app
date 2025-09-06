@@ -70,68 +70,38 @@ export default function AdminUsersPage() {
   const [actionDialog, setActionDialog] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
-  // ダミーデータ（Phase 2実装用）
+  // ユーザーデータ取得
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const params = new URLSearchParams({
+        page: String(page + 1),
+        limit: String(rowsPerPage),
+        search: searchTerm,
+        role: roleFilter !== 'all' ? roleFilter : '',
+      });
+      
+      const response = await fetch(`/api/admin/users?${params}`);
+      if (!response.ok) {
+        throw new Error('ユーザー一覧の取得に失敗しました');
+      }
+      
+      const result = await response.json();
+      setUsers(result.data.users);
+      setTotalCount(result.data.pagination.totalCount);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '予期しないエラーが発生しました');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!hasAccess) return;
-
-    setLoading(true);
-    
-    // 実際のAPIコール実装予定地
-    // const response = await fetch('/api/admin/users');
-    
-    // Phase 2: ダミーデータで UI 確認
-    setTimeout(() => {
-      const dummyUsers: AdminUserView[] = [
-        {
-          _id: '1',
-          name: 'テストユーザー1',
-          email: 'test1@example.com',
-          username: 'testuser1',
-          role: 'user',
-          isVerified: true,
-          isOnline: false,
-          lastSeen: new Date('2025-09-01'),
-          createdAt: new Date('2025-08-01'),
-          stats: {
-            postsCount: 15,
-            followersCount: 120,
-            followingCount: 80,
-            likesReceived: 245
-          },
-          moderation: {
-            reportCount: 0,
-            suspensionHistory: []
-          }
-        },
-        {
-          _id: '2', 
-          name: '問題ユーザー',
-          email: 'problem@example.com',
-          username: 'problemuser',
-          role: 'user',
-          isVerified: false,
-          isOnline: true,
-          lastSeen: new Date(),
-          createdAt: new Date('2025-08-15'),
-          stats: {
-            postsCount: 3,
-            followersCount: 5,
-            followingCount: 200,
-            likesReceived: 1
-          },
-          moderation: {
-            reportCount: 3,
-            lastReportDate: new Date('2025-08-30'),
-            suspensionHistory: []
-          }
-        }
-      ];
-      
-      setUsers(dummyUsers);
-      setTotalCount(dummyUsers.length);
-      setLoading(false);
-    }, 1000);
-  }, [hasAccess]);
+    fetchUsers();
+  }, [hasAccess, page, rowsPerPage, searchTerm, roleFilter]);
 
   // アクションハンドラー
   const handleUserAction = async (action: string, user: AdminUserView) => {
@@ -277,7 +247,7 @@ export default function AdminUsersPage() {
                     
                     <TableCell>
                       <Typography variant="caption">
-                        {user.lastSeen.toLocaleDateString('ja-JP')}
+                        {user.lastSeen ? new Date(user.lastSeen).toLocaleDateString('ja-JP') : '不明'}
                       </Typography>
                     </TableCell>
                     

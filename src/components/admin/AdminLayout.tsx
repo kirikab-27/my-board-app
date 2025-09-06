@@ -8,7 +8,7 @@ import {
   Typography,
   Drawer,
   List,
-  ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
   useTheme,
@@ -47,6 +47,7 @@ export function AdminLayout({ children, title = '管理者パネル' }: AdminLay
     { text: 'ユーザー管理', icon: <People />, path: '/admin/users' },
     { text: '投稿管理', icon: <Article />, path: '/admin/posts' },
     { text: '分析・統計', icon: <Analytics />, path: '/admin/analytics' },
+    { text: '検証コード管理', icon: <Settings />, path: '/admin/verification' },
     ...(session?.user?.role === 'admin' ? [
       { text: 'システム設定', icon: <Settings />, path: '/admin/settings' }
     ] : []),
@@ -71,9 +72,8 @@ export function AdminLayout({ children, title = '管理者パネル' }: AdminLay
       {/* メニュー */}
       <List>
         {menuItems.map((item) => (
-          <ListItem
+          <ListItemButton
             key={item.path}
-            button
             onClick={() => router.push(item.path)}
             sx={{
               '&:hover': {
@@ -85,12 +85,11 @@ export function AdminLayout({ children, title = '管理者パネル' }: AdminLay
               {item.icon}
             </ListItemIcon>
             <ListItemText primary={item.text} />
-          </ListItem>
+          </ListItemButton>
         ))}
 
         {/* ログアウト */}
-        <ListItem
-          button
+        <ListItemButton
           onClick={handleLogout}
           sx={{
             mt: 2,
@@ -106,7 +105,7 @@ export function AdminLayout({ children, title = '管理者パネル' }: AdminLay
             <ExitToApp />
           </ListItemIcon>
           <ListItemText primary="ログアウト" />
-        </ListItem>
+        </ListItemButton>
       </List>
     </Box>
   );
