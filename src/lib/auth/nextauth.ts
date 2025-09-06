@@ -1,34 +1,37 @@
 import { NextAuthOptions } from 'next-auth';
-import { MongoDBAdapter } from '@next-auth/mongodb-adapter';
+// import { MongoDBAdapter } from '@next-auth/mongodb-adapter';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import GitHubProvider from 'next-auth/providers/github';
-import { MongoClient } from 'mongodb';
+// import { MongoClient } from 'mongodb';
 import { connectDB } from '@/lib/mongodb';
 import User from '@/models/User';
 import { loginSchema } from '@/lib/validations/auth';
 import type { UserRole } from '@/types/auth';
 
-// MongoDBクライアント設定
-let client: MongoClient;
+// MongoDBクライアント設定（OAuth有効化時に必要）
+// let client: MongoClient;
 
-if (!process.env.MONGODB_URI) {
-  throw new Error('MONGODB_URI環境変数が設定されていません');
-}
+// if (!process.env.MONGODB_URI) {
+//   throw new Error('MONGODB_URI環境変数が設定されていません');
+// }
 
-// MongoDB接続プール管理
-const globalWithMongo = global as typeof globalThis & {
-  _mongoClientPromise?: Promise<MongoClient>;
-};
+// MongoDB接続プール管理（OAuth有効化時に必要）
+// const globalWithMongo = global as typeof globalThis & {
+//   _mongoClientPromise?: Promise<MongoClient>;
+// };
 
-if (!globalWithMongo._mongoClientPromise) {
-  client = new MongoClient(process.env.MONGODB_URI);
-  globalWithMongo._mongoClientPromise = client.connect();
-}
-const clientPromise = globalWithMongo._mongoClientPromise;
+// if (!globalWithMongo._mongoClientPromise) {
+//   client = new MongoClient(process.env.MONGODB_URI);
+//   globalWithMongo._mongoClientPromise = client.connect();
+// }
+// const clientPromise = globalWithMongo._mongoClientPromise;
 
 export const authOptions: NextAuthOptions = {
-  adapter: MongoDBAdapter(clientPromise),
+  // MongoDB Adapter 設定
+  // 注意: Credentials Provider と MongoDB Adapter の併用は問題があるため、
+  // 現在は無効化。OAuth Provider（Google/GitHub）有効化時に以下の条件付き実装を使用:
+  // adapter: (process.env.GOOGLE_CLIENT_ID || process.env.GITHUB_ID) ? MongoDBAdapter(clientPromise) : undefined,
   session: {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30日
