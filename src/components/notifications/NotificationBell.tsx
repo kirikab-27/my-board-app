@@ -51,7 +51,6 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
       setLoading(false);
     }
     */
-  }, [session?.user?.id]);
 
   // 初回読み込み（緊急修正：useEffect無効化）
   // useEffect(() => {
