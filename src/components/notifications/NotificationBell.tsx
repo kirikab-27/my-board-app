@@ -20,14 +20,13 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
   showPopover = true,
   popoverMaxHeight = 400,
 }) => {
-  const [unreadCount, setUnreadCount] = useState(3); // 固定値
+  const [unreadCount, setUnreadCount] = useState(0); // 正常値（空の通知なし）
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     if (showPopover) {
       setAnchorEl(event.currentTarget);
-      // 一時的に既読処理（固定値を0に）
-      setTimeout(() => setUnreadCount(0), 1000);
+      // 通知ポップオーバーを開く（カウント操作なし）
     } else {
       // 通知ページに遷移
       window.location.href = '/notifications';
