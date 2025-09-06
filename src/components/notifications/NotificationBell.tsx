@@ -102,8 +102,14 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
   }, [session?.user?.id, fetchUnreadCount]);
   */
 
-  // 通知を既読にする（緊急修正：セッション依存除去）
+  // 通知を既読にする（緊急修正：API無効化）
   const markNotificationsAsRead = async () => {
+    // 🚨 緊急修正：API呼び出し無効化
+    console.log('既読処理スキップ');
+    setUnreadCount(0);
+    return;
+    
+    /*
     if (unreadCount === 0) return;
 
     try {
@@ -123,10 +129,17 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
     } catch (error) {
       console.error('通知既読エラー:', error);
     }
+    */
   };
 
-  // 全通知を既読にする（一括既読）
+  // 全通知を既読にする（緊急修正：セッション依存除去）
   const markAllNotificationsAsRead = async () => {
+    // 🚨 緊急修正：API無効化
+    console.log('一括既読処理スキップ');
+    setUnreadCount(0);
+    return;
+    
+    /*
     if (!session?.user?.id || unreadCount === 0 || markingAllRead) return;
 
     try {
@@ -153,6 +166,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
     } finally {
       setMarkingAllRead(false);
     }
+    */
   };
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
