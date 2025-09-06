@@ -325,11 +325,31 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (token && session.user) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as UserRole;
+        // 🚨 緊急修正：管理者ユーザーの権限・ID強制設定
+        const email = session.user.email || '';
+        
+        if (email === 'kab27kav@gmail.com') {
+          session.user.id = '507f1f77bcf86cd799439011';
+          session.user.role = 'admin';
+          console.log('🔧 管理者セッション強制設定:', email, '→ admin権限・ID設定');
+        } else if (email === 'minomasa34@gmail.com') {
+          session.user.id = '507f1f77bcf86cd799439012';
+          session.user.role = 'admin';
+          console.log('🔧 管理者セッション強制設定:', email, '→ admin権限・ID設定');
+        } else {
+          session.user.id = token.id as string || 'default-id';
+          session.user.role = token.role as UserRole || 'user';
+        }
+        
         session.user.emailVerified = token.emailVerified as Date | null;
         session.user.bio = token.bio as string;
-        session.user.image = token.avatar as string | null; // プロフィール画像をsessionに設定
+        session.user.image = token.avatar as string | null;
+        
+        console.log('✅ Final session設定:', {
+          email: session.user.email,
+          id: session.user.id,
+          role: session.user.role
+        });
       }
       return session;
     },
