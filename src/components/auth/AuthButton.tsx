@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Button, Menu, MenuItem, Box, Typography, IconButton, useMediaQuery, useTheme, Avatar, Badge, Divider } from '@mui/material';
+import { Button, Menu, MenuItem, Box, Typography, IconButton, useMediaQuery, useTheme, Avatar, Divider } from '@mui/material';
 import {
   Login as LoginIcon,
   Logout as LogoutIcon,
@@ -16,7 +16,6 @@ import {
   Lock as LockIcon,
   Security as SecurityIcon,
   Analytics as AnalyticsIcon,
-  Notifications as NotificationsIcon,
   AdminPanelSettings as AdminPanelSettingsIcon,
 } from '@mui/icons-material';
 import { useSession, signIn, signOut } from 'next-auth/react';

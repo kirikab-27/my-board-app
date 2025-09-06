@@ -22,11 +22,9 @@ import {
   Divider,
 } from '@mui/material';
 import {
-  AdminPanelSettings,
   People,
   Article,
   Analytics,
-  Security,
   TrendingUp,
   PersonAdd,
   ThumbUp,
@@ -97,7 +95,7 @@ export default function AdminDashboardPage() {
     return null; // リダイレクト処理中
   }
 
-  const isAdmin = (session.user as any).role === 'admin';
+  // const isAdmin = (session.user as any).role === 'admin';
 
   return (
     <AdminLayout title="管理者ダッシュボード">
