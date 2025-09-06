@@ -47,7 +47,12 @@ import AdminWebSocketClient from '@/components/websocket/AdminWebSocketClient';
 import { getNavigationHeaderStyles } from '@/styles/navigationHeaderStyles';
 
 export default function DashboardPage() {
-  const { data: session, status } = useSession();
+  const { data: session, status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      router.push('/login');
+    }
+  });
   const theme = useTheme(); // Issue #38: ダークモード対応
   const router = useRouter();
   
@@ -143,9 +148,9 @@ export default function DashboardPage() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             ダッシュボード
           </Typography>
-          {/* 🚨 緊急修正：通知アイコン直接配置 */}
-          <IconButton color="inherit" title="通知">
-            <Badge badgeContent={3} color="error">
+          {/* 🚨 緊急修正：通知アイコン無条件表示 */}
+          <IconButton color="inherit" title="通知" sx={{ position: 'relative' }}>
+            <Badge badgeContent={3} color="error" sx={{ position: 'absolute', zIndex: 9999 }}>
               <Notifications />
             </Badge>
           </IconButton>
