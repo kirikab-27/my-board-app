@@ -205,12 +205,8 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
           placeholder="投稿を検索..."
         />
       )}
-      {/* 🚨 緊急テスト: 通知アイコン単純化 */}
-      <IconButton color="inherit" title="通知">
-        <Badge badgeContent={3} color="error">
-          <NotificationsIcon />
-        </Badge>
-      </IconButton>
+      {/* 🚨 重複削除: 通知アイコンはダッシュボード直接配置に移行 */}
+      {/* <NotificationBell /> */}
       <IconButton
         onClick={handleMenuOpen}
         sx={{ p: 0 }}
