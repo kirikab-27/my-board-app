@@ -230,8 +230,8 @@ export default function DashboardPage() {
             </Box>
           </Box>
 
-          {/* メール認証状況・再送信機能 */}
-          {!session.user?.emailVerified && (
+          {/* メール認証状況・再送信機能（緊急修正：表示無効化） */}
+          {false && !session.user?.emailVerified && (
             <Box sx={{ mt: 3 }}>
               <Paper sx={{ p: 3, bgcolor: 'warning.light', color: 'warning.contrastText' }}>
                 <Typography
