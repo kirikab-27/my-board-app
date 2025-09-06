@@ -7,7 +7,6 @@ import { MongoClient } from 'mongodb';
 import { connectDB } from '@/lib/mongodb';
 import User from '@/models/User';
 import { loginSchema } from '@/lib/validations/auth';
-// Rate limiting imports removed as they're not used with MongoDB adapter
 import type { UserRole } from '@/types/auth';
 
 // MongoDBクライアント設定
@@ -17,7 +16,7 @@ if (!process.env.MONGODB_URI) {
   throw new Error('MONGODB_URI環境変数が設定されていません');
 }
 
-// Edge Runtime compatible - use production settings for stability
+// MongoDB接続プール管理
 const globalWithMongo = global as typeof globalThis & {
   _mongoClientPromise?: Promise<MongoClient>;
 };
@@ -29,14 +28,12 @@ if (!globalWithMongo._mongoClientPromise) {
 const clientPromise = globalWithMongo._mongoClientPromise;
 
 export const authOptions: NextAuthOptions = {
-  // 🔥 緊急修正: MongoDB Adapter一時無効化でCredentials Provider問題を特定
-  // adapter: MongoDBAdapter(clientPromise),
+  adapter: MongoDBAdapter(clientPromise),
   session: {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30日
   },
   providers: [
-    // 🔥 緊急修正: Credentials Provider最優先配置・設定完全再初期化
     CredentialsProvider({
       id: 'credentials',
       name: 'Email and Password',
@@ -45,146 +42,52 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        console.log('🔥🔥🔥 [AUTHORIZE FUNCTION CALLED] authorize関数が実行されました！');
-        console.log('🚨🚨🚨 [ULTIMATE EMERGENCY] 最強緊急認証モード - 全認証チェック無効化');
-        console.log('🔍 [DEBUG] 入力情報:', {
-          hasEmail: !!credentials?.email,
-          hasPassword: !!credentials?.password,
-          email: credentials?.email,
-          passwordLength: credentials?.password?.length || 0
-        });
-
-        // 🚨🚨 最終緊急対応: メール入力があれば問答無用で認証成功
-        if (!credentials?.email) {
-          console.log('❌ 認証失敗: メールが未入力');
-          return null;
-        }
-
-        const { email } = credentials;
-        
-        // 🚨🚨 超緊急: 特定ユーザーは問答無用で認証成功（全チェック無効）
-        const emergencyUsers = [
-          'akirafunakoshi.actrys+week2-test-001@gmail.com',
-          'kab27kav+test002@gmail.com',
-          // Issue #47対応: 管理者権限ユーザー追加
-          'kab27kav@gmail.com',
-          'minomasa34@gmail.com'
-        ];
-        
-        if (emergencyUsers.includes(email.toLowerCase())) {
-          console.log('🚨🚨🚨 [ULTIMATE BYPASS] 問答無用強制認証実行:', email);
-          
-          // データベースチェックも最小限にして即座に認証成功
-          const mockUser = {
-            id: email.includes('akirafunakoshi') ? '68a3b154315c328f27e29bb3' : 
-                email.includes('kab27kav@gmail.com') ? '507f1f77bcf86cd799439011' :
-                email.includes('minomasa34@gmail.com') ? '507f1f77bcf86cd799439012' :
-                '68a949fb171cc25bf8e79e71',
-            email: email,
-            name: email.includes('akirafunakoshi') ? 'あきらパパ' :
-                  email.includes('kab27kav@gmail.com') ? 'kirikab' :
-                  email.includes('minomasa34@gmail.com') ? 'テストユーザー' :
-                  'テスト002',
-            image: null,
-          };
-          
-          console.log('🚨🚨🚨 [ULTIMATE BYPASS] 強制認証成功（DB確認スキップ）:', mockUser);
-          return mockUser;
-        }
-
-        // 一般ユーザーは従来通りパスワード必須
-        if (!credentials?.password) {
-          console.log('❌ 認証失敗: 一般ユーザーはパスワードが必須です');
+        // 入力検証
+        if (!credentials?.email || !credentials?.password) {
           return null;
         }
 
         try {
           // バリデーション
-          console.log('🔍 [DEBUG] バリデーション開始');
           const validatedFields = loginSchema.safeParse(credentials);
           if (!validatedFields.success) {
-            console.log(
-              '❌ 認証失敗: バリデーションエラー',
-              validatedFields.error.flatten().fieldErrors
-            );
             return null;
           }
 
           const { email: validEmail, password: validPassword } = validatedFields.data;
-          console.log('🔍 [DEBUG] バリデーション成功:', {
-            email: validEmail,
-            passwordLength: validPassword.length
-          });
 
           // データベース接続
-          console.log('🔍 [DEBUG] データベース接続開始');
           await connectDB();
-          console.log('🔍 [DEBUG] データベース接続完了');
 
           // ユーザー検索
-          console.log('🔍 [DEBUG] ユーザー検索開始:', { searchEmail: validEmail.toLowerCase() });
           const user = await User.findOne({ email: validEmail.toLowerCase() });
-          console.log('🔍 [DEBUG] ユーザー検索結果:', {
-            found: !!user,
-            userId: user?._id,
-            userEmail: user?.email,
-            hasPassword: !!user?.password
-          });
-          
+
           if (!user) {
-            console.log('❌ 認証失敗: ユーザーが見つかりません', validEmail);
             return null;
           }
 
           // パスワード確認
-          console.log('🔍 [DEBUG] パスワード確認開始');
           const isPasswordValid = await user.comparePassword(validPassword);
-          console.log('🔍 [DEBUG] パスワード確認結果:', { isValid: isPasswordValid });
-          
+
           if (!isPasswordValid) {
-            console.log('❌ 認証失敗: パスワードが間違っています', validEmail);
             return null;
           }
 
-          // メール認証チェック（一時的に無効化 - 既存ユーザー緊急対応）
-          // if (!user.emailVerified) {
-          //   console.log('❌ 認証失敗: メール認証が完了していません', email);
-          //   return null;
-          // }
-          
-          // 緊急対応: 既存ユーザーログイン問題のため一時的にメール認証チェック無効化
-          // TODO: 既存ユーザー問題解決後にメール認証チェックを復活すること
+          // メール認証チェック
           if (!user.emailVerified) {
-            console.log('⚠️ 警告: メール認証未完了ですがログインを許可（緊急対応モード）', email);
+            // メール認証が完了していない場合は認証失敗
+            return null;
           }
 
-          console.log(
-            '✅ 認証成功:',
-            email,
-            'ユーザーID:',
-            user._id,
-            'メール認証:',
-            user.emailVerified ? '済み' : '未完了'
-          );
-
           // NextAuth用のユーザーオブジェクトを返す
-          const userResponse = {
+          return {
             id: user._id.toString(),
             email: user.email,
             name: user.name,
             image: user.avatar || user.image || null,
           };
-          
-          console.log('🔍 [DEBUG] 返却するユーザーオブジェクト:', userResponse);
-          return userResponse;
         } catch (error) {
-          const err = error as Error;
-          console.error('❌ [CRITICAL] 認証中に予期しないエラーが発生:', {
-            error: err.message || String(error),
-            stack: err.stack,
-            email: credentials?.email,
-            type: err.constructor?.name || 'Unknown'
-          });
+          console.error('Authentication error:', error);
           return null;
         }
       },
@@ -218,97 +121,45 @@ export const authOptions: NextAuthOptions = {
       if (user || trigger === 'update') {
         const userId = user?.id || token.id;
 
-        // 🚨 緊急修正：IDを最初に強制設定
         if (user && user.id) {
           token.id = user.id;
-        } else if (!token.id) {
-          // 緊急バイパスユーザーのIDを強制設定
-          const email = token.email || user?.email || '';
-          if (email.includes('kab27kav@gmail.com')) {
-            token.id = '507f1f77bcf86cd799439011';
-          } else if (email.includes('minomasa34@gmail.com')) {
-            token.id = '507f1f77bcf86cd799439012';
-          } else {
-            token.id = userId || 'default-user-id';
-          }
+        } else if (!token.id && userId) {
+          token.id = userId;
         }
-
-        console.log('🔧 JWT ID強制設定:', {
-          email: token.email,
-          originalId: userId,
-          forcedId: token.id,
-          user_id_from_user: user?.id
-        });
 
         if (userId) {
           try {
             await connectDB();
             const dbUser = await User.findById(userId);
-            console.log(
-              '🔍 JWT callback - trigger:',
-              trigger || 'login',
-              'user:',
-              user?.email || token.email,
-              'dbUser found:',
-              !!dbUser,
-              'avatar:',
-              dbUser?.avatar || 'none'
-            );
 
             if (dbUser) {
-              // 🔧 ID強制設定（Issue #47対応・通知アイコン復活）
+              // ID設定
               if (user) {
                 token.id = user.id;
               } else if (!token.id) {
                 token.id = dbUser._id.toString();
               }
 
-              // 🔧 権限情報強制更新（Issue #47対応）
-              const newRole = dbUser.role || 'user';
-              console.log('🔧 JWT権限更新:', {
-                email: dbUser.email,
-                oldRole: token.role,
-                newRole: newRole,
-                dbRole: dbUser.role,
-                forceUpdate: true
-              });
-              
-              token.role = newRole;
+              // 権限情報更新
+              token.role = dbUser.role || 'user';
               token.emailVerified = dbUser.emailVerified;
               token.bio = dbUser.bio || '';
-              token.avatar = dbUser.avatar || null; // プロフィール画像更新
-
-              console.log('✅ JWT callback - token updated:', {
-                trigger: trigger || 'login',
-                role: token.role,
-                emailVerified: !!token.emailVerified,
-                bio: !!token.bio,
-                avatar: token.avatar ? 'set' : 'none',
-              });
+              token.avatar = dbUser.avatar || null;
             } else {
-              // 🔧 ユーザーが見つからない場合でもIDを設定（Issue #47対応）
+              // ユーザーが見つからない場合のデフォルト設定
               if (user && user.id) {
                 token.id = user.id;
               } else if (!token.id) {
-                // 緊急バイパスユーザーの場合、mockUserのIDを使用
-                const email = token.email || '';
-                if (email.includes('kab27kav@gmail.com')) {
-                  token.id = '507f1f77bcf86cd799439011';
-                } else if (email.includes('minomasa34@gmail.com')) {
-                  token.id = '507f1f77bcf86cd799439012';
-                } else {
-                  token.id = userId; // 基本的なID設定
-                }
+                token.id = userId;
               }
-              
+
               token.role = 'user';
               token.emailVerified = null;
               token.bio = '';
               token.avatar = null;
-              console.log('⚠️ JWT callback - user not found in DB, using defaults with forced ID:', token.id);
             }
           } catch (error) {
-            console.error('❌ JWT callback error:', error);
+            console.error('JWT callback error:', error);
             token.role = 'user';
             token.emailVerified = null;
             token.avatar = null;
@@ -316,40 +167,15 @@ export const authOptions: NextAuthOptions = {
         }
       }
 
-      // 既存のトークンの場合の情報ログ出力
-      if (!user && !trigger && token) {
-        console.log('🔄 JWT callback - existing token, avatar:', token.avatar ? 'set' : 'none');
-      }
-
       return token;
     },
     async session({ session, token }) {
       if (token && session.user) {
-        // 🚨 緊急修正：管理者ユーザーの権限・ID強制設定
-        const email = session.user.email || '';
-        
-        if (email === 'kab27kav@gmail.com') {
-          session.user.id = '507f1f77bcf86cd799439011';
-          session.user.role = 'admin';
-          console.log('🔧 管理者セッション強制設定:', email, '→ admin権限・ID設定');
-        } else if (email === 'minomasa34@gmail.com') {
-          session.user.id = '507f1f77bcf86cd799439012';
-          session.user.role = 'admin';
-          console.log('🔧 管理者セッション強制設定:', email, '→ admin権限・ID設定');
-        } else {
-          session.user.id = token.id as string || 'default-id';
-          session.user.role = token.role as UserRole || 'user';
-        }
-        
+        session.user.id = token.id as string;
+        session.user.role = (token.role as UserRole) || 'user';
         session.user.emailVerified = token.emailVerified as Date | null;
         session.user.bio = token.bio as string;
         session.user.image = token.avatar as string | null;
-        
-        console.log('✅ Final session設定:', {
-          email: session.user.email,
-          id: session.user.id,
-          role: session.user.role
-        });
       }
       return session;
     },
@@ -364,5 +190,5 @@ export const authOptions: NextAuthOptions = {
     brandColor: '#1976d2', // MUIのプライマリカラー
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: true, // 緊急調査のため一時的に有効化
+  debug: false,
 };
