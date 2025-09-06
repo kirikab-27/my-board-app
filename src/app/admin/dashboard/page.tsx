@@ -8,7 +8,6 @@ import {
   Typography,
   Box,
   Paper,
-  Grid,
   Card,
   CardContent,
   Alert,
@@ -21,14 +20,7 @@ import {
   Chip,
   Divider,
 } from '@mui/material';
-import {
-  People,
-  Article,
-  Analytics,
-  TrendingUp,
-  PersonAdd,
-  ThumbUp,
-} from '@mui/icons-material';
+import { People, Article, Analytics, TrendingUp, PersonAdd, ThumbUp } from '@mui/icons-material';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 
 /**
@@ -45,7 +37,7 @@ export default function AdminDashboardPage() {
   // 管理者権限チェック
   useEffect(() => {
     if (status === 'loading') return;
-    
+
     if (!session?.user) {
       router.push('/login?callbackUrl=/admin/dashboard');
       return;
@@ -110,19 +102,23 @@ export default function AdminDashboardPage() {
         {/* 統計カード */}
         {stats && (
           <>
-            <Grid container spacing={3} sx={{ mb: 4 }}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 4 }}>
               {/* 総ユーザー数 */}
-              <Grid item xs={12} sm={6} md={3}>
+              <Box sx={{ flexGrow: 1, minWidth: { xs: '100%', sm: '45%', md: '22%' } }}>
                 <Card>
                   <CardContent>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}
+                    >
                       <Box>
                         <Typography color="text.secondary" gutterBottom>
                           総ユーザー数
                         </Typography>
-                        <Typography variant="h4">
-                          {stats.users.total}
-                        </Typography>
+                        <Typography variant="h4">{stats.users.total}</Typography>
                         <Typography variant="body2" color="success.main">
                           +{stats.summary.newUsersThisWeek} 今週
                         </Typography>
@@ -131,20 +127,24 @@ export default function AdminDashboardPage() {
                     </Box>
                   </CardContent>
                 </Card>
-              </Grid>
+              </Box>
 
               {/* アクティブユーザー */}
-              <Grid item xs={12} sm={6} md={3}>
+              <Box sx={{ flexGrow: 1, minWidth: { xs: '100%', sm: '45%', md: '22%' } }}>
                 <Card>
                   <CardContent>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}
+                    >
                       <Box>
                         <Typography color="text.secondary" gutterBottom>
                           アクティブユーザー
                         </Typography>
-                        <Typography variant="h4">
-                          {stats.users.active}
-                        </Typography>
+                        <Typography variant="h4">{stats.users.active}</Typography>
                         <Typography variant="body2" color="text.secondary">
                           過去7日間
                         </Typography>
@@ -153,20 +153,24 @@ export default function AdminDashboardPage() {
                     </Box>
                   </CardContent>
                 </Card>
-              </Grid>
+              </Box>
 
               {/* 総投稿数 */}
-              <Grid item xs={12} sm={6} md={3}>
+              <Box sx={{ flexGrow: 1, minWidth: { xs: '100%', sm: '45%', md: '22%' } }}>
                 <Card>
                   <CardContent>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}
+                    >
                       <Box>
                         <Typography color="text.secondary" gutterBottom>
                           総投稿数
                         </Typography>
-                        <Typography variant="h4">
-                          {stats.posts.total}
-                        </Typography>
+                        <Typography variant="h4">{stats.posts.total}</Typography>
                         <Typography variant="body2" color="info.main">
                           +{stats.posts.today} 今日
                         </Typography>
@@ -175,20 +179,24 @@ export default function AdminDashboardPage() {
                     </Box>
                   </CardContent>
                 </Card>
-              </Grid>
+              </Box>
 
               {/* エンゲージメント率 */}
-              <Grid item xs={12} sm={6} md={3}>
+              <Box sx={{ flexGrow: 1, minWidth: { xs: '100%', sm: '45%', md: '22%' } }}>
                 <Card>
                   <CardContent>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}
+                    >
                       <Box>
                         <Typography color="text.secondary" gutterBottom>
                           エンゲージメント率
                         </Typography>
-                        <Typography variant="h4">
-                          {stats.summary.engagementRate}
-                        </Typography>
+                        <Typography variant="h4">{stats.summary.engagementRate}</Typography>
                         <Typography variant="body2" color="text.secondary">
                           いいね率
                         </Typography>
@@ -197,13 +205,13 @@ export default function AdminDashboardPage() {
                     </Box>
                   </CardContent>
                 </Card>
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
 
             {/* 詳細情報 */}
-            <Grid container spacing={3}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
               {/* ユーザー分布 */}
-              <Grid item xs={12} md={4}>
+              <Box sx={{ flexGrow: 1, minWidth: { xs: '100%', md: '30%' } }}>
                 <Paper sx={{ p: 3, height: '100%' }}>
                   <Typography variant="h6" gutterBottom>
                     ユーザー分布
@@ -227,10 +235,10 @@ export default function AdminDashboardPage() {
                     今週の新規登録: {stats.summary.newUsersThisWeek}人
                   </Typography>
                 </Paper>
-              </Grid>
+              </Box>
 
               {/* 最近のユーザー */}
-              <Grid item xs={12} md={4}>
+              <Box sx={{ flexGrow: 1, minWidth: { xs: '100%', md: '30%' } }}>
                 <Paper sx={{ p: 3, height: '100%' }}>
                   <Typography variant="h6" gutterBottom>
                     最近のユーザー登録
@@ -243,23 +251,26 @@ export default function AdminDashboardPage() {
                             <PersonAdd fontSize="small" />
                           </Avatar>
                         </ListItemAvatar>
-                        <ListItemText
-                          primary={user.name}
-                          secondary={user.email}
-                        />
-                        <Chip 
-                          label={user.role} 
-                          size="small" 
-                          color={user.role === 'admin' ? 'error' : user.role === 'moderator' ? 'warning' : 'default'}
+                        <ListItemText primary={user.name} secondary={user.email} />
+                        <Chip
+                          label={user.role}
+                          size="small"
+                          color={
+                            user.role === 'admin'
+                              ? 'error'
+                              : user.role === 'moderator'
+                                ? 'warning'
+                                : 'default'
+                          }
                         />
                       </ListItem>
                     ))}
                   </List>
                 </Paper>
-              </Grid>
+              </Box>
 
               {/* 最近の投稿 */}
-              <Grid item xs={12} md={4}>
+              <Box sx={{ flexGrow: 1, minWidth: { xs: '100%', md: '30%' } }}>
                 <Paper sx={{ p: 3, height: '100%' }}>
                   <Typography variant="h6" gutterBottom>
                     最近の投稿
@@ -276,41 +287,41 @@ export default function AdminDashboardPage() {
                           }
                           primaryTypographyProps={{
                             noWrap: true,
-                            style: { fontSize: '0.875rem' }
+                            style: { fontSize: '0.875rem' },
                           }}
                           secondaryTypographyProps={{
-                            component: 'span'
+                            component: 'span',
                           }}
                         />
                       </ListItem>
                     ))}
                   </List>
                 </Paper>
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
 
             {/* 今週のサマリー */}
             <Paper sx={{ p: 3, mt: 3 }}>
               <Typography variant="h6" gutterBottom>
                 今週のサマリー
               </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={4}>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                <Box sx={{ flexGrow: 1, minWidth: { xs: '100%', sm: '30%' } }}>
                   <Alert severity="info" icon={<People />}>
                     新規ユーザー: {stats.summary.newUsersThisWeek}人
                   </Alert>
-                </Grid>
-                <Grid item xs={12} sm={4}>
+                </Box>
+                <Box sx={{ flexGrow: 1, minWidth: { xs: '100%', sm: '30%' } }}>
                   <Alert severity="success" icon={<Article />}>
                     新規投稿: {stats.summary.postsThisWeek}件
                   </Alert>
-                </Grid>
-                <Grid item xs={12} sm={4}>
+                </Box>
+                <Box sx={{ flexGrow: 1, minWidth: { xs: '100%', sm: '30%' } }}>
                   <Alert severity="warning" icon={<Analytics />}>
                     エンゲージメント: {stats.summary.engagementRate}
                   </Alert>
-                </Grid>
-              </Grid>
+                </Box>
+              </Box>
             </Paper>
           </>
         )}

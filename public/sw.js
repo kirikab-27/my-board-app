@@ -31,8 +31,16 @@ define(['./workbox-f52fd911'], function (e) {
     e.clientsClaim(),
     e.precacheAndRoute(
       [
-        { url: '/_next/app-build-manifest.json', revision: '4d45c552fb1e8175718733e8928a5c1b' },
+        { url: '/_next/app-build-manifest.json', revision: '4602495b61e363fcc3fb4747e4e9ac51' },
         { url: '/_next/dynamic-css-manifest.json', revision: 'd751713988987e9331980363e24189ce' },
+        {
+          url: '/_next/static/ZaFLVMDQUE81bd97qc2jH/_buildManifest.js',
+          revision: 'ab2ddd0e4348261ac6793eb21cc8dd05',
+        },
+        {
+          url: '/_next/static/ZaFLVMDQUE81bd97qc2jH/_ssgManifest.js',
+          revision: 'b6652df95db52feb4daf4eca35380933',
+        },
         { url: '/_next/static/chunks/1322.da56bcd244f97d30.js', revision: 'da56bcd244f97d30' },
         { url: '/_next/static/chunks/152.3d8c5bbf53d3ba5b.js', revision: '3d8c5bbf53d3ba5b' },
         { url: '/_next/static/chunks/3000-12e8e0f9f8a45124.js', revision: '12e8e0f9f8a45124' },
@@ -51,8 +59,8 @@ define(['./workbox-f52fd911'], function (e) {
           revision: 'c0663ea3688a670e',
         },
         {
-          url: '/_next/static/chunks/app/admin/dashboard/page-97281520fd535f72.js',
-          revision: '97281520fd535f72',
+          url: '/_next/static/chunks/app/admin/dashboard/page-c98c64c0446e3fe2.js',
+          revision: 'c98c64c0446e3fe2',
         },
         {
           url: '/_next/static/chunks/app/admin/layout-6efe46f0715a80c7.js',
@@ -599,14 +607,6 @@ define(['./workbox-f52fd911'], function (e) {
           revision: '8d2042ad87c17718',
         },
         { url: '/_next/static/chunks/webpack-67902cb519b733d5.js', revision: '67902cb519b733d5' },
-        {
-          url: '/_next/static/d1lzEpRF3-5Mei-aUJdny/_buildManifest.js',
-          revision: 'ab2ddd0e4348261ac6793eb21cc8dd05',
-        },
-        {
-          url: '/_next/static/d1lzEpRF3-5Mei-aUJdny/_ssgManifest.js',
-          revision: 'b6652df95db52feb4daf4eca35380933',
-        },
         { url: '/file.svg', revision: 'd09f95206c3fa0bb9bd9fefabfd0ea71' },
         { url: '/globe.svg', revision: '2aaafa6a49b6563925fe440891e32717' },
         { url: '/icons/icon-192x192.png', revision: '63f5de6a958bbf7547232b8635ede47f' },
