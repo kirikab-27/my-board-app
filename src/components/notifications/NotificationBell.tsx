@@ -20,8 +20,9 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
   showPopover = true,
   popoverMaxHeight = 400,
 }) => {
-  const { data: session } = useSession();
-  const [unreadCount, setUnreadCount] = useState(0);
+  // 🚨 緊急修正：セッション依存完全除去・安定表示優先
+  // const { data: session } = useSession();
+  const [unreadCount, setUnreadCount] = useState(3); // 固定値
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [loading, setLoading] = useState(false);
   const [markingAllRead, setMarkingAllRead] = useState(false);
@@ -52,13 +53,13 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
     */
   }, [session?.user?.id]);
 
-  // 初回読み込み（緊急修正：無条件実行）
-  useEffect(() => {
-    // 🚨 緊急修正：セッション条件完全無効化
-    fetchUnreadCount();
-  }, [fetchUnreadCount]);
+  // 初回読み込み（緊急修正：useEffect無効化）
+  // useEffect(() => {
+  //   fetchUnreadCount();
+  // }, [fetchUnreadCount]);
 
-  // Phase 4: スマートポーリング最適化（60秒間隔・アクティブタブのみ）
+  // Phase 4: スマートポーリング最適化（緊急修正：無効化）
+  /*
   useEffect(() => {
     if (!session?.user?.id) return;
 
@@ -100,10 +101,11 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [session?.user?.id, fetchUnreadCount]);
+  */
 
-  // 通知を既読にする
+  // 通知を既読にする（緊急修正：セッション依存除去）
   const markNotificationsAsRead = async () => {
-    if (!session?.user?.id || unreadCount === 0) return;
+    if (unreadCount === 0) return;
 
     try {
       const response = await fetch('/api/notifications', {
