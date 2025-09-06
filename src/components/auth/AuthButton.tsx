@@ -205,8 +205,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
           placeholder="投稿を検索..."
         />
       )}
-      {/* 🚨 重複削除: 通知アイコンはダッシュボード直接配置に移行 */}
-      {/* <NotificationBell /> */}
+      <NotificationBell />
       <IconButton
         onClick={handleMenuOpen}
         sx={{ p: 0 }}

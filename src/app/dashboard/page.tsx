@@ -148,12 +148,6 @@ export default function DashboardPage() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             ダッシュボード
           </Typography>
-          {/* 🚨 緊急修正：通知アイコン無条件表示 */}
-          <IconButton color="inherit" title="通知" sx={{ position: 'relative' }}>
-            <Badge badgeContent={3} color="error" sx={{ position: 'absolute', zIndex: 9999 }}>
-              <Notifications />
-            </Badge>
-          </IconButton>
           <AuthButton 
             onSearch={handleSearch}
             onClearSearch={handleClearSearch}
