@@ -26,6 +26,7 @@ import {
   DialogActions,
   Alert,
   CircularProgress,
+  Tooltip,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -46,19 +47,18 @@ import type { AdminUserView } from '@/types/admin';
  */
 export default function AdminUsersPage() {
   const { session, isLoading, hasAccess } = useAdminAuth({
-    requiredLevel: ['admin', 'moderator']
+    requiredLevel: ['admin', 'moderator'],
   });
 
   // 状態管理
   const [users, setUsers] = useState<AdminUserView[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  
+  const [, setLoading] = useState(true);
+  const [, setError] = useState<string | null>(null);
+
   // 検索・フィルタ
   const [searchTerm, setSearchTerm] = useState('');
-  const [roleFilter, setRoleFilter] = useState<string>('all');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  
+  const [roleFilter] = useState<string>('all');
+
   // ページング
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
@@ -75,19 +75,19 @@ export default function AdminUsersPage() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const params = new URLSearchParams({
         page: String(page + 1),
         limit: String(rowsPerPage),
         search: searchTerm,
         role: roleFilter !== 'all' ? roleFilter : '',
       });
-      
+
       const response = await fetch(`/api/admin/users?${params}`);
       if (!response.ok) {
         throw new Error('ユーザー一覧の取得に失敗しました');
       }
-      
+
       const result = await response.json();
       setUsers(result.data.users);
       setTotalCount(result.data.pagination.totalCount);
@@ -101,6 +101,7 @@ export default function AdminUsersPage() {
   useEffect(() => {
     if (!hasAccess) return;
     fetchUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasAccess, page, rowsPerPage, searchTerm, roleFilter]);
 
   // アクションハンドラー
@@ -108,10 +109,10 @@ export default function AdminUsersPage() {
     setActionLoading(true);
     setActionDialog(action);
     setSelectedUser(user);
-    
+
     // 実装予定: API呼び出し・監査ログ記録
     console.log('管理者操作:', { action, userId: user._id, adminId: session?.user?.id });
-    
+
     setTimeout(() => {
       setActionLoading(false);
       setActionDialog(null);
@@ -122,27 +123,39 @@ export default function AdminUsersPage() {
   const getRoleChip = (role: string) => {
     const colors = {
       admin: 'error',
-      moderator: 'warning', 
-      user: 'default'
+      moderator: 'warning',
+      user: 'default',
     } as const;
-    
+
     return (
-      <Chip 
-        label={role === 'admin' ? '管理者' : role === 'moderator' ? 'モデレーター' : '一般'} 
-        color={colors[role as keyof typeof colors]} 
-        size="small" 
+      <Chip
+        label={role === 'admin' ? '管理者' : role === 'moderator' ? 'モデレーター' : '一般'}
+        color={colors[role as keyof typeof colors]}
+        size="small"
       />
     );
   };
 
   const getStatusIcon = (user: AdminUserView) => {
     if (user.moderation.reportCount > 0) {
-      return <BlockIcon color="error" title={`報告${user.moderation.reportCount}件`} />;
+      return (
+        <Tooltip title={`報告${user.moderation.reportCount}件`}>
+          <BlockIcon color="error" />
+        </Tooltip>
+      );
     }
     if (user.isVerified) {
-      return <CheckCircleIcon color="success" title="認証済み" />;
+      return (
+        <Tooltip title="認証済み">
+          <CheckCircleIcon color="success" />
+        </Tooltip>
+      );
     }
-    return <PersonIcon color="disabled" title="未認証" />;
+    return (
+      <Tooltip title="未認証">
+        <PersonIcon color="disabled" />
+      </Tooltip>
+    );
   };
 
   if (isLoading || !hasAccess) {
@@ -160,11 +173,15 @@ export default function AdminUsersPage() {
       <Container maxWidth="lg">
         {/* ヘッダー・検索 */}
         <Box sx={{ mb: 3 }}>
-          <Typography variant="h4" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography
+            variant="h4"
+            gutterBottom
+            sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+          >
             <PersonIcon color="primary" />
             ユーザー管理
           </Typography>
-          
+
           {/* 検索バー */}
           <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
             <TextField
@@ -180,16 +197,10 @@ export default function AdminUsersPage() {
               }}
               sx={{ flexGrow: 1 }}
             />
-            <Button
-              variant="outlined"
-              startIcon={<FilterIcon />}
-            >
+            <Button variant="outlined" startIcon={<FilterIcon />}>
               フィルタ
             </Button>
-            <Button
-              variant="outlined"
-              startIcon={<DownloadIcon />}
-            >
+            <Button variant="outlined" startIcon={<DownloadIcon />}>
               エクスポート
             </Button>
           </Box>
@@ -218,7 +229,7 @@ export default function AdminUsersPage() {
                         {user.isOnline && <Chip label="オンライン" color="success" size="small" />}
                       </Box>
                     </TableCell>
-                    
+
                     <TableCell>
                       <Box>
                         <Typography variant="subtitle2">{user.name}</Typography>
@@ -232,11 +243,9 @@ export default function AdminUsersPage() {
                         )}
                       </Box>
                     </TableCell>
-                    
-                    <TableCell>
-                      {getRoleChip(user.role)}
-                    </TableCell>
-                    
+
+                    <TableCell>{getRoleChip(user.role)}</TableCell>
+
                     <TableCell>
                       <Box sx={{ fontSize: '0.875rem' }}>
                         <div>投稿: {user.stats.postsCount}</div>
@@ -244,13 +253,15 @@ export default function AdminUsersPage() {
                         <div>いいね: {user.stats.likesReceived}</div>
                       </Box>
                     </TableCell>
-                    
+
                     <TableCell>
                       <Typography variant="caption">
-                        {user.lastSeen ? new Date(user.lastSeen).toLocaleDateString('ja-JP') : '不明'}
+                        {user.lastSeen
+                          ? new Date(user.lastSeen).toLocaleDateString('ja-JP')
+                          : '不明'}
                       </Typography>
                     </TableCell>
-                    
+
                     <TableCell>
                       <IconButton
                         onClick={(e) => {
@@ -266,7 +277,7 @@ export default function AdminUsersPage() {
               </TableBody>
             </Table>
           </TableContainer>
-          
+
           {/* ページング */}
           <TablePagination
             component="div"
@@ -282,22 +293,19 @@ export default function AdminUsersPage() {
         </Paper>
 
         {/* アクションメニュー */}
-        <Menu
-          anchorEl={actionMenu}
-          open={Boolean(actionMenu)}
-          onClose={() => setActionMenu(null)}
-        >
+        <Menu anchorEl={actionMenu} open={Boolean(actionMenu)} onClose={() => setActionMenu(null)}>
           <MenuItem onClick={() => handleUserAction('view_details', selectedUser!)}>
             詳細表示
           </MenuItem>
-          <MenuItem onClick={() => handleUserAction('suspend', selectedUser!)}>
-            一時停止
-          </MenuItem>
+          <MenuItem onClick={() => handleUserAction('suspend', selectedUser!)}>一時停止</MenuItem>
           <MenuItem onClick={() => handleUserAction('change_role', selectedUser!)}>
             権限変更
           </MenuItem>
           {session?.user?.role === 'admin' && (
-            <MenuItem onClick={() => handleUserAction('delete', selectedUser!)} sx={{ color: 'error.main' }}>
+            <MenuItem
+              onClick={() => handleUserAction('delete', selectedUser!)}
+              sx={{ color: 'error.main' }}
+            >
               削除
             </MenuItem>
           )}
@@ -313,9 +321,7 @@ export default function AdminUsersPage() {
           <DialogContent>
             {selectedUser && (
               <Box>
-                <Typography>
-                  ユーザー「{selectedUser.name}」に対する操作を実行しますか？
-                </Typography>
+                <Typography>ユーザー「{selectedUser.name}」に対する操作を実行しますか？</Typography>
                 <Alert severity="warning" sx={{ mt: 2 }}>
                   この操作は監査ログに記録されます。
                 </Alert>
@@ -324,11 +330,7 @@ export default function AdminUsersPage() {
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setActionDialog(null)}>キャンセル</Button>
-            <Button 
-              variant="contained" 
-              color="error"
-              disabled={actionLoading}
-            >
+            <Button variant="contained" color="error" disabled={actionLoading}>
               {actionLoading ? <CircularProgress size={20} /> : '実行'}
             </Button>
           </DialogActions>
