@@ -86,16 +86,6 @@ export async function POST(request: NextRequest) {
     const description = formData.get('description') as string;
     const hash = formData.get('hash') as string; // 元ファイルハッシュ
 
-    console.log('🔧 デバッグ: 受信データ:', {
-      fileName: file?.name,
-      fileSize: file?.size,
-      hasHash: !!hash,
-      hashPreview: hash ? hash.substring(0, 16) + '...' : 'なし',
-      hashLength: hash ? hash.length : 0,
-      hashType: typeof hash,
-      rawHash: hash,
-    });
-
     if (!file) {
       return NextResponse.json({ error: 'ファイルが選択されていません' }, { status: 400 });
     }

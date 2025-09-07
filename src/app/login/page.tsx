@@ -104,41 +104,10 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      // 🚨 緊急対応: 特定ユーザーはパスワード内容無視
-      const emergencyUsers = [
-        'akirafunakoshi.actrys+week2-test-001@gmail.com',
-        'kab27kav+test002@gmail.com'
-      ];
-      
-      let passwordToUse = data.password;
-      
-      if (emergencyUsers.includes(data.email.toLowerCase())) {
-        // パスワードが空の場合はダミーパスワードを設定、入力されている場合はそのまま使用
-        passwordToUse = data.password || 'any-password-works';
-        console.log('🚨 [CLIENT] 緊急ユーザー検出 - パスワード内容無視:', {
-          email: data.email,
-          passwordProvided: !!data.password
-        });
-      }
-
-      console.log('🔍 [CLIENT DEBUG] signIn実行開始:', {
-        email: data.email,
-        isEmergencyUser: emergencyUsers.includes(data.email.toLowerCase()),
-        passwordLength: passwordToUse?.length || 0
-      });
-
       const result = await signIn('credentials', {
         email: data.email,
-        password: passwordToUse,
+        password: data.password,
         redirect: false,
-      });
-
-      console.log('🔍 [CLIENT DEBUG] signIn結果:', {
-        ok: result?.ok,
-        error: result?.error,
-        status: result?.status,
-        url: result?.url,
-        fullResult: result
       });
 
       if (result?.error) {

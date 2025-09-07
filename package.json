@@ -28,7 +28,8 @@
     "dev:all": "concurrently --kill-others-on-fail \"npm run dev\" \"npm run typecheck:watch\" \"npm run lint:watch\"",
     "health-check": "node scripts/production-health-check.js",
     "health-check:verbose": "DEBUG=1 node scripts/production-health-check.js",
-    "pre-deploy": "npm run build && npm run type-check && npm run lint",
+    "pre-deploy": "node scripts/pre-deploy-check.js",
+    "pre-deploy:fix": "npm run lint:fix && npm run type-check && npm run build",
     "pre-demo": "npm run health-check && echo '🎉 発表会準備完了！'",
     "quality-gate": "npm run pre-deploy && npm run test && npm run health-check"
   },

@@ -187,7 +187,14 @@
       "Bash(curl:*)",
       "Bash(npx tsx:*)",
       "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue view 51 --repo kirikab-27/my-board-app)",
-      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue list --repo kirikab-27/my-board-app --state open --limit 10)"
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue list --repo kirikab-27/my-board-app --state open --limit 10)",
+      "Bash(git remote get-url:*)",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue list --repo kirikab-27/my-board-app --state open --limit 15)",
+      "Bash(rm:*)",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue list --repo kirikab-27/my-board-app --state open --label \"critical\" --limit 5)",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue view 51 --json body --jq '.body')",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue view 48 --json body --jq '.body')",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue view 52 --json body --jq '.body')"
     ],
     "deny": [],
     "ask": [],

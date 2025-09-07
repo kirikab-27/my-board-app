@@ -275,17 +275,8 @@ const MediaUpload: React.FC<MediaUploadProps> = ({
     // ファイルハッシュを事前計算
     const fileHash = await calculateFileHash(file);
     
-    console.log('🔧 uploadFile デバッグ:', {
-      fileName: file.name,
-      fileSize: file.size,
-      hasHash: !!fileHash,
-      hashPreview: fileHash ? fileHash.substring(0, 16) + '...' : 'なし',
-      hashLength: fileHash ? fileHash.length : 0
-    });
-    
     // 405エラー対策: まずCloudinary直接アップロードを試行
     try {
-      console.log('🔄 Cloudinary直接アップロードを試行...');
       return await uploadFileDirectToCloudinary(file, onProgress);
     } catch (directUploadError) {
       console.warn('⚠️ Cloudinary直接アップロードが失敗、内部APIフォールバック:', directUploadError);

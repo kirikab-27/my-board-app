@@ -55,8 +55,17 @@ next-env.d.ts
 /playwright/.cache/
 
 # logs
-/logs/
+/logs/daily/            # 日次作業記録は除外
+/logs/*/test-results/   # テスト結果は除外
+# エラーテンプレートと修正記録は保持（コミット対象）
+!/logs/ERROR_TEMPLATE.md
+!/logs/issue-*/ERROR_LOG.md
+!/logs/issue-*/fix-*.md
 
 # OS files
 Thumbs.db
 *.swp
+# Encryption keys
+.keys/
+*.key
+*.key.enc

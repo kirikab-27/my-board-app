@@ -1,17 +1,89 @@
 {
   "buildCommand": "npm run vercel-build",
   "installCommand": "npm install --legacy-peer-deps",
+  "framework": "nextjs",
   "build": {
     "env": {
       "NODE_OPTIONS": "--max-old-space-size=8192",
       "DISABLE_ESLINT_PLUGIN": "true",
       "SENTRY_SUPPRESS_INSTRUMENTATION_FILE_WARNING": "1",
-      "SENTRY_SUPPRESS_GLOBAL_ERROR_HANDLER_FILE_WARNING": "1"
+      "SENTRY_SUPPRESS_GLOBAL_ERROR_HANDLER_FILE_WARNING": "1",
+      "SKIP_ENV_VALIDATION": "true"
     }
   },
   "functions": {
     "app/api/**/*.ts": {
-      "maxDuration": 30
+      "maxDuration": 30,
+      "runtime": "nodejs20.x"
+    },
+    "app/api/media/**/*.ts": {
+      "maxDuration": 60,
+      "runtime": "nodejs20.x"
     }
-  }
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "X-Requested-With, Content-Type, Authorization"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        }
+      ]
+    },
+    {
+      "source": "/sw.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "Service-Worker-Allowed",
+          "value": "/"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/auth/:path*",
+      "destination": "/api/auth/:path*"
+    }
+  ],
+  "regions": ["hnd1"],
+  "crons": []
 }

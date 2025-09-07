@@ -62,6 +62,53 @@
 - ユーザー：「実装要求内容を確認して戦略を詰めて」
 - AI：「要求内容を分析し、戦略を策定しました。実装に進んでよろしいですか？」✅
 
+### 📝 「CLAUDE.mdのルールに従って」前置きの解釈（2025/09/07追加）
+
+**現実的な運用ルール**:
+
+「CLAUDE.mdのルールに従って」という前置きがある場合の行動指針：
+
+- **＋「どう思いますか？」「意見を聞かせてください」** → **分析・意見のみ提供（実装しない）**
+- **＋「実装してください」「作成してください」** → **CLAUDE.mdのルールに従って実装する**
+
+**重要な理解**:
+- 「CLAUDE.mdのルールに従って」は実装を禁止するものではない
+- CLAUDE.mdには実装時のルール（段階的確認、Issue管理フロー等）も含まれる
+- 後続の具体的要求（意見 or 実装）に応じて適切に行動する
+
+**実装例**:
+- ❌ ユーザー：「デプロイについてどう思いますか？」→ AI：勝手にCI/CD実装開始
+- ✅ ユーザー：「CLAUDE.mdのルールに従って、デプロイについてどう思いますか？」→ AI：分析と意見のみ提供
+
+## 🔧 エラー対処・記録ルール（2025/09/07追加）
+
+### エラー記録体系
+
+**すべてのエラーと修正内容を体系的に記録し、将来の参考資料とする**
+
+#### logsディレクトリ構造
+```
+logs/
+├── ERROR_TEMPLATE.md              # エラー記録テンプレート
+├── issue-[番号]-[概要]/          # Issue別エラー記録
+│   ├── ERROR_LOG.md              # エラー詳細記録
+│   ├── fix-[日付]-[概要].md      # 修正記録
+│   └── test-results/             # テスト結果
+└── daily/                        # 日次作業記録（必要時）
+```
+
+#### エラー記録フロー
+1. **エラー発生**: 即座にERROR_TEMPLATE.mdを基に記録開始
+2. **原因分析**: 推測ではなく実際のログ・コードで確認
+3. **修正実施**: 段階的修正・各段階で動作確認
+4. **記録完了**: logs/issue-XX/ERROR_LOG.mdに詳細記録
+5. **CLAUDE.md更新**: よくあるエラーに追加（TOP10維持）
+
+#### 記録の重要性
+- **知識の蓄積**: 同じエラーの再発防止
+- **引き継ぎ資料**: 他の開発者への情報共有
+- **品質向上**: エラーパターンの分析・予防策立案
+
 ## 📚 ドキュメント管理ルール
 
 ### CLAUDE.mdの役割と制限
@@ -92,7 +139,7 @@
 
 このアプリケーションは以下の機能を提供します：
 
-### ✅ 実装済み機能（Week 1完了）
+### ✅ 基本機能実装完了
 
 - 投稿の作成・編集・削除（200文字制限）
 - 投稿の一覧表示・詳細表示
@@ -103,7 +150,7 @@
 - メール送信基盤（SMTP・テンプレート）
 - レスポンシブデザイン（Material-UI）
 
-### ✅ 全Phase実装完了（develop統合済み・Phase 5.5完了）
+### ✅ 全Phase実装完了（2025/09まで）
 
 - **Phase 0**: テスト基盤・開発環境整備（Jest・Playwright・CI/CD）✅ **統合完了**
 - **Phase 0.5**: 観測基盤・モニタリング設定（Sentry・Analytics）✅ **統合完了**
@@ -119,21 +166,18 @@
 
 ### ✅ 最新Issue実装完了
 
-- **Phase 7.0**: リアルタイム機能（2025/08/24完了）- 管理者限定WebSocket・ポーリング最適化・保守的アプローチ完全遵守。
-- **Issue #27**: PWA機能（2025/08/24完了）- next-pwa統合・Service Worker・ネイティブアプリ級体験。
-- **Issue #22**: ユーザー検索拡張（2025/08/23完了）- 日本語対応・高度検索・@username検索・認証システム修復。
-- **Issue #24**: 無限スクロール機能（2025/08/23完了）- Intersection Observer・デバイス別最適化・Twitter/Instagramレベル体験実現。
-- **Issue #21**: エンゲージメント表示（2025/08/23完了）- ハートアイコン・コメント件数・メディア表示・Instagram/Twitter風UI。
-- **Issue #20**: 検索バーのヘッダー移動（2025/08/24完了）- 虫眼鏡アイコン化・ポップオーバー検索・GitHub風UX。
-- **Issue #25**: ヘッダー2段目ハッシュタグナビゲーション（2025/08/24完了）- Hydrationエラー修正・完全統合。
-- **Issue #11**: プロフィール画像統合（2025/08/24完了）- 全箇所反映・セッション同期・愛着向上。
-- **Issue #18**: アバターメニュー整理（2025/08/24完了）- GitHub風2段ヘッダー・14項目→4項目整理。
-- **Issue #17**: 通知ベル一括既読・テーマ切り替え簡素化（2025/08/23完了）
-- **Issue #16**: ランディングページテーマ切り替え（2025/08/23完了）
-- **Issue #19**: ヘッダー固定機能（2025/08/24完了）
-- **Issue #28**: 包括的パフォーマンス最適化（2025/08/25完了）- Lighthouse 35点→62点改善
-- **Issue #30**: 包括的プライバシー設定（2025/08/27完了）- エンタープライズ級ユーザー保護
-- **Issue #29**: Twitter/Slack風メンション機能（2025/08/26完了）- アプリ起動問題修正
+#### 管理者機能関連（2025/09）
+- **Issue #49**: NextAuth認証システムの修復と正常化（2025/09/07完了）- MongoDB Adapter条件付き有効化・緊急コード削除
+- **Issue #45-46**: 管理者機能基盤・UI完成 - 管理画面・権限システム・監査ログ
+- **Issue #47**: RBAC権限管理システム - Enterprise級セキュリティ実装計画
+
+#### SNS・UX機能（2025/08）
+- **Issue #36**: 画像アップロード405エラー修正 - Cloudinary統合・Node.js Runtime強制
+- **Issue #30**: 包括的プライバシー設定 - エンタープライズ級ユーザー保護
+- **Issue #29**: Twitter/Slack風メンション機能 - リアルタイム通知
+- **Issue #28**: パフォーマンス最適化 - Lighthouse 35点→62点改善
+- **Issue #27**: PWA機能 - Service Worker・オフライン対応
+- **Issue #24**: 無限スクロール - Intersection Observer実装
 
 詳細な実装履歴は `docs/issue-history-archive.md` 参照。
 
@@ -233,6 +277,11 @@ SLACK_WEBHOOK_URL=your_slack_webhook_url
 
 # セキュリティ設定
 SECURITY_API_TOKEN=your_security_admin_token_here
+
+# メディアアップロード設定（Cloudinary）
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 ```
 
 ## API エンドポイント
@@ -267,6 +316,20 @@ SECURITY_API_TOKEN=your_security_admin_token_here
 - `GET /api/security/stats` - 攻撃統計
 - `POST /api/security/unblock` - ブロック解除
 - `GET/POST/PATCH /api/security/audit` - 監査ログ
+
+### メディア関連
+
+- `POST /api/media/upload` - 画像・動画アップロード
+- `GET /api/media` - メディア一覧取得
+- `DELETE /api/media/[id]` - メディア削除
+
+### 管理者関連
+
+- `GET /api/admin/users` - ユーザー管理
+- `GET /api/admin/posts` - 投稿管理
+- `GET /api/admin/analytics` - 分析データ
+- `POST /api/admin/verification/send` - 検証コード送信
+- `POST /api/admin/verification/verify` - 検証コード確認
 
 詳細なAPI仕様は `docs/api-detailed-specs.md` 参照。
 
@@ -368,7 +431,7 @@ const [固定値, set固定値] = useState(初期値);  // useSession回避
 
 ## GitHub Projects タスク管理
 
-**プロジェクト**: Week3 SNS Development - 5段階カンバンボード管理
+**プロジェクト**: my-board-app Development - GitHub Projects管理
 
 ### ワークフロー（確定版）
 
@@ -391,7 +454,7 @@ const [固定値, set固定値] = useState(初期値);  // useSession回避
 - **AI**: 高度助言者・技術実装支援・分析提供者  
 - **協議**: 創発的解決・相互学習・AI依存防止セーフガード
 
-### 5分ルール（Week 1-2実装中）
+### 5分ルール（運用中）
 
 **緊急要望受信時**: `./scripts/emergency-brake.sh` 実行（必須）
 
@@ -413,8 +476,10 @@ const [固定値, set固定値] = useState(初期値);  // useSession回避
 - 🟢 MEDIUM → featureブランチ→通常Issue管理フロー→develop→main
 - ⚪ LOW → mainブランチ→即座修正（簡易確認のみ）
 
-### 効果測定（Week 1-2終了後）
-- 5分ルール実行率・判定精度・問題解決時間短縮効果
+### 効果
+- 緊急対応の適切な判断
+- Issue管理フローの遵守率向上
+- 不要な緊急対応の削減
 
 ## Git ブランチ戦略
 
