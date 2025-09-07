@@ -21,8 +21,18 @@ import {
   Chip,
   Divider,
 } from '@mui/material';
-import { People, Article, Analytics, TrendingUp, PersonAdd, ThumbUp } from '@mui/icons-material';
+import {
+  People,
+  Article,
+  Analytics,
+  TrendingUp,
+  PersonAdd,
+  ThumbUp,
+  Dashboard,
+} from '@mui/icons-material';
 import { AdminLayout } from '@/components/admin/AdminLayout';
+import { Button } from '@mui/material';
+import Link from 'next/link';
 
 /**
  * 管理者ダッシュボード
@@ -99,6 +109,26 @@ export default function AdminDashboardPage() {
   return (
     <AdminLayout title="管理者ダッシュボード">
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        {/* 拡張ダッシュボードへのリンク */}
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
+          <Link href="/admin/dashboard/enhanced" passHref>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<Dashboard />}
+              sx={{
+                background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                boxShadow: '0 3px 5px 2px rgba(33, 203, 243, .3)',
+                '&:hover': {
+                  background: 'linear-gradient(45deg, #1976D2 30%, #00BCD4 90%)',
+                },
+              }}
+            >
+              拡張ダッシュボードを表示
+            </Button>
+          </Link>
+        </Box>
+
         {/* エラー表示 */}
         {error && (
           <Alert severity="error" sx={{ mb: 3 }}>

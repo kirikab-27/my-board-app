@@ -99,7 +99,6 @@ export default function EnhancedAdminDashboardPage() {
     }
 
     if (!['admin', 'moderator'].includes((session.user as any).role || '')) {
-      // eslint-disable-line @typescript-eslint/no-explicit-any
       router.push('/dashboard?error=insufficient-permissions');
       return;
     }
@@ -174,7 +173,6 @@ export default function EnhancedAdminDashboardPage() {
   }
 
   if (!session?.user || !['admin', 'moderator'].includes((session.user as any).role || '')) {
-    // eslint-disable-line @typescript-eslint/no-explicit-any
     return null;
   }
 
@@ -574,17 +572,19 @@ export default function EnhancedAdminDashboardPage() {
                               </Avatar>
                             </ListItemAvatar>
                             <ListItemText primary={user.name} secondary={user.email} />
-                            <Chip
-                              label={user.role}
-                              size="small"
-                              color={
-                                user.role === 'admin'
-                                  ? 'error'
-                                  : user.role === 'moderator'
-                                    ? 'warning'
-                                    : 'default'
-                              }
-                            />
+                            <Box>
+                              <Chip
+                                label={user.role}
+                                size="small"
+                                color={
+                                  user.role === 'admin'
+                                    ? 'error'
+                                    : user.role === 'moderator'
+                                      ? 'warning'
+                                      : 'default'
+                                }
+                              />
+                            </Box>
                           </ListItem>
                         )
                       )}
@@ -605,14 +605,28 @@ export default function EnhancedAdminDashboardPage() {
                           <ListItem key={post.id} sx={{ px: 0 }}>
                             <ListItemText
                               primary={<Typography noWrap>{post.content}</Typography>}
+                              secondaryTypographyProps={{ component: 'div' }}
                               secondary={
-                                <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
-                                  <Chip
-                                    icon={<ThumbUp />}
-                                    label={post.likes}
-                                    size="small"
-                                    variant="outlined"
-                                  />
+                                <Box
+                                  sx={{ display: 'flex', gap: 1, alignItems: 'center', mt: 0.5 }}
+                                >
+                                  <Typography
+                                    component="span"
+                                    sx={{
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: 0.5,
+                                      px: 1,
+                                      py: 0.25,
+                                      border: 1,
+                                      borderColor: 'divider',
+                                      borderRadius: 2,
+                                      fontSize: '0.75rem',
+                                    }}
+                                  >
+                                    <ThumbUp sx={{ fontSize: '0.875rem' }} />
+                                    {post.likes}
+                                  </Typography>
                                   <Typography variant="caption" color="text.secondary">
                                     by {post.author?.name || '匿名'}
                                   </Typography>

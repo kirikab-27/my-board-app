@@ -80,6 +80,8 @@ export function AdminLayoutEnhanced({
   const [notificationCount, setNotificationCount] = useState(0);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [systemMenuOpen, setSystemMenuOpen] = useState(false);
+  const [basicMenuOpen, setBasicMenuOpen] = useState(true);
+  const [securityMenuOpen, setSecurityMenuOpen] = useState(false);
   const [scrollTrigger, setScrollTrigger] = useState(false);
 
   const drawerWidth = 260;
@@ -185,12 +187,25 @@ export function AdminLayoutEnhanced({
           {menuGroups.map((group) => {
             if (group.show === false) return null;
 
+            // アコーディオンの開閉状態を管理
+            const isOpen =
+              group.title === '基本機能'
+                ? basicMenuOpen
+                : group.title === 'システム'
+                  ? systemMenuOpen
+                  : group.title === 'セキュリティ'
+                    ? securityMenuOpen
+                    : true;
+
+            const handleToggle = () => {
+              if (group.title === '基本機能') setBasicMenuOpen(!basicMenuOpen);
+              else if (group.title === 'システム') setSystemMenuOpen(!systemMenuOpen);
+              else if (group.title === 'セキュリティ') setSecurityMenuOpen(!securityMenuOpen);
+            };
+
             return (
               <Box key={group.title}>
-                <ListItemButton
-                  onClick={() => setSystemMenuOpen(!systemMenuOpen)}
-                  sx={{ py: 0.5, px: 2 }}
-                >
+                <ListItemButton onClick={handleToggle} sx={{ py: 0.5, px: 2 }}>
                   <ListItemText
                     primary={
                       <Typography variant="caption" color="text.secondary">
@@ -198,10 +213,13 @@ export function AdminLayoutEnhanced({
                       </Typography>
                     }
                   />
-                  {group.title === 'システム' && (systemMenuOpen ? <ExpandLess /> : <ExpandMore />)}
+                  {(group.title === '基本機能' ||
+                    group.title === 'システム' ||
+                    group.title === 'セキュリティ') &&
+                    (isOpen ? <ExpandLess /> : <ExpandMore />)}
                 </ListItemButton>
 
-                <Collapse in={group.title !== 'システム' || systemMenuOpen} timeout="auto">
+                <Collapse in={isOpen} timeout="auto">
                   {group.items.map((item) => {
                     const isActive = pathname === item.path;
 
