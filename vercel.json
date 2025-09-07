@@ -13,12 +13,10 @@
   },
   "functions": {
     "app/api/**/*.ts": {
-      "maxDuration": 30,
-      "runtime": "nodejs20.x"
+      "maxDuration": 30
     },
     "app/api/media/**/*.ts": {
-      "maxDuration": 60,
-      "runtime": "nodejs20.x"
+      "maxDuration": 60
     }
   },
   "headers": [
