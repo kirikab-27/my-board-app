@@ -206,7 +206,8 @@
       "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue view 51 --repo kirikab-27/my-board-app --json comments --jq '.comments | length')",
       "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue view 56 --json body --jq '.body')",
       "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue list --repo kirikab-27/my-board-app --state open --sort created --direction asc --limit 10)",
-      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue list --repo kirikab-27/my-board-app --state open --label \"bug\" --limit 10)"
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue list --repo kirikab-27/my-board-app --state open --label \"bug\" --limit 10)",
+      "Bash(git rm:*)"
     ],
     "deny": [],
     "ask": [],
