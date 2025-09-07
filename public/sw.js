@@ -31,14 +31,14 @@ define(['./workbox-f52fd911'], function (e) {
     e.clientsClaim(),
     e.precacheAndRoute(
       [
-        { url: '/_next/app-build-manifest.json', revision: '5bd0b9ac1cac5ea46e18481fda1df2ac' },
+        { url: '/_next/app-build-manifest.json', revision: '9a4cbbd1b42a71a7e8c2ecb35595016e' },
         { url: '/_next/dynamic-css-manifest.json', revision: 'd751713988987e9331980363e24189ce' },
         {
-          url: '/_next/static/0o-TYwq1PtuAokFKVJItO/_buildManifest.js',
+          url: '/_next/static/LF-mAfPLctp2wQmbaXoDX/_buildManifest.js',
           revision: 'e35467873ffbf027332d33c33d286f50',
         },
         {
-          url: '/_next/static/0o-TYwq1PtuAokFKVJItO/_ssgManifest.js',
+          url: '/_next/static/LF-mAfPLctp2wQmbaXoDX/_ssgManifest.js',
           revision: 'b6652df95db52feb4daf4eca35380933',
         },
         { url: '/_next/static/chunks/1322.da56bcd244f97d30.js', revision: 'da56bcd244f97d30' },
@@ -63,12 +63,12 @@ define(['./workbox-f52fd911'], function (e) {
           revision: 'a16a26bcc1a55ec3',
         },
         {
-          url: '/_next/static/chunks/app/admin/dashboard/enhanced/page-7a2dfd0859922bf8.js',
-          revision: '7a2dfd0859922bf8',
+          url: '/_next/static/chunks/app/admin/dashboard/enhanced/page-cf4f8a7264de8d21.js',
+          revision: 'cf4f8a7264de8d21',
         },
         {
-          url: '/_next/static/chunks/app/admin/dashboard/page-37bd402ba1e2622e.js',
-          revision: '37bd402ba1e2622e',
+          url: '/_next/static/chunks/app/admin/dashboard/page-24ea0023143b0eb3.js',
+          revision: '24ea0023143b0eb3',
         },
         {
           url: '/_next/static/chunks/app/admin/layout-08de19bdd326f6ad.js',

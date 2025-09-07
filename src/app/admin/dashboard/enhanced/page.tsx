@@ -34,7 +34,6 @@ import {
   ThumbUp,
   Warning,
   CheckCircle,
-  Error,
   Refresh,
   Download,
   AccessTime,
@@ -110,13 +109,14 @@ export default function EnhancedAdminDashboardPage() {
       setLoading(true);
       const response = await fetch('/api/admin/stats');
       if (!response.ok) {
-        throw new Error('統計情報の取得に失敗しました' as string);
+        setError('統計情報の取得に失敗しました');
+        return;
       }
       const data = await response.json();
       setStats(data);
       setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '予期しないエラーが発生しました');
+    } catch {
+      setError('予期しないエラーが発生しました');
     } finally {
       setLoading(false);
     }
