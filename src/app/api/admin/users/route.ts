@@ -30,15 +30,15 @@ export async function GET(request: NextRequest) {
 
     // 検索条件構築
     const query: any = {};
-    
+
     if (search) {
       query.$or = [
         { name: { $regex: search, $options: 'i' } },
         { email: { $regex: search, $options: 'i' } },
-        { username: { $regex: search, $options: 'i' } }
+        { username: { $regex: search, $options: 'i' } },
       ];
     }
-    
+
     if (role !== 'all') {
       query.role = role;
     }
@@ -52,11 +52,11 @@ export async function GET(request: NextRequest) {
         .skip(skip)
         .limit(limit)
         .lean(),
-      User.countDocuments(query)
+      User.countDocuments(query),
     ]);
 
     // レスポンス成形
-    const adminUserView = users.map(user => ({
+    const adminUserView = users.map((user: any) => ({
       _id: user._id.toString(),
       name: user.name,
       email: user.email,
@@ -70,19 +70,19 @@ export async function GET(request: NextRequest) {
         postsCount: 0,
         followersCount: 0,
         followingCount: 0,
-        likesReceived: 0
+        likesReceived: 0,
       },
       moderation: {
         reportCount: user.adminMetadata?.reportCount || 0,
-        suspensionHistory: user.adminMetadata?.suspensionHistory || []
-      }
+        suspensionHistory: user.adminMetadata?.suspensionHistory || [],
+      },
     }));
 
     // 監査ログ記録（実装予定）
     console.log('Admin API: ユーザー一覧取得', {
       adminId: session.user.id,
       query: { page, limit, search, role },
-      resultCount: users.length
+      resultCount: users.length,
     });
 
     return NextResponse.json({
@@ -94,23 +94,22 @@ export async function GET(request: NextRequest) {
           totalPages: Math.ceil(totalCount / limit),
           totalCount,
           hasNext: page * limit < totalCount,
-          hasPrev: page > 1
+          hasPrev: page > 1,
         },
         aggregations: {
           totalUsers: totalCount,
           // 実装予定: より詳細な集計
-        }
-      }
+        },
+      },
     });
-
   } catch (error) {
     console.error('Admin Users API Error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: 'INTERNAL_SERVER_ERROR',
-        message: 'ユーザー一覧の取得に失敗しました'
-      }, 
+        message: 'ユーザー一覧の取得に失敗しました',
+      },
       { status: 500 }
     );
   }

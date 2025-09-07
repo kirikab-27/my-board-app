@@ -13,11 +13,9 @@ interface UseAdminAuthOptions {
  * Issue #45 Phase 3: セキュリティ基盤
  */
 export function useAdminAuth(options: UseAdminAuthOptions = {}) {
-  const { 
-    requiredLevel = ['admin', 'moderator'], 
-    redirectTo = '/dashboard?error=admin-required' 
-  } = options;
-  
+  const { requiredLevel = ['admin', 'moderator'], redirectTo = '/dashboard?error=admin-required' } =
+    options;
+
   const { data: session, status } = useSession();
   const router = useRouter();
 
@@ -36,7 +34,7 @@ export function useAdminAuth(options: UseAdminAuthOptions = {}) {
       console.warn('管理者権限不足:', {
         userRole,
         requiredLevel,
-        userId: session.user.id
+        userId: session.user.id,
       });
       router.push(redirectTo);
       return;
@@ -48,7 +46,6 @@ export function useAdminAuth(options: UseAdminAuthOptions = {}) {
     isLoading: status === 'loading',
     isAdmin: session?.user?.role === 'admin',
     isModerator: session?.user?.role === 'moderator',
-    isAudit: session?.user?.role === 'audit',
     hasAccess: session?.user ? requiredLevel.includes(session.user.role as AdminLevel) : false,
   };
 }

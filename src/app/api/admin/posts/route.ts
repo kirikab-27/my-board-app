@@ -30,14 +30,14 @@ export async function GET(request: NextRequest) {
 
     // 検索条件構築
     const query: any = {};
-    
+
     if (search) {
       query.$or = [
         { title: { $regex: search, $options: 'i' } },
-        { content: { $regex: search, $options: 'i' } }
+        { content: { $regex: search, $options: 'i' } },
       ];
     }
-    
+
     if (status === 'reported') {
       query['moderationData.reportCount'] = { $gt: 0 };
     } else if (status === 'hidden') {
@@ -56,11 +56,11 @@ export async function GET(request: NextRequest) {
         .skip(skip)
         .limit(limit)
         .lean(),
-      Post.countDocuments(query)
+      Post.countDocuments(query),
     ]);
 
     // レスポンス成形
-    const adminPostView = posts.map(post => ({
+    const adminPostView = posts.map((post: any) => ({
       _id: post._id.toString(),
       title: post.title,
       content: post.content,
@@ -72,23 +72,23 @@ export async function GET(request: NextRequest) {
       engagement: {
         likes: post.likes || 0,
         comments: post.comments?.length || 0,
-        shares: 0 // 実装予定
+        shares: 0, // 実装予定
       },
       moderation: {
         reportCount: post.moderationData?.reportCount || 0,
         isHidden: post.moderationData?.status === 'hidden',
         hiddenReason: post.moderationData?.moderationReason,
         moderatedBy: post.moderationData?.reviewedBy,
-        moderatedAt: post.moderationData?.reviewedAt
+        moderatedAt: post.moderationData?.reviewedAt,
       },
-      media: post.media || []
+      media: post.media || [],
     }));
 
     // 監査ログ記録
     console.log('Admin API: 投稿一覧取得', {
       adminId: session.user.id,
       query: { page, limit, search, status },
-      resultCount: posts.length
+      resultCount: posts.length,
     });
 
     return NextResponse.json({
@@ -100,19 +100,18 @@ export async function GET(request: NextRequest) {
           totalPages: Math.ceil(totalCount / limit),
           totalCount,
           hasNext: page * limit < totalCount,
-          hasPrev: page > 1
-        }
-      }
+          hasPrev: page > 1,
+        },
+      },
     });
-
   } catch (error) {
     console.error('Admin Posts API Error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: 'INTERNAL_SERVER_ERROR',
-        message: '投稿一覧の取得に失敗しました'
-      }, 
+        message: '投稿一覧の取得に失敗しました',
+      },
       { status: 500 }
     );
   }
@@ -131,10 +130,7 @@ export async function PUT(request: NextRequest) {
 
     // 入力検証
     if (!postId || !action || !reason) {
-      return NextResponse.json(
-        { error: 'postId, action, reasonは必須です' }, 
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'postId, action, reasonは必須です' }, { status: 400 });
     }
 
     // データベース接続
@@ -147,10 +143,10 @@ export async function PUT(request: NextRequest) {
     }
 
     // モデレーション実行
-    let updateData: any = {
+    const updateData: any = {
       'moderationData.reviewedBy': session.user.id,
       'moderationData.reviewedAt': new Date(),
-      'moderationData.moderationReason': reason
+      'moderationData.moderationReason': reason,
     };
 
     switch (action) {
@@ -173,11 +169,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // 更新実行
-    const updatedPost = await Post.findByIdAndUpdate(
-      postId,
-      updateData,
-      { new: true }
-    );
+    const updatedPost = await Post.findByIdAndUpdate(postId, updateData, { new: true });
 
     // 監査ログ記録
     console.log('Admin API: 投稿モデレーション', {
@@ -186,7 +178,7 @@ export async function PUT(request: NextRequest) {
       postId,
       reason,
       authorId: post.userId?._id,
-      result: 'success'
+      result: 'success',
     });
 
     // 投稿者への通知（実装予定）
@@ -194,24 +186,23 @@ export async function PUT(request: NextRequest) {
       console.log('投稿者通知送信予定:', {
         recipientId: post.userId._id,
         action,
-        reason
+        reason,
       });
     }
 
     return NextResponse.json({
       success: true,
       message: `投稿を${action === 'hide' ? '非表示に' : action === 'delete' ? '削除' : '復活'}しました`,
-      data: updatedPost
+      data: updatedPost,
     });
-
   } catch (error) {
     console.error('Admin Post Moderation Error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: 'INTERNAL_SERVER_ERROR',
-        message: 'モデレーション処理に失敗しました'
-      }, 
+        message: 'モデレーション処理に失敗しました',
+      },
       { status: 500 }
     );
   }

@@ -1,7 +1,11 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 // 認証コード種別の定義
-export type VerificationType = 'admin_registration' | 'password_reset' | '2fa' | 'email_verification';
+export type VerificationType =
+  | 'admin_registration'
+  | 'password_reset'
+  | '2fa'
+  | 'email_verification';
 
 // VerificationCode インターフェース
 export interface IVerificationCode extends Document {
@@ -18,7 +22,7 @@ export interface IVerificationCode extends Document {
   ipAddress: string;
   userAgent?: string;
   metadata?: Record<string, any>;
-  
+
   // メソッド
   isExpired(): boolean;
   isLocked(): boolean;
@@ -101,8 +105,8 @@ const VerificationCodeSchema: Schema<IVerificationCode> = new Schema(
   },
   {
     timestamps: false,
-    toJSON: { 
-      transform: (doc, ret) => {
+    toJSON: {
+      transform: (doc, ret: any) => {
         delete ret.code;
         delete ret.__v;
         return ret;
@@ -118,39 +122,43 @@ VerificationCodeSchema.index({ ipAddress: 1, createdAt: 1 });
 VerificationCodeSchema.index({ createdAt: 1, expiresAt: 1 });
 
 // インスタンスメソッド
-VerificationCodeSchema.methods.isExpired = function(): boolean {
+VerificationCodeSchema.methods.isExpired = function (): boolean {
   return new Date() > this.expiresAt;
 };
 
-VerificationCodeSchema.methods.isLocked = function(): boolean {
+VerificationCodeSchema.methods.isLocked = function (): boolean {
   return this.lockedUntil && new Date() < this.lockedUntil;
 };
 
-VerificationCodeSchema.methods.canAttempt = function(): boolean {
+VerificationCodeSchema.methods.canAttempt = function (): boolean {
   return !this.used && !this.isExpired() && !this.isLocked() && this.attempts < 3;
 };
 
-VerificationCodeSchema.methods.incrementAttempts = function(): void {
+VerificationCodeSchema.methods.incrementAttempts = function (): void {
   this.attempts += 1;
   this.lastAttemptAt = new Date();
-  
+
   // 3回失敗で15分ロック
   if (this.attempts >= 3) {
     this.lockCode(15 * 60 * 1000); // 15分
   }
 };
 
-VerificationCodeSchema.methods.markAsUsed = function(): void {
+VerificationCodeSchema.methods.markAsUsed = function (): void {
   this.used = true;
   this.usedAt = new Date();
 };
 
-VerificationCodeSchema.methods.lockCode = function(duration: number): void {
+VerificationCodeSchema.methods.lockCode = function (duration: number): void {
   this.lockedUntil = new Date(Date.now() + duration);
 };
 
 // スタティックメソッド
-VerificationCodeSchema.statics.findActiveCode = function(email: string, code: string, type: VerificationType) {
+VerificationCodeSchema.statics.findActiveCode = function (
+  email: string,
+  code: string,
+  type: VerificationType
+) {
   return this.findOne({
     email: email.toLowerCase(),
     code,
@@ -160,7 +168,11 @@ VerificationCodeSchema.statics.findActiveCode = function(email: string, code: st
   });
 };
 
-VerificationCodeSchema.statics.countRecentAttempts = function(email: string, type: VerificationType, minutes: number = 10) {
+VerificationCodeSchema.statics.countRecentAttempts = function (
+  email: string,
+  type: VerificationType,
+  minutes: number = 10
+) {
   const cutoff = new Date(Date.now() - minutes * 60 * 1000);
   return this.countDocuments({
     email: email.toLowerCase(),
@@ -169,7 +181,10 @@ VerificationCodeSchema.statics.countRecentAttempts = function(email: string, typ
   });
 };
 
-VerificationCodeSchema.statics.countRecentIPAttempts = function(ipAddress: string, minutes: number = 10) {
+VerificationCodeSchema.statics.countRecentIPAttempts = function (
+  ipAddress: string,
+  minutes: number = 10
+) {
   const cutoff = new Date(Date.now() - minutes * 60 * 1000);
   return this.countDocuments({
     ipAddress,
@@ -177,7 +192,7 @@ VerificationCodeSchema.statics.countRecentIPAttempts = function(ipAddress: strin
   });
 };
 
-VerificationCodeSchema.statics.cleanupExpired = function() {
+VerificationCodeSchema.statics.cleanupExpired = function () {
   return this.deleteMany({
     $or: [
       { expiresAt: { $lt: new Date() } },
@@ -187,7 +202,7 @@ VerificationCodeSchema.statics.cleanupExpired = function() {
 };
 
 // プリフック
-VerificationCodeSchema.pre('save', async function(next) {
+VerificationCodeSchema.pre('save', async function (next) {
   // コード重複チェック（同時生成対策）
   if (this.isNew) {
     const existingCodeQuery = {
@@ -197,7 +212,7 @@ VerificationCodeSchema.pre('save', async function(next) {
       expiresAt: { $gt: new Date() },
       _id: { $ne: this._id },
     };
-    
+
     try {
       const existing = await (this.constructor as any).findOne(existingCodeQuery).exec();
       if (existing) {
@@ -214,13 +229,14 @@ VerificationCodeSchema.pre('save', async function(next) {
 });
 
 // ポストフック（統計用）
-VerificationCodeSchema.post('save', function(doc) {
+VerificationCodeSchema.post('save', function (doc) {
   if (doc.used && doc.usedAt) {
     console.log(`✅ 認証コード使用: ${doc.email} (${doc.type})`);
   }
 });
 
-const VerificationCode = mongoose.models.VerificationCode || 
+const VerificationCode =
+  mongoose.models.VerificationCode ||
   mongoose.model<IVerificationCode>('VerificationCode', VerificationCodeSchema);
 
 export default VerificationCode;

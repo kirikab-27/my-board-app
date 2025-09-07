@@ -17,13 +17,10 @@ import {
   Avatar,
   Chip,
   Alert,
-  IconButton,
-  Badge,
   useTheme,
 } from '@mui/material';
 import {
   Forum as ForumIcon,
-  Security as SecurityIcon,
   Person as PersonIcon,
   Speed as SpeedIcon,
   NetworkCheck as NetworkIcon,
@@ -51,11 +48,11 @@ export default function DashboardPage() {
     required: true,
     onUnauthenticated() {
       router.push('/login');
-    }
+    },
   });
   const theme = useTheme(); // Issue #38: ダークモード対応
   const router = useRouter();
-  
+
   // 🚨 緊急デバッグ: レンダリング状況確認
   console.log('🔧 Dashboard レンダリング:', {
     status,
@@ -63,14 +60,14 @@ export default function DashboardPage() {
     userEmail: session?.user?.email,
     userRole: session?.user?.role,
     userId: session?.user?.id,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
   const [loadingButton, setLoadingButton] = useState<string | null>(null);
   const [isResending, setIsResending] = useState(false);
-  
+
   // Issue #47: セッション更新機能
   const [updatingSession, setUpdatingSession] = useState(false);
-  
+
   const handleUpdateSession = async () => {
     setUpdatingSession(true);
     try {
@@ -134,11 +131,11 @@ export default function DashboardPage() {
     console.log('🔧 Dashboard: セッションなし・Access Denied');
     return <div>Access Denied</div>;
   }
-  
+
   console.log('🔧 Dashboard: 正常レンダリング開始', {
     sessionExists: !!session,
     userExists: !!session.user,
-    email: session?.user?.email
+    email: session?.user?.email,
   });
 
   return (
@@ -148,16 +145,10 @@ export default function DashboardPage() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             ダッシュボード
           </Typography>
-          <AuthButton 
-            onSearch={handleSearch}
-            onClearSearch={handleClearSearch}
-          />
+          <AuthButton onSearch={handleSearch} onClearSearch={handleClearSearch} />
         </Toolbar>
         {/* 2段目のナビゲーション行 */}
-        <Toolbar
-          variant="dense"
-          sx={getNavigationHeaderStyles(theme)}
-        >
+        <Toolbar variant="dense" sx={getNavigationHeaderStyles(theme)}>
           <AuthButton isNavigationRow={true} />
         </Toolbar>
       </AppBar>
@@ -206,18 +197,16 @@ export default function DashboardPage() {
                     />
                   )}
                 </Box>
-                
+
                 {/* 🔧 緊急デバッグ: セッション情報確認 */}
                 <Box sx={{ mt: 2 }}>
                   <Alert severity="info">
-                    🔍 セッション確認: 
-                    ユーザー: {session?.user?.name || 'なし'} | 
-                    メール: {session?.user?.email || 'なし'} | 
-                    権限: {session?.user?.role || 'undefined'} |
+                    🔍 セッション確認: ユーザー: {session?.user?.name || 'なし'} | メール:{' '}
+                    {session?.user?.email || 'なし'} | 権限: {session?.user?.role || 'undefined'} |
                     ID: {session?.user?.id || 'なし'}
-                    <Button 
-                      variant="outlined" 
-                      size="small" 
+                    <Button
+                      variant="outlined"
+                      size="small"
                       sx={{ ml: 2 }}
                       onClick={handleUpdateSession}
                       disabled={updatingSession}
@@ -231,7 +220,7 @@ export default function DashboardPage() {
           </Box>
 
           {/* メール認証状況・再送信機能（緊急修正：表示無効化） */}
-          {false && !session.user?.emailVerified && (
+          {false && !session?.user?.emailVerified && (
             <Box sx={{ mt: 3 }}>
               <Paper sx={{ p: 3, bgcolor: 'warning.light', color: 'warning.contrastText' }}>
                 <Typography
@@ -611,17 +600,20 @@ export default function DashboardPage() {
               </Grid>
 
               {/* Issue #47: 管理者機能アクセス（強制表示・セッション問題対応） */}
-              {(session?.user?.role === 'admin' || 
-                session?.user?.role === 'moderator' || 
-                session?.user?.role === 'super_admin' ||
+              {(session?.user?.role === 'admin' ||
+                session?.user?.role === 'moderator' ||
                 session?.user?.email === 'kab27kav@gmail.com' ||
                 session?.user?.email === 'minomasa34@gmail.com') && (
                 <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                  <Card sx={{ border: 2, borderColor: 'error.main', backgroundColor: 'error.light' }}>
+                  <Card
+                    sx={{ border: 2, borderColor: 'error.main', backgroundColor: 'error.light' }}
+                  >
                     <CardContent>
                       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                         <AdminPanelSettings sx={{ mr: 1, color: 'error.main' }} />
-                        <Typography variant="h6" color="error.main">管理者パネル</Typography>
+                        <Typography variant="h6" color="error.main">
+                          管理者パネル
+                        </Typography>
                       </Box>
                       <Typography color="error.main" sx={{ mb: 2 }}>
                         🛡️ 管理者機能・ユーザー管理・システム管理
