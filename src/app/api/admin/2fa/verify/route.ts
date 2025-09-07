@@ -12,21 +12,15 @@ export async function POST(request: NextRequest) {
   try {
     // セッション確認
     const session = await getServerSession(authOptions);
-    
+
     if (!session?.user) {
-      return NextResponse.json(
-        { error: '認証が必要です' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: '認証が必要です' }, { status: 401 });
     }
 
     const { token } = await request.json();
 
     if (!token || typeof token !== 'string') {
-      return NextResponse.json(
-        { error: '認証コードが必要です' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: '認証コードが必要です' }, { status: 400 });
     }
 
     const userId = (session.user as any).id;
@@ -35,27 +29,21 @@ export async function POST(request: NextRequest) {
     const result = await TwoFactorAuthService.verifyToken(userId, token);
 
     if (!result.success) {
-      return NextResponse.json(
-        { error: result.error || '認証に失敗しました' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: result.error || '認証に失敗しました' }, { status: 400 });
     }
 
     // セッションに2FA検証済みフラグを設定
-    // TODO: NextAuth.jsのセッション拡張が必要
+    // NextAuth.jsのセッション更新をクライアント側で行う必要がある
+    // クライアント側でupdate({ twoFactorVerified: true })を呼ぶ
 
     return NextResponse.json({
       success: true,
       isBackupCode: result.isBackupCode,
-      message: result.isBackupCode 
-        ? 'バックアップコードで認証されました' 
-        : '2FA認証に成功しました'
+      twoFactorVerified: true, // クライアントに検証成功を通知
+      message: result.isBackupCode ? 'バックアップコードで認証されました' : '2FA認証に成功しました',
     });
   } catch (error) {
     console.error('2FA verify error:', error);
-    return NextResponse.json(
-      { error: '2FA検証に失敗しました' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '2FA検証に失敗しました' }, { status: 500 });
   }
 }

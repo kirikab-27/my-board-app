@@ -15,7 +15,7 @@ let client: MongoClient | undefined;
 let clientPromise: Promise<MongoClient> | undefined;
 
 // OAuth Providerが設定されている場合のみMongoDB Adapterを初期化
-const isOAuthEnabled = 
+const isOAuthEnabled =
   (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_ID !== 'your_google_client_id_here') ||
   (process.env.GITHUB_ID && process.env.GITHUB_ID !== 'your_github_id_here');
 
@@ -128,9 +128,11 @@ export const authOptions: NextAuthOptions = {
       // 2FA検証完了時の更新
       if (trigger === 'update' && session?.twoFactorVerified) {
         token.twoFactorVerified = true;
+        // 2FA検証時刻を記録
+        token.twoFactorVerifiedAt = new Date().toISOString();
         return token;
       }
-      
+
       // 新規ログインまたはセッション更新でDB情報を取得
       if (user || trigger === 'update') {
         const userId = user?.id || token.id;
@@ -159,7 +161,7 @@ export const authOptions: NextAuthOptions = {
               token.emailVerified = dbUser.emailVerified;
               token.bio = dbUser.bio || '';
               token.avatar = dbUser.avatar || null;
-              
+
               // 2FA状態チェック（管理者・モデレーターのみ）
               if (['admin', 'moderator'].includes(token.role as string)) {
                 const is2FAEnabled = await TwoFactorAuthService.isEnabled(dbUser._id.toString());
