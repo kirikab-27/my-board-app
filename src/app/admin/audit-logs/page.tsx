@@ -212,7 +212,7 @@ export default function AuditLogsPage() {
       case 'HIGH': return <Warning />;
       case 'MEDIUM': return <Info />;
       case 'LOW': return <CheckCircle />;
-      default: return null;
+      default: return undefined;
     }
   };
   
