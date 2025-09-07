@@ -222,7 +222,7 @@ export default function AuditLogsPage() {
       
       {/* 統計カード */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={3}>
+        <Grid size={{ xs: 12, md: 3 }}>
           <Card>
             <CardContent>
               <Typography color="textSecondary" gutterBottom>
@@ -234,7 +234,7 @@ export default function AuditLogsPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} md={3}>
+        <Grid size={{ xs: 12, md: 3 }}>
           <Card>
             <CardContent>
               <Typography color="textSecondary" gutterBottom>
@@ -267,7 +267,7 @@ export default function AuditLogsPage() {
       {/* フィルター */}
       <Paper sx={{ p: 2, mb: 3 }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} sm={6} md={2.4}>
+          <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
             <FormControl fullWidth size="small" sx={{ minWidth: 150 }}>
               <InputLabel>タイプ</InputLabel>
               <Select
@@ -284,7 +284,7 @@ export default function AuditLogsPage() {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} sm={6} md={2.4}>
+          <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
             <FormControl fullWidth size="small" sx={{ minWidth: 150 }}>
               <InputLabel>重要度</InputLabel>
               <Select
@@ -300,7 +300,7 @@ export default function AuditLogsPage() {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} sm={6} md={2}>
+          <Grid size={{ xs: 12, sm: 6, md: 2 }}>
             <TextField
               fullWidth
               size="small"
@@ -311,7 +311,7 @@ export default function AuditLogsPage() {
               InputLabelProps={{ shrink: true }}
             />
           </Grid>
-          <Grid item xs={12} sm={6} md={2}>
+          <Grid size={{ xs: 12, sm: 6, md: 2 }}>
             <TextField
               fullWidth
               size="small"
@@ -322,7 +322,7 @@ export default function AuditLogsPage() {
               InputLabelProps={{ shrink: true }}
             />
           </Grid>
-          <Grid item xs={12} md={2}>
+          <Grid size={{ xs: 12, md: 2 }}>
             <Button
               fullWidth
               variant="contained"
