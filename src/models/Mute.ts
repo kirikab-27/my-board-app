@@ -197,8 +197,8 @@ MuteSchema.statics.isMuted = async function(
 MuteSchema.statics.matchesKeyword = function(content: string, mute: any): boolean {
   if (!content || !mute.keyword) return false;
   
-  let searchContent = mute.caseSensitive ? content : content.toLowerCase();
-  let keyword = mute.caseSensitive ? mute.keyword : mute.keyword.toLowerCase();
+  const searchContent = mute.caseSensitive ? content : content.toLowerCase();
+  const keyword = mute.caseSensitive ? mute.keyword : mute.keyword.toLowerCase();
   
   if (mute.isRegex) {
     try {

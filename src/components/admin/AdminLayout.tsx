@@ -22,6 +22,8 @@ import {
   Settings,
   ExitToApp,
   Lock,
+  Security,
+  Devices,
 } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
@@ -48,8 +50,11 @@ export function AdminLayout({ children, title = '管理者パネル' }: AdminLay
     { text: 'ユーザー管理', icon: <People />, path: '/admin/users' },
     { text: '投稿管理', icon: <Article />, path: '/admin/posts' },
     { text: '分析・統計', icon: <Analytics />, path: '/admin/analytics' },
+    { text: '監査ログ', icon: <Security />, path: '/admin/audit-logs' },
     { text: '検証コード管理', icon: <Settings />, path: '/admin/verification' },
     { text: '秘密情報管理', icon: <Lock />, path: '/admin/secrets' },
+    { text: '2段階認証', icon: <Security />, path: '/admin/security/2fa' },
+    { text: 'セッション管理', icon: <Devices />, path: '/admin/sessions' },
     ...(session?.user?.role === 'admin' ? [
       { text: 'システム設定', icon: <Settings />, path: '/admin/settings' }
     ] : []),

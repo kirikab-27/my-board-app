@@ -517,7 +517,7 @@ MediaSchema.methods.updateStats = async function (action: 'view' | 'download' | 
     }
     
     // 日別統計を更新
-    let dailyStatIndex = this.stats.dailyViews.findIndex(
+    const dailyStatIndex = this.stats.dailyViews.findIndex(
       (stat: any) => stat.date.getTime() === today.getTime()
     );
     
@@ -554,7 +554,7 @@ MediaSchema.methods.getOptimizedUrl = function (options: any = {}): string {
     crop = 'fit'
   } = options;
   
-  let transformations = [`q_${quality}`, `f_${format}`];
+  const transformations = [`q_${quality}`, `f_${format}`];
   
   if (width || height) {
     const w = width ? `w_${width}` : '';

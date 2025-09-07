@@ -8,6 +8,7 @@ import { connectDB } from '@/lib/mongodb';
 import User from '@/models/User';
 import { loginSchema } from '@/lib/validations/auth';
 import type { UserRole } from '@/types/auth';
+import { TwoFactorAuthService } from '@/lib/auth/twoFactor';
 
 // MongoDBクライアント設定（OAuth Provider使用時）
 let client: MongoClient | undefined;
@@ -123,7 +124,13 @@ export const authOptions: NextAuthOptions = {
       : []),
   ],
   callbacks: {
-    async jwt({ token, user, trigger }) {
+    async jwt({ token, user, trigger, session }) {
+      // 2FA検証完了時の更新
+      if (trigger === 'update' && session?.twoFactorVerified) {
+        token.twoFactorVerified = true;
+        return token;
+      }
+      
       // 新規ログインまたはセッション更新でDB情報を取得
       if (user || trigger === 'update') {
         const userId = user?.id || token.id;
@@ -152,6 +159,16 @@ export const authOptions: NextAuthOptions = {
               token.emailVerified = dbUser.emailVerified;
               token.bio = dbUser.bio || '';
               token.avatar = dbUser.avatar || null;
+              
+              // 2FA状態チェック（管理者・モデレーターのみ）
+              if (['admin', 'moderator'].includes(token.role as string)) {
+                const is2FAEnabled = await TwoFactorAuthService.isEnabled(dbUser._id.toString());
+                token.requires2FA = is2FAEnabled;
+                // 初回ログイン時は2FA未検証状態
+                if (user) {
+                  token.twoFactorVerified = false;
+                }
+              }
             } else {
               // ユーザーが見つからない場合のデフォルト設定
               if (user && user.id) {
@@ -183,6 +200,9 @@ export const authOptions: NextAuthOptions = {
         session.user.emailVerified = token.emailVerified as Date | null;
         session.user.bio = token.bio as string;
         session.user.image = token.avatar as string | null;
+        // 2FA状態をセッションに追加
+        (session as any).requires2FA = token.requires2FA || false;
+        (session as any).twoFactorVerified = token.twoFactorVerified || false;
       }
       return session;
     },

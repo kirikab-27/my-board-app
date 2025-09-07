@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
       isHidden: false,
     };
 
-    let query: any = { ...baseQuery };
+    const query: any = { ...baseQuery };
 
     // 既読フィルター
     switch (filter) {
@@ -288,7 +288,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // 更新対象の条件
-    let updateQuery: any = {
+    const updateQuery: any = {
       userId: session.user.id,
       isDeleted: false,
     };

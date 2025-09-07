@@ -167,6 +167,10 @@ logs/
 ### ✅ 最新Issue実装完了
 
 #### 管理者機能関連（2025/09）
+- **Issue #53**: 2FA管理者ログインシステム（2025/09/07完了）- Google Authenticator対応・バックアップコード・QRコード生成
+- **Issue #52**: 環境変数・秘密鍵管理システム（2025/09/07完了）- AES-256暗号化・Vault実装・管理UI
+- **Issue #51**: 管理者ページ基本機能（2025/09/07完了）- ダッシュボード統計・権限チェック・AdminLayout
+- **Issue #50**: 検証コードシステム（2025/09/07完了）- メール検証・レート制限・6桁コード生成
 - **Issue #49**: NextAuth認証システムの修復と正常化（2025/09/07完了）- MongoDB Adapter条件付き有効化・緊急コード削除
 - **Issue #45-46**: 管理者機能基盤・UI完成 - 管理画面・権限システム・監査ログ
 - **Issue #47**: RBAC権限管理システム - Enterprise級セキュリティ実装計画
@@ -238,6 +242,27 @@ npm run dev -- --port 3012  # ポート3010占有時のみ
 2. **プロセス確認**: `netstat -ano | findstr :3010` で占有確認
 3. **プロセス終了**: `taskkill /PID [PID] /F` またはプロセス管理
 4. **緊急スクリプト**: `./scripts/emergency-env-reset.sh` 使用
+
+### ⚠️ 禁止コマンド（Claude Code動作停止の原因）
+
+**以下のコマンドを絶対に実行しないこと**：
+
+```bash
+# ❌ PowerShellでNode.jsプロセスを終了（Claude Codeが強制終了）
+powershell -Command "Get-Process node -ErrorAction SilentlyContinue | Stop-Process -Force"
+```
+
+**代替の安全なコマンド**：
+```bash
+# ✅ Git Bash互換のプロセス確認
+ps aux | grep node
+
+# ✅ Git Bash互換のディレクトリ削除
+rm -rf .next
+
+# ✅ ポート使用確認
+netstat -ano | grep 3010
+```
 
 ## 環境設定
 
@@ -363,10 +388,11 @@ CLOUDINARY_API_SECRET=your_api_secret
 
 #### 症状
 - `Cannot find module 'next/dist/bin/next'` エラー
+- `Cannot find module './[数字].js'` エラー（webpack-runtime.js）
 - `pages-manifest.json` 欠損エラー
 - 開発サーバー完全起動不可
 
-#### 原因（Issue #45で発生）
+#### 原因（Issue #45, #53で発生）
 1. **不完全な環境操作**: .next削除中に稼働プロセスが存在
 2. **複数プロセス競合**: npm install中の複数Node.jsプロセス
 3. **中途半端な削除**: node_modules部分破損・依存関係不整合
@@ -374,19 +400,24 @@ CLOUDINARY_API_SECRET=your_api_secret
 
 #### 緊急解決手順
 ```bash
-# 1. 全Node.jsプロセス確認・終了
-tasklist | findstr node
-taskkill /F /IM node.exe  # 必要時のみ
+# 1. 開発サーバー停止（必須）
 
-# 2. 完全クリーンアップ
-rm -rf node_modules package-lock.json .next
+# 2. .nextディレクトリ完全削除（Windows）
+powershell -Command "Remove-Item -Path .next -Recurse -Force"
+# または
+rm -rf .next
 
-# 3. クリーンインストール
-npm install --legacy-peer-deps
+# 3. ポート確認・プロセス終了（必要時）
+netstat -ano | findstr :3010
+powershell -Command "Stop-Process -Id [PID] -Force"
 
-# 4. 開発サーバー起動確認
+# 4. 開発サーバー再起動
 npm run dev
 ```
+
+#### 重要: node_modules削除は最終手段
+- 通常は`.next`削除のみで解決
+- node_modules削除はパッケージ再インストールが必要で時間がかかる
 
 #### 再発防止策
 1. **環境操作前**: 全Node.jsプロセス終了確認

@@ -576,7 +576,7 @@ HashtagSchema.statics.updateDailyStats = async function(): Promise<void> {
     
     let postCount = 0;
     let commentCount = 0;
-    let uniqueUsers = new Set();
+    const uniqueUsers = new Set();
     
     if (Post) {
       const posts = await Post.find({

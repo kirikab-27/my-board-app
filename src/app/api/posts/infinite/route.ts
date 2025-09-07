@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
     const sortCondition = getSortCondition(sortBy);
 
     // クエリ条件の構築
-    let query: any = {};
+    const query: any = {};
     
     // カーソル設定（ソート条件に応じた比較演算子を設定）
     if (cursor) {
