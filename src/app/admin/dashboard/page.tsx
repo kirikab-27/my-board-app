@@ -3,6 +3,7 @@
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useRequire2FA } from '@/hooks/use2FACheck';
 import {
   Container,
   Typography,
@@ -30,6 +31,7 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 export default function AdminDashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { isChecking: is2FAChecking, requiresVerification } = useRequire2FA();
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -73,7 +75,7 @@ export default function AdminDashboardPage() {
     }
   };
 
-  if (status === 'loading' || loading) {
+  if (status === 'loading' || loading || is2FAChecking) {
     return (
       <AdminLayout title="管理者ダッシュボード">
         <Box display="flex" justifyContent="center" mt={4}>
@@ -81,6 +83,11 @@ export default function AdminDashboardPage() {
         </Box>
       </AdminLayout>
     );
+  }
+
+  // 2FA検証が必要な場合（リダイレクト処理中）
+  if (requiresVerification) {
+    return null;
   }
 
   if (!session?.user || !['admin', 'moderator'].includes((session.user as any).role || '')) {
