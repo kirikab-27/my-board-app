@@ -124,7 +124,7 @@ export default function UserManagementGrid({ initialData = [] }: UserManagementG
       } else {
         throw new Error(result.message || result.error || 'データの取得に失敗しました');
       }
-    } catch {
+    } catch (error) {
       console.error('Failed to fetch users:', error);
       setSnackbar({
         open: true,

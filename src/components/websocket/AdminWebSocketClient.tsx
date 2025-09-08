@@ -63,7 +63,7 @@ export default function AdminWebSocketClient({ }: AdminWebSocketClientProps) {
 
     // WebSocket機能を一時的に無効化（サーバー未実装のため）
     console.log('⚠️ WebSocket機能は現在無効化されています');
-    setConnectionStatus('disconnected');
+    // setConnectionStatus('disconnected'); // 削除: readonlyのため
     return;
 
     // 以下のコードは将来的にWebSocketサーバー実装時に有効化
@@ -164,7 +164,7 @@ export default function AdminWebSocketClient({ }: AdminWebSocketClientProps) {
         console.log('🔌 WebSocket切断中...');
         socket.disconnect();
         setSocket(null);
-        setConnectionStatus('disconnected');
+        // setConnectionStatus('disconnected'); // 削除: readonlyのため
       }
     };
   }, [session, status, connectWebSocket]);
