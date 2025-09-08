@@ -175,7 +175,7 @@ export function AdminLayoutEnhanced({
 
     if (pathname && pathname !== '/admin/dashboard') {
       const label = pathMap[pathname] || title;
-      generatedBreadcrumbs.push({ label });
+      generatedBreadcrumbs.push({ label, href: pathname });
     }
 
     return generatedBreadcrumbs;
