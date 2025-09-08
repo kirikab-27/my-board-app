@@ -37,7 +37,7 @@ import {
   Info as InfoIcon,
 } from '@mui/icons-material';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { AdminLayout } from '@/components/admin/AdminLayout';
+import { AdminLayoutEnhanced } from '@/components/admin/AdminLayoutEnhanced';
 import type { IAuditLog, AdminAction } from '@/types/admin';
 
 /**
@@ -46,19 +46,18 @@ import type { IAuditLog, AdminAction } from '@/types/admin';
  */
 export default function AdminLogsPage() {
   const { session, isLoading, hasAccess } = useAdminAuth({
-    requiredLevel: ['admin', 'moderator', 'audit']
+    requiredLevel: ['admin', 'moderator', 'audit'],
   });
 
   // 状態管理
   const [logs, setLogs] = useState<IAuditLog[]>([]);
-  const [loading, setLoading] = useState(true);
-  
+  const [, setLoading] = useState(true);
+
   // 検索・フィルタ
   const [searchTerm, setSearchTerm] = useState('');
   const [actionFilter, setActionFilter] = useState<string>('all');
   const [resultFilter, setResultFilter] = useState<string>('all');
-  const [adminFilter, setAdminFilter] = useState<string>('all');
-  
+
   // ページング
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
@@ -69,7 +68,7 @@ export default function AdminLogsPage() {
     if (!hasAccess) return;
 
     setLoading(true);
-    
+
     setTimeout(() => {
       const dummyLogs: IAuditLog[] = [
         {
@@ -83,10 +82,10 @@ export default function AdminLogsPage() {
             userAgent: 'Mozilla/5.0...',
             requestData: { reason: 'スパム行為', duration: 7 },
             changes: { before: { status: 'active' }, after: { status: 'suspended' } },
-            sessionId: 'sess_123456'
+            sessionId: 'sess_123456',
           },
           result: 'success',
-          timestamp: new Date('2025-09-03T10:30:00')
+          timestamp: new Date('2025-09-03T10:30:00'),
         },
         {
           _id: '2',
@@ -98,10 +97,10 @@ export default function AdminLogsPage() {
             ipAddress: '192.168.1.100',
             userAgent: 'Mozilla/5.0...',
             requestData: { reason: '不適切なコンテンツ' },
-            sessionId: 'sess_123456'
+            sessionId: 'sess_123456',
           },
           result: 'success',
-          timestamp: new Date('2025-09-03T09:15:00')
+          timestamp: new Date('2025-09-03T09:15:00'),
         },
         {
           _id: '3',
@@ -111,10 +110,10 @@ export default function AdminLogsPage() {
           metadata: {
             ipAddress: '192.168.1.100',
             userAgent: 'Mozilla/5.0...',
-            sessionId: 'sess_123456'
+            sessionId: 'sess_123456',
           },
           result: 'success',
-          timestamp: new Date('2025-09-03T08:00:00')
+          timestamp: new Date('2025-09-03T08:00:00'),
         },
         {
           _id: '4',
@@ -126,13 +125,13 @@ export default function AdminLogsPage() {
             ipAddress: '10.0.0.50',
             userAgent: 'Mozilla/5.0...',
             requestData: { oldRole: 'user', newRole: 'admin' },
-            sessionId: 'sess_789012'
+            sessionId: 'sess_789012',
           },
           result: 'failure',
-          timestamp: new Date('2025-09-02T16:45:00')
-        }
+          timestamp: new Date('2025-09-02T16:45:00'),
+        },
       ];
-      
+
       setLogs(dummyLogs);
       setTotalCount(dummyLogs.length);
       setLoading(false);
@@ -143,7 +142,7 @@ export default function AdminLogsPage() {
   const getActionLabel = (action: AdminAction | string) => {
     const labels: Record<string, string> = {
       'user.view': 'ユーザー表示',
-      'user.edit': 'ユーザー編集', 
+      'user.edit': 'ユーザー編集',
       'user.suspend': 'ユーザー停止',
       'user.delete': 'ユーザー削除',
       'user.role_change': '権限変更',
@@ -153,7 +152,7 @@ export default function AdminLogsPage() {
       'post.restore': '投稿復活',
       'system.login': 'システムログイン',
       'system.logout': 'システムログアウト',
-      'system.settings': 'システム設定変更'
+      'system.settings': 'システム設定変更',
     };
     return labels[action] || action;
   };
@@ -163,51 +162,48 @@ export default function AdminLogsPage() {
     const config = {
       success: { label: '成功', color: 'success' as const, icon: <CheckCircleIcon /> },
       failure: { label: '失敗', color: 'error' as const, icon: <ErrorIcon /> },
-      partial: { label: '部分的', color: 'warning' as const, icon: <InfoIcon /> }
+      partial: { label: '部分的', color: 'warning' as const, icon: <InfoIcon /> },
     };
-    
+
     const item = config[result as keyof typeof config] || config.success;
-    return (
-      <Chip 
-        label={item.label} 
-        color={item.color} 
-        size="small" 
-        icon={item.icon}
-      />
-    );
+    return <Chip label={item.label} color={item.color} size="small" icon={item.icon} />;
   };
 
   // エクスポート処理
   const handleExport = () => {
-    console.log('監査ログエクスポート:', { 
-      searchTerm, 
-      actionFilter, 
+    console.log('監査ログエクスポート:', {
+      searchTerm,
+      actionFilter,
       resultFilter,
-      adminId: session?.user?.id 
+      adminId: session?.user?.id,
     });
     // 実装予定: CSV・JSON形式でのエクスポート
   };
 
   if (isLoading || !hasAccess) {
     return (
-      <AdminLayout title="監査ログ">
+      <AdminLayoutEnhanced title="監査ログ">
         <Box display="flex" justifyContent="center" mt={4}>
           <CircularProgress />
         </Box>
-      </AdminLayout>
+      </AdminLayoutEnhanced>
     );
   }
 
   return (
-    <AdminLayout title="監査ログ">
+    <AdminLayoutEnhanced title="監査ログ">
       <Container maxWidth="lg">
         {/* ヘッダー・検索 */}
         <Box sx={{ mb: 3 }}>
-          <Typography variant="h4" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography
+            variant="h4"
+            gutterBottom
+            sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+          >
             <SecurityIcon color="primary" />
             監査ログ・操作履歴
           </Typography>
-          
+
           {/* 検索・フィルタバー */}
           <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
             <TextField
@@ -223,7 +219,7 @@ export default function AdminLogsPage() {
               }}
               sx={{ flexGrow: 1, minWidth: 300 }}
             />
-            
+
             <FormControl sx={{ minWidth: 120 }}>
               <InputLabel>操作</InputLabel>
               <Select
@@ -237,7 +233,7 @@ export default function AdminLogsPage() {
                 <MenuItem value="system">システム操作</MenuItem>
               </Select>
             </FormControl>
-            
+
             <FormControl sx={{ minWidth: 120 }}>
               <InputLabel>結果</InputLabel>
               <Select
@@ -251,12 +247,8 @@ export default function AdminLogsPage() {
                 <MenuItem value="partial">部分的</MenuItem>
               </Select>
             </FormControl>
-            
-            <Button 
-              variant="outlined" 
-              startIcon={<DownloadIcon />}
-              onClick={handleExport}
-            >
+
+            <Button variant="outlined" startIcon={<DownloadIcon />} onClick={handleExport}>
               エクスポート
             </Button>
           </Box>
@@ -270,19 +262,19 @@ export default function AdminLogsPage() {
           <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
             <Box>
               <Typography variant="h4" color="primary">
-                {logs.filter(log => log.result === 'success').length}
+                {logs.filter((log) => log.result === 'success').length}
               </Typography>
               <Typography variant="caption">成功操作</Typography>
             </Box>
             <Box>
               <Typography variant="h4" color="error">
-                {logs.filter(log => log.result === 'failure').length}
+                {logs.filter((log) => log.result === 'failure').length}
               </Typography>
               <Typography variant="caption">失敗操作</Typography>
             </Box>
             <Box>
               <Typography variant="h4" color="warning">
-                {logs.filter(log => log.action.includes('delete')).length}
+                {logs.filter((log) => log.action.includes('delete')).length}
               </Typography>
               <Typography variant="caption">削除操作</Typography>
             </Box>
@@ -311,7 +303,7 @@ export default function AdminLogsPage() {
                         {log.timestamp.toLocaleString('ja-JP')}
                       </Typography>
                     </TableCell>
-                    
+
                     <TableCell>
                       <Typography variant="subtitle2">
                         {log.adminUserId === session?.user?.id ? '自分' : `ID: ${log.adminUserId}`}
@@ -320,26 +312,24 @@ export default function AdminLogsPage() {
                         IP: {log.metadata.ipAddress}
                       </Typography>
                     </TableCell>
-                    
+
                     <TableCell>
-                      <Chip 
-                        label={getActionLabel(log.action)} 
+                      <Chip
+                        label={getActionLabel(log.action)}
                         size="small"
                         color={log.action.includes('delete') ? 'error' : 'default'}
                       />
                     </TableCell>
-                    
+
                     <TableCell>
                       <Typography variant="caption">
                         {log.targetType}
                         {log.targetId && `: ${log.targetId}`}
                       </Typography>
                     </TableCell>
-                    
-                    <TableCell>
-                      {getResultChip(log.result)}
-                    </TableCell>
-                    
+
+                    <TableCell>{getResultChip(log.result)}</TableCell>
+
                     <TableCell>
                       <Accordion>
                         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -347,13 +337,23 @@ export default function AdminLogsPage() {
                         </AccordionSummary>
                         <AccordionDetails>
                           <Box sx={{ fontSize: '0.75rem' }}>
-                            <div><strong>セッション:</strong> {log.metadata.sessionId}</div>
-                            <div><strong>ブラウザ:</strong> {log.metadata.userAgent.substring(0, 50)}...</div>
+                            <div>
+                              <strong>セッション:</strong> {log.metadata.sessionId}
+                            </div>
+                            <div>
+                              <strong>ブラウザ:</strong> {log.metadata.userAgent.substring(0, 50)}
+                              ...
+                            </div>
                             {log.metadata.requestData && (
-                              <div><strong>リクエスト:</strong> {JSON.stringify(log.metadata.requestData)}</div>
+                              <div>
+                                <strong>リクエスト:</strong>{' '}
+                                {JSON.stringify(log.metadata.requestData)}
+                              </div>
                             )}
                             {log.metadata.changes && (
-                              <div><strong>変更:</strong> {JSON.stringify(log.metadata.changes)}</div>
+                              <div>
+                                <strong>変更:</strong> {JSON.stringify(log.metadata.changes)}
+                              </div>
                             )}
                           </Box>
                         </AccordionDetails>
@@ -364,7 +364,7 @@ export default function AdminLogsPage() {
               </TableBody>
             </Table>
           </TableContainer>
-          
+
           <TablePagination
             component="div"
             count={totalCount}
@@ -382,6 +382,6 @@ export default function AdminLogsPage() {
           🚧 Phase 3実装中: 監査ログUI完成・実際のログ記録・エクスポート機能は次のPhase予定
         </Alert>
       </Container>
-    </AdminLayout>
+    </AdminLayoutEnhanced>
   );
 }

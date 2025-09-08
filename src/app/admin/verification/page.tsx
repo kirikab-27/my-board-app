@@ -22,7 +22,7 @@ import {
   Send as SendIcon,
   ContentCopy as CopyIcon,
 } from '@mui/icons-material';
-import { AdminLayout } from '@/components/admin/AdminLayout';
+import { AdminLayoutEnhanced } from '@/components/admin/AdminLayoutEnhanced';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 
 /**
@@ -30,8 +30,8 @@ import { useAdminAuth } from '@/hooks/useAdminAuth';
  * Issue #50: 検証コードシステムの完成
  */
 export default function AdminVerificationPage() {
-  const { session, isLoading, hasAccess } = useAdminAuth({
-    requiredLevel: ['admin']
+  const { isLoading, hasAccess } = useAdminAuth({
+    requiredLevel: ['admin'],
   });
 
   // フォーム状態
@@ -86,18 +86,22 @@ export default function AdminVerificationPage() {
 
   if (isLoading || !hasAccess) {
     return (
-      <AdminLayout title="検証コード管理">
+      <AdminLayoutEnhanced title="検証コード管理">
         <Box display="flex" justifyContent="center" mt={4}>
           <CircularProgress />
         </Box>
-      </AdminLayout>
+      </AdminLayoutEnhanced>
     );
   }
 
   return (
-    <AdminLayout title="検証コード管理">
+    <AdminLayoutEnhanced title="検証コード管理">
       <Container maxWidth="md">
-        <Typography variant="h4" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Typography
+          variant="h4"
+          gutterBottom
+          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+        >
           <SecurityIcon color="primary" />
           検証コード管理
         </Typography>
@@ -106,8 +110,14 @@ export default function AdminVerificationPage() {
           <Typography variant="h6" gutterBottom>
             検証コード生成
           </Typography>
-          
-          <Box component="form" onSubmit={(e) => { e.preventDefault(); handleGenerateCode(); }}>
+
+          <Box
+            component="form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleGenerateCode();
+            }}
+          >
             <TextField
               fullWidth
               label="メールアドレス"
@@ -166,7 +176,11 @@ export default function AdminVerificationPage() {
                   生成された検証コード
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Typography variant="h3" component="span" sx={{ fontFamily: 'monospace', letterSpacing: 2 }}>
+                  <Typography
+                    variant="h3"
+                    component="span"
+                    sx={{ fontFamily: 'monospace', letterSpacing: 2 }}
+                  >
                     {generatedCode}
                   </Typography>
                   <Button
@@ -199,6 +213,6 @@ export default function AdminVerificationPage() {
           </ul>
         </Alert>
       </Container>
-    </AdminLayout>
+    </AdminLayoutEnhanced>
   );
 }

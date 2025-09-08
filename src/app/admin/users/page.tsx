@@ -38,7 +38,7 @@ import {
   Download as DownloadIcon,
 } from '@mui/icons-material';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { AdminLayout } from '@/components/admin/AdminLayout';
+import { AdminLayoutEnhanced } from '@/components/admin/AdminLayoutEnhanced';
 import type { AdminUserView } from '@/types/admin';
 
 /**
@@ -160,16 +160,16 @@ export default function AdminUsersPage() {
 
   if (isLoading || !hasAccess) {
     return (
-      <AdminLayout title="ユーザー管理">
+      <AdminLayoutEnhanced title="ユーザー管理">
         <Box display="flex" justifyContent="center" mt={4}>
           <CircularProgress />
         </Box>
-      </AdminLayout>
+      </AdminLayoutEnhanced>
     );
   }
 
   return (
-    <AdminLayout title="ユーザー管理">
+    <AdminLayoutEnhanced title="ユーザー管理">
       <Container maxWidth="lg">
         {/* ヘッダー・検索 */}
         <Box sx={{ mb: 3 }}>
@@ -341,6 +341,6 @@ export default function AdminUsersPage() {
           🚧 Phase 2実装中: ダミーデータ表示・API統合は次のPhaseで実装予定
         </Alert>
       </Container>
-    </AdminLayout>
+    </AdminLayoutEnhanced>
   );
 }

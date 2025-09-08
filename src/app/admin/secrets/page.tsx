@@ -32,8 +32,6 @@ import {
   Card,
   CardContent,
   InputAdornment,
-  FormControlLabel,
-  Switch,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -50,7 +48,7 @@ import {
 } from '@mui/icons-material';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { AdminLayout } from '@/components/admin/AdminLayout';
+import { AdminLayoutEnhanced } from '@/components/admin/AdminLayoutEnhanced';
 
 interface SecretItem {
   key: string;
@@ -76,7 +74,7 @@ interface Statistics {
 export default function AdminSecretsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  
+
   // 状態管理
   const [tabValue, setTabValue] = useState(0);
   const [secrets, setSecrets] = useState<Record<string, string>>({});
@@ -84,12 +82,11 @@ export default function AdminSecretsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showValues, setShowValues] = useState<Record<string, boolean>>({});
-  
+
   // ダイアログ状態
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [selectedSecret, setSelectedSecret] = useState<SecretItem | null>(null);
-  
+
   // フォーム状態
   const [formData, setFormData] = useState<SecretItem>({
     key: '',
@@ -209,7 +206,7 @@ export default function AdminSecretsPage() {
       });
 
       if (!response.ok) throw new Error('Failed to delete secret');
-      
+
       fetchData();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete secret');
@@ -229,7 +226,7 @@ export default function AdminSecretsPage() {
       });
 
       if (!response.ok) throw new Error('Failed to rotate secret');
-      
+
       fetchData();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to rotate secret');
@@ -237,7 +234,7 @@ export default function AdminSecretsPage() {
   };
 
   const toggleShowValue = (key: string) => {
-    setShowValues(prev => ({ ...prev, [key]: !prev[key] }));
+    setShowValues((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   const getCategoryColor = (category: string) => {
@@ -254,23 +251,27 @@ export default function AdminSecretsPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <AdminLayout title="秘密情報管理">
+      <AdminLayoutEnhanced title="秘密情報管理">
         <Box display="flex" justifyContent="center" mt={4}>
           <CircularProgress />
         </Box>
-      </AdminLayout>
+      </AdminLayoutEnhanced>
     );
   }
 
   const isSuperAdmin = (session?.user as any)?.role === 'super_admin';
 
   return (
-    <AdminLayout title="秘密情報管理">
+    <AdminLayoutEnhanced title="秘密情報管理">
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         {/* ヘッダー */}
         <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Box>
-            <Typography variant="h4" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography
+              variant="h4"
+              gutterBottom
+              sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+            >
               <LockIcon />
               秘密情報管理
             </Typography>
@@ -325,34 +326,38 @@ export default function AdminSecretsPage() {
                     </TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Typography
-                          variant="body2"
-                          sx={{ fontFamily: 'monospace' }}
-                        >
+                        <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
                           {showValues[key] ? value : '••••••••'}
                         </Typography>
-                        <IconButton
-                          size="small"
-                          onClick={() => toggleShowValue(key)}
-                        >
+                        <IconButton size="small" onClick={() => toggleShowValue(key)}>
                           {showValues[key] ? <VisibilityOffIcon /> : <VisibilityIcon />}
                         </IconButton>
                       </Box>
                     </TableCell>
                     <TableCell>
                       <Chip
-                        label={key.includes('DATABASE') ? 'database' : 
-                               key.includes('API') ? 'api_key' :
-                               key.includes('AUTH') || key.includes('SECRET') ? 'auth' :
-                               key.includes('SMTP') || key.includes('EMAIL') ? 'email' : 
-                               'other'}
+                        label={
+                          key.includes('DATABASE')
+                            ? 'database'
+                            : key.includes('API')
+                              ? 'api_key'
+                              : key.includes('AUTH') || key.includes('SECRET')
+                                ? 'auth'
+                                : key.includes('SMTP') || key.includes('EMAIL')
+                                  ? 'email'
+                                  : 'other'
+                        }
                         size="small"
                         color={getCategoryColor(
-                          key.includes('DATABASE') ? 'database' : 
-                          key.includes('API') ? 'api_key' :
-                          key.includes('AUTH') || key.includes('SECRET') ? 'auth' :
-                          key.includes('SMTP') || key.includes('EMAIL') ? 'email' : 
-                          'other'
+                          key.includes('DATABASE')
+                            ? 'database'
+                            : key.includes('API')
+                              ? 'api_key'
+                              : key.includes('AUTH') || key.includes('SECRET')
+                                ? 'auth'
+                                : key.includes('SMTP') || key.includes('EMAIL')
+                                  ? 'email'
+                                  : 'other'
                         )}
                       />
                     </TableCell>
@@ -378,20 +383,13 @@ export default function AdminSecretsPage() {
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="ローテーション">
-                        <IconButton
-                          size="small"
-                          onClick={() => handleRotate(key)}
-                        >
+                        <IconButton size="small" onClick={() => handleRotate(key)}>
                           <RotateIcon />
                         </IconButton>
                       </Tooltip>
                       {isSuperAdmin && (
                         <Tooltip title="削除">
-                          <IconButton
-                            size="small"
-                            color="error"
-                            onClick={() => handleDelete(key)}
-                          >
+                          <IconButton size="small" color="error" onClick={() => handleDelete(key)}>
                             <DeleteIcon />
                           </IconButton>
                         </Tooltip>
@@ -408,7 +406,13 @@ export default function AdminSecretsPage() {
         {tabValue === 1 && statistics && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {/* 統計カード */}
-            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 2 }}>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                gap: 2,
+              }}
+            >
               <Card>
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
@@ -418,7 +422,7 @@ export default function AdminSecretsPage() {
                   <Typography variant="h3">{statistics.totalSecrets}</Typography>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
@@ -427,7 +431,7 @@ export default function AdminSecretsPage() {
                   </Box>
                   <Typography variant="h3">{statistics.encryptedSecrets}</Typography>
                   <Typography variant="body2" color="text.secondary">
-                    {statistics.totalSecrets > 0 
+                    {statistics.totalSecrets > 0
                       ? `${Math.round((statistics.encryptedSecrets / statistics.totalSecrets) * 100)}%`
                       : '0%'}
                   </Typography>
@@ -447,7 +451,9 @@ export default function AdminSecretsPage() {
 
             {/* カテゴリー別統計 */}
             <Paper sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>カテゴリー別分布</Typography>
+              <Typography variant="h6" gutterBottom>
+                カテゴリー別分布
+              </Typography>
               <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                 {Object.entries(statistics.byCategory).map(([category, count]) => (
                   <Chip
@@ -461,7 +467,9 @@ export default function AdminSecretsPage() {
 
             {/* 最近のアクセス */}
             <Paper sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>最近のアクセスログ</Typography>
+              <Typography variant="h6" gutterBottom>
+                最近のアクセスログ
+              </Typography>
               <TableContainer>
                 <Table size="small">
                   <TableHead>
@@ -481,17 +489,18 @@ export default function AdminSecretsPage() {
                             label={log.action}
                             size="small"
                             color={
-                              log.action === 'read' ? 'info' :
-                              log.action === 'write' ? 'success' :
-                              log.action === 'delete' ? 'error' :
-                              'default'
+                              log.action === 'read'
+                                ? 'info'
+                                : log.action === 'write'
+                                  ? 'success'
+                                  : log.action === 'delete'
+                                    ? 'error'
+                                    : 'default'
                             }
                           />
                         </TableCell>
                         <TableCell>{log.userId}</TableCell>
-                        <TableCell>
-                          {new Date(log.timestamp).toLocaleString('ja-JP')}
-                        </TableCell>
+                        <TableCell>{new Date(log.timestamp).toLocaleString('ja-JP')}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -502,7 +511,12 @@ export default function AdminSecretsPage() {
         )}
 
         {/* 追加ダイアログ */}
-        <Dialog open={addDialogOpen} onClose={() => setAddDialogOpen(false)} maxWidth="sm" fullWidth>
+        <Dialog
+          open={addDialogOpen}
+          onClose={() => setAddDialogOpen(false)}
+          maxWidth="sm"
+          fullWidth
+        >
           <DialogTitle>秘密情報を追加</DialogTitle>
           <DialogContent>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
@@ -525,7 +539,9 @@ export default function AdminSecretsPage() {
                     <InputAdornment position="end">
                       <IconButton
                         onClick={() => {
-                          const input = document.querySelector('input[type="password"]') as HTMLInputElement;
+                          const input = document.querySelector(
+                            'input[type="password"]'
+                          ) as HTMLInputElement;
                           if (input) {
                             input.type = input.type === 'password' ? 'text' : 'password';
                           }
@@ -577,21 +593,23 @@ export default function AdminSecretsPage() {
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setAddDialogOpen(false)}>キャンセル</Button>
-            <Button onClick={handleAdd} variant="contained">追加</Button>
+            <Button onClick={handleAdd} variant="contained">
+              追加
+            </Button>
           </DialogActions>
         </Dialog>
 
         {/* 編集ダイアログ */}
-        <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="sm" fullWidth>
+        <Dialog
+          open={editDialogOpen}
+          onClose={() => setEditDialogOpen(false)}
+          maxWidth="sm"
+          fullWidth
+        >
           <DialogTitle>秘密情報を更新</DialogTitle>
           <DialogContent>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-              <TextField
-                label="キー"
-                value={formData.key}
-                disabled
-                fullWidth
-              />
+              <TextField label="キー" value={formData.key} disabled fullWidth />
               <TextField
                 label="新しい値"
                 value={formData.value}
@@ -604,10 +622,12 @@ export default function AdminSecretsPage() {
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setEditDialogOpen(false)}>キャンセル</Button>
-            <Button onClick={handleUpdate} variant="contained">更新</Button>
+            <Button onClick={handleUpdate} variant="contained">
+              更新
+            </Button>
           </DialogActions>
         </Dialog>
       </Container>
-    </AdminLayout>
+    </AdminLayoutEnhanced>
   );
 }

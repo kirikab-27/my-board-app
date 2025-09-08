@@ -24,7 +24,7 @@ import {
   Download,
 } from '@mui/icons-material';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { AdminLayout } from '@/components/admin/AdminLayout';
+import { AdminLayoutEnhanced } from '@/components/admin/AdminLayoutEnhanced';
 import type { AdminDashboardStats } from '@/types/admin';
 
 /**
@@ -32,19 +32,19 @@ import type { AdminDashboardStats } from '@/types/admin';
  * Issue #46 Phase 2: 分析機能・レポート実装
  */
 export default function AdminAnalyticsPage() {
-  const { session, isLoading, hasAccess } = useAdminAuth({
-    requiredLevel: ['admin', 'moderator', 'audit']
+  const { isLoading, hasAccess } = useAdminAuth({
+    requiredLevel: ['admin', 'moderator', 'audit'],
   });
 
   const [stats, setStats] = useState<AdminDashboardStats | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
 
   // ダミー統計データ（Phase 2実装用）
   useEffect(() => {
     if (!hasAccess) return;
 
     setLoading(true);
-    
+
     // Phase 2: ダミーデータで UI 確認
     setTimeout(() => {
       const dummyStats: AdminDashboardStats = {
@@ -52,42 +52,42 @@ export default function AdminAnalyticsPage() {
           total: 1247,
           active: 892,
           newToday: 23,
-          suspended: 5
+          suspended: 5,
         },
         posts: {
           total: 8945,
           todayCount: 156,
           reported: 12,
-          deleted: 34
+          deleted: 34,
         },
         engagement: {
           totalLikes: 45678,
           totalComments: 12890,
-          activeUsers24h: 456
+          activeUsers24h: 456,
         },
         moderation: {
           pendingReports: 8,
           resolvedToday: 15,
-          autoModerated: 67
-        }
+          autoModerated: 67,
+        },
       };
-      
+
       setStats(dummyStats);
       setLoading(false);
     }, 800);
   }, [hasAccess]);
 
-  const StatCard = ({ 
-    title, 
-    value, 
-    change, 
-    icon, 
-    color = 'primary' 
-  }: { 
-    title: string; 
-    value: number; 
-    change?: number; 
-    icon: React.ReactNode; 
+  const StatCard = ({
+    title,
+    value,
+    change,
+    icon,
+    color = 'primary',
+  }: {
+    title: string;
+    value: number;
+    change?: number;
+    icon: React.ReactNode;
     color?: 'primary' | 'secondary' | 'success' | 'error' | 'warning';
   }) => (
     <Card>
@@ -107,18 +107,14 @@ export default function AdminAnalyticsPage() {
                 ) : (
                   <TrendingDown color="error" fontSize="small" />
                 )}
-                <Typography 
-                  variant="body2" 
-                  color={change >= 0 ? 'success.main' : 'error.main'}
-                >
-                  {change >= 0 ? '+' : ''}{change}%
+                <Typography variant="body2" color={change >= 0 ? 'success.main' : 'error.main'}>
+                  {change >= 0 ? '+' : ''}
+                  {change}%
                 </Typography>
               </Box>
             )}
           </Box>
-          <Box sx={{ color: `${color}.main`, opacity: 0.7 }}>
-            {icon}
-          </Box>
+          <Box sx={{ color: `${color}.main`, opacity: 0.7 }}>{icon}</Box>
         </Box>
       </CardContent>
     </Card>
@@ -126,39 +122,41 @@ export default function AdminAnalyticsPage() {
 
   if (isLoading || !hasAccess) {
     return (
-      <AdminLayout title="分析・統計">
+      <AdminLayoutEnhanced title="分析・統計">
         <Box display="flex" justifyContent="center" mt={4}>
           <CircularProgress />
         </Box>
-      </AdminLayout>
+      </AdminLayoutEnhanced>
     );
   }
 
   if (!stats) {
     return (
-      <AdminLayout title="分析・統計">
+      <AdminLayoutEnhanced title="分析・統計">
         <Alert severity="error">統計データの取得に失敗しました</Alert>
-      </AdminLayout>
+      </AdminLayoutEnhanced>
     );
   }
 
   return (
-    <AdminLayout title="分析・統計">
+    <AdminLayoutEnhanced title="分析・統計">
       <Container maxWidth="lg">
         {/* ヘッダー */}
         <Box sx={{ mb: 3 }}>
-          <Typography variant="h4" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography
+            variant="h4"
+            gutterBottom
+            sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+          >
             <AnalyticsIcon color="primary" />
             分析・統計ダッシュボード
           </Typography>
-          
+
           <Box sx={{ display: 'flex', gap: 2 }}>
             <Button variant="outlined" startIcon={<Download />}>
               レポートエクスポート
             </Button>
-            <Button variant="outlined">
-              期間指定
-            </Button>
+            <Button variant="outlined">期間指定</Button>
           </Box>
         </Box>
 
@@ -173,7 +171,7 @@ export default function AdminAnalyticsPage() {
               color="primary"
             />
           </Grid>
-          
+
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <StatCard
               title="アクティブユーザー"
@@ -183,7 +181,7 @@ export default function AdminAnalyticsPage() {
               color="success"
             />
           </Grid>
-          
+
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <StatCard
               title="総投稿数"
@@ -193,7 +191,7 @@ export default function AdminAnalyticsPage() {
               color="secondary"
             />
           </Grid>
-          
+
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <StatCard
               title="今日の投稿"
@@ -210,7 +208,7 @@ export default function AdminAnalyticsPage() {
           <Typography variant="h6" gutterBottom>
             エンゲージメント統計
           </Typography>
-          
+
           <Grid container spacing={3}>
             <Grid size={{ xs: 12, md: 4 }}>
               <StatCard
@@ -220,7 +218,7 @@ export default function AdminAnalyticsPage() {
                 color="primary"
               />
             </Grid>
-            
+
             <Grid size={{ xs: 12, md: 4 }}>
               <StatCard
                 title="総コメント数"
@@ -229,7 +227,7 @@ export default function AdminAnalyticsPage() {
                 color="secondary"
               />
             </Grid>
-            
+
             <Grid size={{ xs: 12, md: 4 }}>
               <StatCard
                 title="24時間アクティブ"
@@ -246,7 +244,7 @@ export default function AdminAnalyticsPage() {
           <Typography variant="h6" gutterBottom>
             モデレーション状況
           </Typography>
-          
+
           <Grid container spacing={3}>
             <Grid size={{ xs: 12, md: 4 }}>
               <StatCard
@@ -256,7 +254,7 @@ export default function AdminAnalyticsPage() {
                 color="error"
               />
             </Grid>
-            
+
             <Grid size={{ xs: 12, md: 4 }}>
               <StatCard
                 title="今日の処理済み"
@@ -265,7 +263,7 @@ export default function AdminAnalyticsPage() {
                 color="success"
               />
             </Grid>
-            
+
             <Grid size={{ xs: 12, md: 4 }}>
               <StatCard
                 title="自動処理"
@@ -282,6 +280,6 @@ export default function AdminAnalyticsPage() {
           🚧 Phase 2実装中: 統計UI完成・リアルタイムデータ取得・チャート機能は次のPhase予定
         </Alert>
       </Container>
-    </AdminLayout>
+    </AdminLayoutEnhanced>
   );
 }

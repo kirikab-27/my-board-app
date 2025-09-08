@@ -49,6 +49,7 @@ import {
   PostAdd,
   Assessment,
   KeyboardArrowUp,
+  Home,
 } from '@mui/icons-material';
 import { useRouter, usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
@@ -79,12 +80,108 @@ export function AdminLayoutEnhanced({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [systemMenuOpen, setSystemMenuOpen] = useState(false);
-  const [basicMenuOpen, setBasicMenuOpen] = useState(true);
-  const [securityMenuOpen, setSecurityMenuOpen] = useState(false);
   const [scrollTrigger, setScrollTrigger] = useState(false);
 
   const drawerWidth = 260;
+
+  // 現在のパスに基づいてどのグループに属するか判定
+  const getActiveGroup = (path: string) => {
+    if (
+      path.includes('/admin/audit-logs') ||
+      path.includes('/admin/security') ||
+      path.includes('/admin/sessions')
+    ) {
+      return 'security';
+    }
+    if (
+      path.includes('/admin/secrets') ||
+      path.includes('/admin/verification') ||
+      path === '/admin/settings'
+    ) {
+      return 'system';
+    }
+    return 'basic';
+  };
+
+  const activeGroup = getActiveGroup(pathname || '');
+
+  // localStorageから保存された状態を取得、なければ現在のパスに基づいて設定
+  const getInitialMenuState = (menuName: string) => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(`admin-menu-${menuName}`);
+      if (saved !== null) {
+        return saved === 'true';
+      }
+    }
+    // 初回は現在のパスのグループを開く
+    if (menuName === 'basic') return activeGroup === 'basic';
+    if (menuName === 'system') return activeGroup === 'system';
+    if (menuName === 'security') return activeGroup === 'security';
+    return false;
+  };
+
+  // アコーディオンの開閉状態
+  const [basicMenuOpen, setBasicMenuOpen] = useState(() => getInitialMenuState('basic'));
+  const [systemMenuOpen, setSystemMenuOpen] = useState(() => getInitialMenuState('system'));
+  const [securityMenuOpen, setSecurityMenuOpen] = useState(() => getInitialMenuState('security'));
+
+  // メニューの開閉状態をlocalStorageに保存
+  const saveMenuState = (menuName: string, isOpen: boolean) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(`admin-menu-${menuName}`, String(isOpen));
+    }
+  };
+
+  // 初回レンダリング時、現在のパスのグループを確実に開く
+  useEffect(() => {
+    const group = getActiveGroup(pathname || '');
+    // 現在のパスのグループが閉じていたら開く
+    if (group === 'basic' && !basicMenuOpen) {
+      setBasicMenuOpen(true);
+      saveMenuState('basic', true);
+    } else if (group === 'system' && !systemMenuOpen) {
+      setSystemMenuOpen(true);
+      saveMenuState('system', true);
+    } else if (group === 'security' && !securityMenuOpen) {
+      setSecurityMenuOpen(true);
+      saveMenuState('security', true);
+    }
+  }, [pathname]);
+
+  // 自動ブレッドクラム生成
+  const generateBreadcrumbs = () => {
+    const pathMap: { [key: string]: string } = {
+      '/admin/dashboard': 'ダッシュボード',
+      '/admin/users': 'ユーザー管理',
+      '/admin/posts': '投稿管理',
+      '/admin/analytics': '分析・統計',
+      '/admin/logs': 'ログ管理',
+      '/admin/settings': 'システム設定',
+      '/admin/audit-logs': '監査ログ',
+      '/admin/security/2fa': '2段階認証',
+      '/admin/sessions': 'セッション管理',
+      '/admin/secrets': '環境変数管理',
+      '/admin/verification': '検証コード',
+      '/admin/dashboard/enhanced': '拡張ダッシュボード',
+    };
+
+    // カスタムブレッドクラムが指定されていればそれを使用
+    if (breadcrumbs && breadcrumbs.length > 0) {
+      return breadcrumbs;
+    }
+
+    // パスから自動生成
+    const generatedBreadcrumbs = [{ label: 'ホーム', href: '/admin/dashboard' }];
+
+    if (pathname && pathname !== '/admin/dashboard') {
+      const label = pathMap[pathname] || title;
+      generatedBreadcrumbs.push({ label });
+    }
+
+    return generatedBreadcrumbs;
+  };
+
+  const finalBreadcrumbs = generateBreadcrumbs();
 
   // スクロール検知
   useEffect(() => {
@@ -198,9 +295,19 @@ export function AdminLayoutEnhanced({
                     : true;
 
             const handleToggle = () => {
-              if (group.title === '基本機能') setBasicMenuOpen(!basicMenuOpen);
-              else if (group.title === 'システム') setSystemMenuOpen(!systemMenuOpen);
-              else if (group.title === 'セキュリティ') setSecurityMenuOpen(!securityMenuOpen);
+              if (group.title === '基本機能') {
+                const newState = !basicMenuOpen;
+                setBasicMenuOpen(newState);
+                saveMenuState('basic', newState);
+              } else if (group.title === 'システム') {
+                const newState = !systemMenuOpen;
+                setSystemMenuOpen(newState);
+                saveMenuState('system', newState);
+              } else if (group.title === 'セキュリティ') {
+                const newState = !securityMenuOpen;
+                setSecurityMenuOpen(newState);
+                saveMenuState('security', newState);
+              }
             };
 
             return (
@@ -219,7 +326,7 @@ export function AdminLayoutEnhanced({
                     (isOpen ? <ExpandLess /> : <ExpandMore />)}
                 </ListItemButton>
 
-                <Collapse in={isOpen} timeout="auto">
+                <Collapse in={isOpen} timeout="auto" unmountOnExit>
                   {group.items.map((item) => {
                     const isActive = pathname === item.path;
 
@@ -235,9 +342,11 @@ export function AdminLayoutEnhanced({
                           mx: 1,
                           my: 0.5,
                           borderRadius: 1,
+                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                           '&.Mui-selected': {
                             backgroundColor: 'primary.main',
                             color: 'primary.contrastText',
+                            transform: 'translateX(4px)',
                             '&:hover': {
                               backgroundColor: 'primary.dark',
                             },
@@ -247,6 +356,7 @@ export function AdminLayoutEnhanced({
                           },
                           '&:hover': {
                             backgroundColor: 'action.hover',
+                            transform: 'translateX(4px)',
                           },
                         }}
                       >
@@ -264,6 +374,24 @@ export function AdminLayoutEnhanced({
 
       {/* フッター */}
       <Box sx={{ p: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+        <ListItemButton
+          onClick={() => router.push('/dashboard')}
+          sx={{
+            mb: 1,
+            borderRadius: 1,
+            backgroundColor: 'primary.main',
+            color: 'primary.contrastText',
+            '&:hover': {
+              backgroundColor: 'primary.dark',
+            },
+          }}
+        >
+          <ListItemIcon sx={{ minWidth: 40, color: 'inherit' }}>
+            <Home />
+          </ListItemIcon>
+          <ListItemText primary="通常画面に戻る" />
+        </ListItemButton>
+
         <ListItemButton
           onClick={handleLogout}
           sx={{
@@ -315,26 +443,14 @@ export function AdminLayoutEnhanced({
             </Typography>
 
             {/* ブレッドクラム */}
-            {breadcrumbs.length > 0 && (
+            {finalBreadcrumbs.length > 0 && (
               <Breadcrumbs
                 separator={<NavigateNext fontSize="small" />}
                 aria-label="breadcrumb"
                 sx={{ mt: 0.5 }}
               >
-                <Link
-                  underline="hover"
-                  color="inherit"
-                  href="/admin/dashboard"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    router.push('/admin/dashboard');
-                  }}
-                  sx={{ cursor: 'pointer' }}
-                >
-                  ダッシュボード
-                </Link>
-                {breadcrumbs.map((crumb, index) => {
-                  const isLast = index === breadcrumbs.length - 1;
+                {finalBreadcrumbs.map((crumb, index) => {
+                  const isLast = index === finalBreadcrumbs.length - 1;
                   return isLast ? (
                     <Typography key={index} color="text.primary">
                       {crumb.label}
@@ -415,6 +531,17 @@ export function AdminLayoutEnhanced({
           2段階認証設定
         </MenuItem>
         <Divider />
+        <MenuItem
+          onClick={() => {
+            handleProfileClose();
+            router.push('/dashboard');
+          }}
+        >
+          <ListItemIcon>
+            <Home fontSize="small" />
+          </ListItemIcon>
+          通常画面に戻る
+        </MenuItem>
         <MenuItem onClick={handleLogout}>
           <ListItemIcon>
             <ExitToApp fontSize="small" />

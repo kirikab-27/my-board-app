@@ -2,10 +2,12 @@
 import type { NextConfig } from 'next';
 
 // Bundle analyzer for performance optimization
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
 });
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const withPWA = require('next-pwa')({
   dest: 'public',
   disable: process.env.NODE_ENV === 'development',
@@ -75,7 +77,7 @@ const nextConfig: NextConfig = {
   // Phase 5 Emergency: Next.js 15 uses SWC by default, no need for swcMinify
   // Phase 5 Emergency: Enable gzip compression and additional optimizations
   poweredByHeader: false, // Remove X-Powered-By header for security and performance
-  generateEtags: true,    // Enable ETags for better caching
+  generateEtags: true, // Enable ETags for better caching
   eslint: {
     // Vercel本番ビルド時にESLintエラーを警告に変更（Phase 5.5対応）
     ignoreDuringBuilds: true,
@@ -124,7 +126,7 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, s-maxage=30, stale-while-revalidate=60'
+            value: 'public, s-maxage=30, stale-while-revalidate=60',
           },
         ],
       },
@@ -133,7 +135,7 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable'
+            value: 'public, max-age=31536000, immutable',
           },
         ],
       },
@@ -142,7 +144,7 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable'
+            value: 'public, max-age=31536000, immutable',
           },
         ],
       },
@@ -151,7 +153,7 @@ const nextConfig: NextConfig = {
   // Phase 3: Compression
   compress: true,
   // Phase 5: Advanced JavaScript Bundle Optimization
-  webpack: (config, { isServer, dev }) => {
+  webpack: (config, { dev }) => {
     if (!dev) {
       // Advanced tree shaking optimization
       config.optimization = {
@@ -162,7 +164,7 @@ const nextConfig: NextConfig = {
         innerGraph: true,
         providedExports: true,
       };
-      
+
       // Advanced bundle splitting optimization
       config.optimization.splitChunks = {
         ...config.optimization.splitChunks,
@@ -227,7 +229,7 @@ const nextConfig: NextConfig = {
 
       // Phase 5: Dead code elimination
       config.optimization.minimize = true;
-      
+
       // Module concatenation for better minification
       config.optimization.concatenateModules = true;
     }
@@ -238,7 +240,7 @@ const nextConfig: NextConfig = {
       // Replace crypto-js with Node.js crypto
       'crypto-js': false,
     };
-    
+
     return config;
   },
 };

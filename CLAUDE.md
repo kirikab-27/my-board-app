@@ -46,6 +46,7 @@
 ### 🔴 作業フロー厳守（2025/09/06失敗を教訓に）
 
 **絶対的作業順序**:
+
 ```
 1. 要求分析     → 「分析完了。戦略策定に進んでよろしいですか？」
 2. 戦略策定     → 「戦略完了。実装計画を提示してよろしいですか？」
@@ -55,10 +56,12 @@
 ```
 
 **NG例（2025/09/06違反）**:
+
 - ユーザー：「実装要求内容を確認して戦略を詰めて」
 - AI：勝手に11ファイル作成開始 ❌
 
 **OK例（正しい対応）**:
+
 - ユーザー：「実装要求内容を確認して戦略を詰めて」
 - AI：「要求内容を分析し、戦略を策定しました。実装に進んでよろしいですか？」✅
 
@@ -72,11 +75,13 @@
 - **＋「実装してください」「作成してください」** → **CLAUDE.mdのルールに従って実装する**
 
 **重要な理解**:
+
 - 「CLAUDE.mdのルールに従って」は実装を禁止するものではない
 - CLAUDE.mdには実装時のルール（段階的確認、Issue管理フロー等）も含まれる
 - 後続の具体的要求（意見 or 実装）に応じて適切に行動する
 
 **実装例**:
+
 - ❌ ユーザー：「デプロイについてどう思いますか？」→ AI：勝手にCI/CD実装開始
 - ✅ ユーザー：「CLAUDE.mdのルールに従って、デプロイについてどう思いますか？」→ AI：分析と意見のみ提供
 
@@ -87,6 +92,7 @@
 **すべてのエラーと修正内容を体系的に記録し、将来の参考資料とする**
 
 #### logsディレクトリ構造
+
 ```
 logs/
 ├── ERROR_TEMPLATE.md              # エラー記録テンプレート
@@ -98,6 +104,7 @@ logs/
 ```
 
 #### エラー記録フロー
+
 1. **エラー発生**: 即座にERROR_TEMPLATE.mdを基に記録開始
 2. **原因分析**: 推測ではなく実際のログ・コードで確認
 3. **修正実施**: 段階的修正・各段階で動作確認
@@ -105,6 +112,7 @@ logs/
 5. **CLAUDE.md更新**: よくあるエラーに追加（TOP10維持）
 
 #### 記録の重要性
+
 - **知識の蓄積**: 同じエラーの再発防止
 - **引き継ぎ資料**: 他の開発者への情報共有
 - **品質向上**: エラーパターンの分析・予防策立案
@@ -167,6 +175,7 @@ logs/
 ### ✅ 最新Issue実装完了
 
 #### 管理者機能関連（2025/09）
+
 - **Issue #53**: 2FA管理者ログインシステム（2025/09/07完了）- Google Authenticator対応・バックアップコード・QRコード生成
 - **Issue #52**: 環境変数・秘密鍵管理システム（2025/09/07完了）- AES-256暗号化・Vault実装・管理UI
 - **Issue #51**: 管理者ページ基本機能（2025/09/07完了）- ダッシュボード統計・権限チェック・AdminLayout
@@ -176,6 +185,7 @@ logs/
 - **Issue #47**: RBAC権限管理システム - Enterprise級セキュリティ実装計画
 
 #### SNS・UX機能（2025/08）
+
 - **Issue #36**: 画像アップロード405エラー修正 - Cloudinary統合・Node.js Runtime強制
 - **Issue #30**: 包括的プライバシー設定 - エンタープライズ級ユーザー保護
 - **Issue #29**: Twitter/Slack風メンション機能 - リアルタイム通知
@@ -224,11 +234,13 @@ npm run type-check    # TypeScript厳格チェック
 ### ポート問題対策（重要・再発防止）
 
 #### 症状
+
 - 複数ポート使用による混乱・アクセス先不明
 - ポート占有・競合・開発サーバー起動不可
 - Issue #29・Issue #45・Issue #47等で繰り返し発生
 
 #### 標準ポート（厳守）
+
 ```bash
 # 🔧 標準開発ポート（変更禁止）
 http://localhost:3010  # 開発環境・デバッグ・テスト
@@ -238,6 +250,7 @@ npm run dev -- --port 3012  # ポート3010占有時のみ
 ```
 
 #### 再発防止策
+
 1. **ポート3010厳守**: 原則として3010以外使用しない
 2. **プロセス確認**: `netstat -ano | findstr :3010` で占有確認
 3. **プロセス終了**: `taskkill /PID [PID] /F` またはプロセス管理
@@ -250,12 +263,20 @@ npm run dev -- --port 3012  # ポート3010占有時のみ
 ```bash
 # ❌ PowerShellでNode.jsプロセスを終了（Claude Codeが強制終了）
 powershell -Command "Get-Process node -ErrorAction SilentlyContinue | Stop-Process -Force"
+
+# ❌ Windowsネイティブコマンド（Claude Codeが強制終了）
+taskkill /F /IM node.exe
+cmd //c "taskkill /F /IM node.exe"
 ```
 
 **代替の安全なコマンド**：
+
 ```bash
 # ✅ Git Bash互換のプロセス確認
 ps aux | grep node
+
+# ✅ Git Bash互換のプロセス終了（個別PID指定）
+kill -9 [PID]
 
 # ✅ Git Bash互換のディレクトリ削除
 rm -rf .next
@@ -263,6 +284,31 @@ rm -rf .next
 # ✅ ポート使用確認
 netstat -ano | grep 3010
 ```
+
+### 🔧 Jest Workerエラー対処法（2025/09/07追加）
+
+**症状**: `Jest worker encountered 2 child process exceptions` エラー
+
+**Claude Codeでは実行不可・ユーザー手動実行必須**：
+
+```bash
+# 1. Node.jsプロセス確認と終了（Git Bash）
+ps aux | grep node
+kill -9 [PID]  # 各PIDに対して実行
+
+# 2. キャッシュクリーンアップ
+rm -rf .next
+rm -rf node_modules/.cache
+rm -rf .swc
+
+# 3. 環境変数設定
+export NODE_OPTIONS="--max-old-space-size=4096"
+
+# 4. 開発サーバー再起動
+npm run dev
+```
+
+**重要**: Windows系コマンド（taskkill、PowerShell Stop-Process）はClaude Codeを強制終了させるため、必ずユーザー側で手動実行すること。
 
 ## 環境設定
 
@@ -387,18 +433,21 @@ CLOUDINARY_API_SECRET=your_api_secret
 ### Next.js環境破損問題（重要・再発防止）
 
 #### 症状
+
 - `Cannot find module 'next/dist/bin/next'` エラー
 - `Cannot find module './[数字].js'` エラー（webpack-runtime.js）
 - `pages-manifest.json` 欠損エラー
 - 開発サーバー完全起動不可
 
 #### 原因（Issue #45, #53で発生）
+
 1. **不完全な環境操作**: .next削除中に稼働プロセスが存在
 2. **複数プロセス競合**: npm install中の複数Node.jsプロセス
 3. **中途半端な削除**: node_modules部分破損・依存関係不整合
 4. **npm installタイムアウト**: 不完全インストール・モジュール欠損
 
 #### 緊急解決手順
+
 ```bash
 # 1. 開発サーバー停止（必須）
 
@@ -416,10 +465,12 @@ npm run dev
 ```
 
 #### 重要: node_modules削除は最終手段
+
 - 通常は`.next`削除のみで解決
 - node_modules削除はパッケージ再インストールが必要で時間がかかる
 
 #### 再発防止策
+
 1. **環境操作前**: 全Node.jsプロセス終了確認
 2. **段階的操作**: .next削除→プロセス確認→npm install
 3. **完了確認**: Next.jsバイナリ存在確認（node_modules/next/dist/bin/next）
@@ -428,17 +479,20 @@ npm run dev
 ### UIコンポーネント表示・非表示問題（重要・Issue #35・#47で発生）
 
 #### 症状
+
 - ヘッダーアイコン（検索・通知・テーマ等）が突然消失
 - React再レンダリングで一時表示→消失を繰り返し
 - セッション・状態管理による表示不安定
 
 #### 原因パターン
+
 1. **セッション依存**: useSession・session?.user?.id 依存による消失
 2. **条件分岐**: AuthButton・権限チェック・プロップ渡し不足
 3. **useEffect無限ループ**: status='loading'繰り返し・React再レンダリング
 4. **構文エラー**: コメントブロック未完了・TypeScriptコンパイルエラー
 
 #### 解決手順
+
 ```bash
 # 1. デバッグログ追加・原因特定
 console.log('コンポーネント状態:', { status, session, props });
@@ -453,6 +507,7 @@ const [固定値, set固定値] = useState(初期値);  // useSession回避
 ```
 
 #### 予防策
+
 1. **セッション依存最小化**: 必要最小限のsession使用
 2. **条件分岐デバッグ**: console.logによる条件確認
 3. **段階的実装**: 複雑なコンポーネントは段階的構築
@@ -481,8 +536,9 @@ const [固定値, set固定値] = useState(初期値);  // useSession回避
 **基本原則**: AI = 高度な助言者（対等ではなく支援者）・最終判断責任は人間
 
 #### 健全な関係性
+
 - **人間**: 判断者・責任者・意思決定者
-- **AI**: 高度助言者・技術実装支援・分析提供者  
+- **AI**: 高度助言者・技術実装支援・分析提供者
 - **協議**: 創発的解決・相互学習・AI依存防止セーフガード
 
 ### 5分ルール（運用中）
@@ -490,24 +546,28 @@ const [固定値, set固定値] = useState(初期値);  // useSession回避
 **緊急要望受信時**: `./scripts/emergency-brake.sh` 実行（必須）
 
 #### 必須質問（5分以内）
+
 - ✅ 何が本当の問題？（症状ではなく原因）
 - ✅ なぜ緊急？（真の緊急 vs 単なる急ぎ）
 - ✅ Issue作成 vs 即座修正？
 - ✅ 適切なブランチで作業しているか？
 
 #### 緊急度4段階（30秒判定）
+
 - 🔴 CRITICAL: 本番サービス停止・セキュリティ侵害
 - 🟡 HIGH: 一部ユーザー影響・機能停止
 - 🟢 MEDIUM: 改善・バグ修正・新機能
 - ⚪ LOW: タイポ・スタイル・ドキュメント
 
 #### 対応フロー（ブランチ戦略統合）
+
 - 🔴 CRITICAL → hotfixブランチ→30分調査→即座対応→main直接マージ
 - 🟡 HIGH → hotfixブランチ→30分調査→対応→main直接マージ
 - 🟢 MEDIUM → featureブランチ→通常Issue管理フロー→develop→main
 - ⚪ LOW → mainブランチ→即座修正（簡易確認のみ）
 
 ### 効果
+
 - 緊急対応の適切な判断
 - Issue管理フローの遵守率向上
 - 不要な緊急対応の削減
@@ -529,7 +589,7 @@ feature/issue-xx-xxx → 実装・テスト → develop マージ → deployed-d
      ↓
 動作確認完了 → main マージ → 本番デプロイ → deployed-prod ラベル
 
-【緊急修正】  
+【緊急修正】
 hotfix/xxx → 実装・確認 → main 直接マージ → 本番デプロイ → deployed-prod ラベル
 ```
 

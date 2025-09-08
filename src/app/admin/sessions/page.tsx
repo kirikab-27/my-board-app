@@ -20,11 +20,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListItemSecondaryAction,
   Tooltip,
   Badge,
 } from '@mui/material';
@@ -35,15 +30,13 @@ import {
   Tablet,
   DeviceUnknown,
   LocationOn,
-  AccessTime,
   Warning,
   Block,
-  Check,
   Logout,
   Security,
   Refresh,
 } from '@mui/icons-material';
-import { AdminLayout } from '@/components/admin/AdminLayout';
+import { AdminLayoutEnhanced } from '@/components/admin/AdminLayoutEnhanced';
 import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
 
@@ -54,7 +47,7 @@ import { ja } from 'date-fns/locale';
 export default function SessionManagementPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  
+
   // State
   const [loading, setLoading] = useState(true);
   const [sessions, setSessions] = useState<any[]>([]);
@@ -123,14 +116,14 @@ export default function SessionManagementPage() {
       });
 
       const data = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(data.error || 'セッション無効化に失敗しました');
       }
 
       setSuccess(data.message);
       setDeleteDialog({ open: false });
-      
+
       // 全セッション無効化の場合はログアウト
       if (deleteDialog.all) {
         setTimeout(() => {
@@ -176,11 +169,11 @@ export default function SessionManagementPage() {
 
   if (status === 'loading') {
     return (
-      <AdminLayout title="セッション管理">
+      <AdminLayoutEnhanced title="セッション管理">
         <Box display="flex" justifyContent="center" mt={4}>
           <CircularProgress />
         </Box>
-      </AdminLayout>
+      </AdminLayoutEnhanced>
     );
   }
 
@@ -189,7 +182,7 @@ export default function SessionManagementPage() {
   }
 
   return (
-    <AdminLayout title="セッション管理">
+    <AdminLayoutEnhanced title="セッション管理">
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         {/* ヘッダー */}
         <Paper sx={{ p: 3, mb: 3 }}>
@@ -247,7 +240,7 @@ export default function SessionManagementPage() {
           <Card sx={{ flex: 1 }}>
             <CardContent>
               <Typography variant="h6" color="warning.main">
-                {sessions.filter(s => s.securityFlags?.suspicious).length}
+                {sessions.filter((s) => s.securityFlags?.suspicious).length}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 不審なセッション
@@ -257,7 +250,7 @@ export default function SessionManagementPage() {
           <Card sx={{ flex: 1 }}>
             <CardContent>
               <Typography variant="h6" color="success.main">
-                {sessions.filter(s => s.twoFactorVerified).length}
+                {sessions.filter((s) => s.twoFactorVerified).length}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 2FA検証済み
@@ -273,18 +266,19 @@ export default function SessionManagementPage() {
           </Box>
         ) : sessions.length === 0 ? (
           <Paper sx={{ p: 3, textAlign: 'center' }}>
-            <Typography color="text.secondary">
-              アクティブなセッションがありません
-            </Typography>
+            <Typography color="text.secondary">アクティブなセッションがありません</Typography>
           </Paper>
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {sessions.map((sessionItem) => (
-              <Card key={sessionItem.id} sx={{ 
-                borderLeft: sessionItem.isCurrent ? '4px solid' : 'none',
-                borderLeftColor: 'primary.main',
-                opacity: sessionItem.securityFlags?.blocked ? 0.6 : 1,
-              }}>
+              <Card
+                key={sessionItem.id}
+                sx={{
+                  borderLeft: sessionItem.isCurrent ? '4px solid' : 'none',
+                  borderLeftColor: 'primary.main',
+                  opacity: sessionItem.securityFlags?.blocked ? 0.6 : 1,
+                }}
+              >
                 <CardContent>
                   <Box display="flex" alignItems="center" justifyContent="space-between">
                     <Box display="flex" alignItems="center">
@@ -301,7 +295,12 @@ export default function SessionManagementPage() {
                         <Typography variant="h6">
                           {sessionItem.deviceInfo.browser} - {sessionItem.deviceInfo.os}
                           {sessionItem.isCurrent && (
-                            <Chip label="現在のセッション" size="small" color="primary" sx={{ ml: 1 }} />
+                            <Chip
+                              label="現在のセッション"
+                              size="small"
+                              color="primary"
+                              sx={{ ml: 1 }}
+                            />
                           )}
                         </Typography>
                         <Box display="flex" alignItems="center" gap={2} mt={1}>
@@ -323,43 +322,34 @@ export default function SessionManagementPage() {
                         </Box>
                       </Box>
                     </Box>
-                    
+
                     <Box textAlign="right">
                       <Box display="flex" alignItems="center" gap={1} mb={1}>
                         {sessionItem.twoFactorVerified && (
                           <Tooltip title="2FA検証済み">
-                            <Chip
-                              icon={<Security />}
-                              label="2FA"
-                              size="small"
-                              color="success"
-                            />
+                            <Chip icon={<Security />} label="2FA" size="small" color="success" />
                           </Tooltip>
                         )}
                         {sessionItem.securityFlags?.suspicious && (
                           <Tooltip title={sessionItem.securityFlags.suspiciousReason}>
-                            <Chip
-                              icon={<Warning />}
-                              label="不審"
-                              size="small"
-                              color="warning"
-                            />
+                            <Chip icon={<Warning />} label="不審" size="small" color="warning" />
                           </Tooltip>
                         )}
                         {sessionItem.securityFlags?.blocked && (
-                          <Chip
-                            icon={<Block />}
-                            label="ブロック済み"
-                            size="small"
-                            color="error"
-                          />
+                          <Chip icon={<Block />} label="ブロック済み" size="small" color="error" />
                         )}
                       </Box>
                       <Typography variant="caption" color="text.secondary" display="block">
-                        最終アクティビティ: {format(new Date(sessionItem.lastActivity), 'yyyy/MM/dd HH:mm', { locale: ja })}
+                        最終アクティビティ:{' '}
+                        {format(new Date(sessionItem.lastActivity), 'yyyy/MM/dd HH:mm', {
+                          locale: ja,
+                        })}
                       </Typography>
                       <Typography variant="caption" color="text.secondary" display="block">
-                        有効期限: {format(new Date(sessionItem.expiresAt), 'yyyy/MM/dd HH:mm', { locale: ja })}
+                        有効期限:{' '}
+                        {format(new Date(sessionItem.expiresAt), 'yyyy/MM/dd HH:mm', {
+                          locale: ja,
+                        })}
                       </Typography>
                     </Box>
                   </Box>
@@ -370,10 +360,12 @@ export default function SessionManagementPage() {
                       size="small"
                       color="error"
                       startIcon={<Logout />}
-                      onClick={() => setDeleteDialog({ 
-                        open: true, 
-                        sessionId: sessionItem.id 
-                      })}
+                      onClick={() =>
+                        setDeleteDialog({
+                          open: true,
+                          sessionId: sessionItem.id,
+                        })
+                      }
                       disabled={loading || sessionItem.securityFlags?.blocked}
                     >
                       ログアウト
@@ -398,15 +390,13 @@ export default function SessionManagementPage() {
             </Alert>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setDeleteDialog({ open: false })}>
-              キャンセル
-            </Button>
+            <Button onClick={() => setDeleteDialog({ open: false })}>キャンセル</Button>
             <Button onClick={handleInvalidateSession} color="error" variant="contained">
               {deleteDialog.all ? 'すべて終了' : '終了'}
             </Button>
           </DialogActions>
         </Dialog>
       </Container>
-    </AdminLayout>
+    </AdminLayoutEnhanced>
   );
 }

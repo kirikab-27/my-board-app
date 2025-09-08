@@ -23,26 +23,14 @@ import {
   ListItem,
   ListItemText,
   ListItemIcon,
-  Divider,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   IconButton,
-  Tooltip,
 } from '@mui/material';
-import {
-  Security,
-  QrCode2,
-  ContentCopy,
-  Check,
-  Warning,
-  Refresh,
-  Delete,
-  LockOpen,
-  Lock,
-} from '@mui/icons-material';
-import { AdminLayout } from '@/components/admin/AdminLayout';
+import { Security, ContentCopy, Check, Delete, LockOpen, Lock } from '@mui/icons-material';
+import { AdminLayoutEnhanced } from '@/components/admin/AdminLayoutEnhanced';
 
 /**
  * 2FA設定ページ
@@ -51,7 +39,7 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 export default function TwoFactorAuthPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  
+
   // State
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -129,7 +117,7 @@ export default function TwoFactorAuthPage() {
       });
 
       const data = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(data.error || '2FA有効化に失敗しました');
       }
@@ -178,11 +166,11 @@ export default function TwoFactorAuthPage() {
 
   if (status === 'loading') {
     return (
-      <AdminLayout title="2段階認証設定">
+      <AdminLayoutEnhanced title="2段階認証設定">
         <Box display="flex" justifyContent="center" mt={4}>
           <CircularProgress />
         </Box>
-      </AdminLayout>
+      </AdminLayoutEnhanced>
     );
   }
 
@@ -191,7 +179,7 @@ export default function TwoFactorAuthPage() {
   }
 
   return (
-    <AdminLayout title="2段階認証設定">
+    <AdminLayoutEnhanced title="2段階認証設定">
       <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
         {/* ヘッダー */}
         <Paper sx={{ p: 3, mb: 3 }}>
@@ -293,9 +281,7 @@ export default function TwoFactorAuthPage() {
               <StepLabel>QRコードをスキャン</StepLabel>
               <StepContent>
                 <Box sx={{ mb: 2 }}>
-                  <Typography paragraph>
-                    認証アプリでQRコードをスキャンしてください：
-                  </Typography>
+                  <Typography paragraph>認証アプリでQRコードをスキャンしてください：</Typography>
                   <Box sx={{ textAlign: 'center', mb: 2 }}>
                     <img
                       src={setupData.qrCodeUrl}
@@ -410,6 +396,6 @@ export default function TwoFactorAuthPage() {
           </DialogActions>
         </Dialog>
       </Container>
-    </AdminLayout>
+    </AdminLayoutEnhanced>
   );
 }

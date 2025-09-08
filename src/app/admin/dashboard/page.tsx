@@ -30,7 +30,7 @@ import {
   ThumbUp,
   Dashboard,
 } from '@mui/icons-material';
-import { AdminLayout } from '@/components/admin/AdminLayout';
+import { AdminLayoutEnhanced } from '@/components/admin/AdminLayoutEnhanced';
 import { Button } from '@mui/material';
 import Link from 'next/link';
 
@@ -87,11 +87,11 @@ export default function AdminDashboardPage() {
 
   if (status === 'loading' || loading || is2FAChecking) {
     return (
-      <AdminLayout title="管理者ダッシュボード">
+      <AdminLayoutEnhanced title="管理者ダッシュボード">
         <Box display="flex" justifyContent="center" mt={4}>
           <CircularProgress />
         </Box>
-      </AdminLayout>
+      </AdminLayoutEnhanced>
     );
   }
 
@@ -107,7 +107,7 @@ export default function AdminDashboardPage() {
   // const isAdmin = (session.user as any).role === 'admin';
 
   return (
-    <AdminLayout title="管理者ダッシュボード">
+    <AdminLayoutEnhanced title="管理者ダッシュボード">
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         {/* 拡張ダッシュボードへのリンク */}
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
@@ -363,6 +363,6 @@ export default function AdminDashboardPage() {
           </>
         )}
       </Container>
-    </AdminLayout>
+    </AdminLayoutEnhanced>
   );
 }

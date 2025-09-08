@@ -5,7 +5,6 @@ import {
   Container,
   Typography,
   Box,
-  Paper,
   Grid,
   Card,
   CardContent,
@@ -14,7 +13,6 @@ import {
   Switch,
   FormControlLabel,
   Button,
-  Divider,
   Alert,
   Chip,
   List,
@@ -31,13 +29,12 @@ import {
   Settings as SettingsIcon,
   Security as SecurityIcon,
   Backup as BackupIcon,
-  Notifications as NotificationsIcon,
   Delete as DeleteIcon,
   Add as AddIcon,
   Save as SaveIcon,
 } from '@mui/icons-material';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { AdminLayout } from '@/components/admin/AdminLayout';
+import { AdminLayoutEnhanced } from '@/components/admin/AdminLayoutEnhanced';
 import type { AdminSystemSettings } from '@/types/admin';
 
 /**
@@ -46,11 +43,11 @@ import type { AdminSystemSettings } from '@/types/admin';
  */
 export default function AdminSettingsPage() {
   const { session, isLoading, hasAccess } = useAdminAuth({
-    requiredLevel: ['admin'] // 管理者のみ
+    requiredLevel: ['admin'], // 管理者のみ
   });
 
   const [settings, setSettings] = useState<AdminSystemSettings | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [newIP, setNewIP] = useState('');
   const [ipDialog, setIpDialog] = useState(false);
@@ -60,33 +57,33 @@ export default function AdminSettingsPage() {
     if (!hasAccess) return;
 
     setLoading(true);
-    
+
     setTimeout(() => {
       const dummySettings: AdminSystemSettings = {
         security: {
           adminSessionTimeout: 30,
           maxLoginAttempts: 5,
           ipWhitelist: ['192.168.1.0/24', '10.0.0.0/8', '203.0.113.1'],
-          twoFactorRequired: false
+          twoFactorRequired: false,
         },
         moderation: {
           autoModerationEnabled: true,
           spamDetectionLevel: 'medium',
           autoDeleteThreshold: 5,
-          reportThreshold: 3
+          reportThreshold: 3,
         },
         notifications: {
           emailAlerts: true,
           slackWebhook: 'https://hooks.slack.com/services/...',
-          criticalAlerts: true
+          criticalAlerts: true,
         },
         maintenance: {
           lastBackup: new Date('2025-09-03T02:00:00'),
           backupFrequency: 'daily',
-          systemHealthCheck: true
-        }
+          systemHealthCheck: true,
+        },
       };
-      
+
       setSettings(dummySettings);
       setLoading(false);
     }, 800);
@@ -94,13 +91,13 @@ export default function AdminSettingsPage() {
 
   const handleSaveSettings = async () => {
     setSaving(true);
-    
+
     // 実装予定: API呼び出し・設定保存・監査ログ記録
-    console.log('システム設定保存:', { 
-      settings, 
-      adminId: session?.user?.id 
+    console.log('システム設定保存:', {
+      settings,
+      adminId: session?.user?.id,
     });
-    
+
     setTimeout(() => {
       setSaving(false);
     }, 2000);
@@ -112,8 +109,8 @@ export default function AdminSettingsPage() {
         ...settings,
         security: {
           ...settings.security,
-          ipWhitelist: [...settings.security.ipWhitelist, newIP.trim()]
-        }
+          ipWhitelist: [...settings.security.ipWhitelist, newIP.trim()],
+        },
       });
       setNewIP('');
       setIpDialog(false);
@@ -126,42 +123,46 @@ export default function AdminSettingsPage() {
         ...settings,
         security: {
           ...settings.security,
-          ipWhitelist: settings.security.ipWhitelist.filter(item => item !== ip)
-        }
+          ipWhitelist: settings.security.ipWhitelist.filter((item) => item !== ip),
+        },
       });
     }
   };
 
   if (isLoading || !hasAccess) {
     return (
-      <AdminLayout title="システム設定">
+      <AdminLayoutEnhanced title="システム設定">
         <Box display="flex" justifyContent="center" mt={4}>
           <Alert severity="warning">
             管理者権限が必要です。adminロールでログインしてください。
           </Alert>
         </Box>
-      </AdminLayout>
+      </AdminLayoutEnhanced>
     );
   }
 
   if (!settings) {
     return (
-      <AdminLayout title="システム設定">
+      <AdminLayoutEnhanced title="システム設定">
         <Alert severity="error">設定データの取得に失敗しました</Alert>
-      </AdminLayout>
+      </AdminLayoutEnhanced>
     );
   }
 
   return (
-    <AdminLayout title="システム設定">
+    <AdminLayoutEnhanced title="システム設定">
       <Container maxWidth="lg">
         {/* ヘッダー */}
         <Box sx={{ mb: 3 }}>
-          <Typography variant="h4" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography
+            variant="h4"
+            gutterBottom
+            sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+          >
             <SettingsIcon color="primary" />
             システム設定・運用管理
           </Typography>
-          
+
           <Alert severity="warning" sx={{ mb: 2 }}>
             🔒 管理者専用機能: 設定変更はシステム全体に影響します。慎重に操作してください。
           </Alert>
@@ -171,51 +172,54 @@ export default function AdminSettingsPage() {
           {/* セキュリティ設定 */}
           <Grid size={{ xs: 12, md: 6 }}>
             <Card>
-              <CardHeader
-                title="セキュリティ設定"
-                avatar={<SecurityIcon color="error" />}
-              />
+              <CardHeader title="セキュリティ設定" avatar={<SecurityIcon color="error" />} />
               <CardContent>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   <TextField
                     label="セッションタイムアウト（分）"
                     type="number"
                     value={settings.security.adminSessionTimeout}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      security: {
-                        ...settings.security,
-                        adminSessionTimeout: parseInt(e.target.value)
-                      }
-                    })}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        security: {
+                          ...settings.security,
+                          adminSessionTimeout: parseInt(e.target.value),
+                        },
+                      })
+                    }
                     fullWidth
                   />
-                  
+
                   <TextField
                     label="最大ログイン試行回数"
                     type="number"
                     value={settings.security.maxLoginAttempts}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      security: {
-                        ...settings.security,
-                        maxLoginAttempts: parseInt(e.target.value)
-                      }
-                    })}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        security: {
+                          ...settings.security,
+                          maxLoginAttempts: parseInt(e.target.value),
+                        },
+                      })
+                    }
                     fullWidth
                   />
-                  
+
                   <FormControlLabel
                     control={
                       <Switch
                         checked={settings.security.twoFactorRequired}
-                        onChange={(e) => setSettings({
-                          ...settings,
-                          security: {
-                            ...settings.security,
-                            twoFactorRequired: e.target.checked
-                          }
-                        })}
+                        onChange={(e) =>
+                          setSettings({
+                            ...settings,
+                            security: {
+                              ...settings.security,
+                              twoFactorRequired: e.target.checked,
+                            },
+                          })
+                        }
                       />
                     }
                     label="2段階認証必須"
@@ -240,16 +244,9 @@ export default function AdminSettingsPage() {
                 <List dense>
                   {settings.security.ipWhitelist.map((ip, index) => (
                     <ListItem key={index}>
-                      <ListItemText 
-                        primary={ip}
-                        secondary={`許可IP ${index + 1}`}
-                      />
+                      <ListItemText primary={ip} secondary={`許可IP ${index + 1}`} />
                       <ListItemSecondaryAction>
-                        <IconButton 
-                          edge="end" 
-                          onClick={() => handleRemoveIP(ip)}
-                          size="small"
-                        >
+                        <IconButton edge="end" onClick={() => handleRemoveIP(ip)} size="small">
                           <DeleteIcon />
                         </IconButton>
                       </ListItemSecondaryAction>
@@ -263,10 +260,7 @@ export default function AdminSettingsPage() {
           {/* システム状態 */}
           <Grid size={{ xs: 12 }}>
             <Card>
-              <CardHeader
-                title="システム状態・運用"
-                avatar={<BackupIcon color="info" />}
-              />
+              <CardHeader title="システム状態・運用" avatar={<BackupIcon color="info" />} />
               <CardContent>
                 <Grid container spacing={3}>
                   <Grid size={{ xs: 12, md: 4 }}>
@@ -277,7 +271,7 @@ export default function AdminSettingsPage() {
                       <Typography variant="caption">システム状態</Typography>
                     </Box>
                   </Grid>
-                  
+
                   <Grid size={{ xs: 12, md: 4 }}>
                     <Box sx={{ textAlign: 'center' }}>
                       <Typography variant="h6">
@@ -286,14 +280,16 @@ export default function AdminSettingsPage() {
                       <Typography variant="caption">最終バックアップ</Typography>
                     </Box>
                   </Grid>
-                  
+
                   <Grid size={{ xs: 12, md: 4 }}>
                     <Box sx={{ textAlign: 'center' }}>
-                      <Chip 
+                      <Chip
                         label={settings.maintenance.backupFrequency === 'daily' ? '毎日' : '毎週'}
-                        color="primary" 
+                        color="primary"
                       />
-                      <Typography variant="caption" display="block">バックアップ頻度</Typography>
+                      <Typography variant="caption" display="block">
+                        バックアップ頻度
+                      </Typography>
                     </Box>
                   </Grid>
                 </Grid>
@@ -343,6 +339,6 @@ export default function AdminSettingsPage() {
           🚧 Phase 3実装中: システム設定UI完成・実際の設定保存・バックアップ機能は次のPhase予定
         </Alert>
       </Container>
-    </AdminLayout>
+    </AdminLayoutEnhanced>
   );
 }
