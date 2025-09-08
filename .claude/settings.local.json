@@ -216,10 +216,14 @@
       "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" api graphql -f query='\nmutation {\n  updateProjectV2ItemFieldValue(input: {\n    projectId: \"\"PVT_kwHOB5DmjM4BAytu\"\"\n    itemId: \"\"PVTI_lAHOB5DmjM4BAytuzgedDAs\"\"\n    fieldId: \"\"PVTSSF_lAHOB5DmjM4BAytuzgzfW84\"\"\n    value: {\n      singleSelectOptionId: \"\"f75ad846\"\"\n    }\n  }) {\n    projectV2Item {\n      id\n    }\n  }\n}')",
       "Bash(kill:*)",
       "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue view 63 --repo kirikab-27/my-board-app --json title,body,state,labels)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue view 58 --repo kirikab-27/my-board-app)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": [],
-    "additionalDirectories": ["C:\\c\\Users\\masas\\Documents\\Projects\\my-board-app"]
+    "additionalDirectories": [
+      "C:\\c\\Users\\masas\\Documents\\Projects\\my-board-app"
+    ]
   }
 }

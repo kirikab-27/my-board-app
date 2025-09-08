@@ -7,7 +7,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
-import { io, Socket } from 'socket.io-client';
+import { /* io, */ Socket } from 'socket.io-client';
 import { 
   Box, 
   Card, 
@@ -25,10 +25,7 @@ import {
 } from '@mui/material';
 import { 
   NotificationsActive,
-  Close as CloseIcon,
   SignalWifiOff,
-  SignalWifi4Bar,
-  FiberManualRecord,
   PostAdd
 } from '@mui/icons-material';
 
@@ -49,14 +46,14 @@ interface AdminWebSocketClientProps {
   onNewPost?: (notification: WebSocketNotification) => void;
 }
 
-export default function AdminWebSocketClient({ onNewPost }: AdminWebSocketClientProps) {
+export default function AdminWebSocketClient({ }: AdminWebSocketClientProps) {
   const { data: session, status } = useSession();
   const [socket, setSocket] = useState<Socket | null>(null);
-  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected' | 'error'>('disconnected');
-  const [notifications, setNotifications] = useState<WebSocketNotification[]>([]);
+  const [connectionStatus] = useState<'connecting' | 'connected' | 'disconnected' | 'error'>('disconnected');
+  const [notifications] = useState<WebSocketNotification[]>([]);
   const [showSnackbar, setShowSnackbar] = useState(false);
-  const [latestNotification, setLatestNotification] = useState<WebSocketNotification | null>(null);
-  const [connectedCount, setConnectedCount] = useState(0);
+  const [latestNotification] = useState<WebSocketNotification | null>(null);
+  // const [connectedCount, setConnectedCount] = useState(0);
 
   // 管理者のみWebSocket接続を試行
   const connectWebSocket = useCallback(() => {
@@ -64,6 +61,13 @@ export default function AdminWebSocketClient({ onNewPost }: AdminWebSocketClient
       return;
     }
 
+    // WebSocket機能を一時的に無効化（サーバー未実装のため）
+    console.log('⚠️ WebSocket機能は現在無効化されています');
+    setConnectionStatus('disconnected');
+    return;
+
+    // 以下のコードは将来的にWebSocketサーバー実装時に有効化
+    /*
     console.log('🚀 Phase 7.2: 管理者WebSocket接続試行中...');
     setConnectionStatus('connecting');
 
@@ -146,6 +150,7 @@ export default function AdminWebSocketClient({ onNewPost }: AdminWebSocketClient
     });
 
     setSocket(socketInstance);
+    */
   }, [session, status]);
 
   // セッション確立後にWebSocket接続開始
@@ -169,8 +174,8 @@ export default function AdminWebSocketClient({ onNewPost }: AdminWebSocketClient
     return null;
   }
 
-  // 接続状態インジケーター
-  const getStatusColor = () => {
+  // 接続状態インジケーター（未使用）
+  /* const getStatusColor = () => {
     switch (connectionStatus) {
       case 'connected': return 'success';
       case 'connecting': return 'warning';
@@ -186,7 +191,7 @@ export default function AdminWebSocketClient({ onNewPost }: AdminWebSocketClient
       case 'error': return <SignalWifiOff />;
       default: return <SignalWifiOff />;
     }
-  };
+  }; */
 
   return (
     <Box>
@@ -195,35 +200,21 @@ export default function AdminWebSocketClient({ onNewPost }: AdminWebSocketClient
         <CardContent>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
             <IconButton size="small" sx={{ mr: 1 }}>
-              {getStatusIcon()}
+              <SignalWifiOff />
             </IconButton>
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              Phase 7.2 リアルタイム通知（管理者限定）
+              リアルタイム通知（現在無効）
             </Typography>
             <Chip 
-              label={connectionStatus === 'connected' ? `接続中 (${connectedCount}/10)` : connectionStatus} 
-              color={getStatusColor()}
+              label="無効化" 
+              color="default"
               size="small"
             />
           </Box>
           
-          {connectionStatus === 'connected' && (
-            <Alert severity="success" sx={{ mt: 1 }}>
-              ✅ 新着投稿のリアルタイム通知を受信中
-            </Alert>
-          )}
-          
-          {connectionStatus === 'error' && (
-            <Alert severity="warning" sx={{ mt: 1 }}>
-              ⚠️ WebSocket接続失敗 - ポーリング通知で継続中
-            </Alert>
-          )}
-          
-          {connectionStatus === 'connecting' && (
-            <Alert severity="info" sx={{ mt: 1 }}>
-              🔄 WebSocket接続試行中...
-            </Alert>
-          )}
+          <Alert severity="info" sx={{ mt: 1 }}>
+            ℹ️ WebSocket機能は現在メンテナンス中です。通知機能は通常のポーリングで動作します。
+          </Alert>
         </CardContent>
       </Card>
 
