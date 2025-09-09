@@ -4,7 +4,12 @@ import { Box, Typography, CircularProgress, Alert } from '@mui/material';
 import { Article as ArticleIcon } from '@mui/icons-material';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { AdminLayoutEnhanced } from '@/components/admin/AdminLayoutEnhanced';
-import PostManagementGrid from '@/components/admin/posts/PostManagementGrid';
+import dynamic from 'next/dynamic';
+
+const PostManagementGrid = dynamic(() => import('@/components/admin/posts/PostManagementGrid'), {
+  ssr: false,
+  loading: () => <CircularProgress />,
+});
 
 /**
  * 管理者投稿管理ページ
