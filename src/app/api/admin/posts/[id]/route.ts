@@ -10,18 +10,19 @@ import Post from '@/models/Post';
  */
 
 // PATCH: 投稿編集
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
     // 管理者権限チェック
     const session = await getServerSession(authOptions);
     const userRole = (session?.user as { role?: string })?.role;
-    if (!session?.user || !['admin', 'moderator'].includes(userRole)) {
+    if (!session?.user || !userRole || !['admin', 'moderator'].includes(userRole)) {
       return NextResponse.json(
         { success: false, message: '管理者権限が必要です' },
         { status: 403 }
       );
     }
 
+    const params = await context.params;
     const { id } = params;
     const body = await request.json();
 
@@ -57,7 +58,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 }
 
 // DELETE: 投稿削除
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
     // 管理者権限チェック
     const session = await getServerSession(authOptions);
@@ -69,6 +70,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       );
     }
 
+    const params = await context.params;
     const { id } = params;
 
     await dbConnect();

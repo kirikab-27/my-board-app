@@ -142,7 +142,7 @@ export default function PostManagementGrid({ initialData = [] }: PostManagementG
       } else {
         throw new Error(result.message || 'データの取得に失敗しました');
       }
-    } catch {
+    } catch (error) {
       console.error('Failed to fetch posts:', error);
       setSnackbar({
         open: true,
