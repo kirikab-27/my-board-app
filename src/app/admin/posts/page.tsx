@@ -4,7 +4,7 @@ import { Box, Typography, CircularProgress, Alert } from '@mui/material';
 import { Article as ArticleIcon } from '@mui/icons-material';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { AdminLayoutEnhanced } from '@/components/admin/AdminLayoutEnhanced';
-import PostManagementGrid from './PostManagementGrid';
+import PostManagementGrid from '@/components/admin/posts/PostManagementGrid';
 
 /**
  * 管理者投稿管理ページ

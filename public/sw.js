@@ -31,16 +31,8 @@ define(['./workbox-f52fd911'], function (e) {
     e.clientsClaim(),
     e.precacheAndRoute(
       [
-        { url: '/_next/app-build-manifest.json', revision: '674e330ce6acb44df3a4fabbffe105db' },
+        { url: '/_next/app-build-manifest.json', revision: '1d9d1ee9eb3e15c74b848d04460670cd' },
         { url: '/_next/dynamic-css-manifest.json', revision: '635e29f1572238182774b0257937f4dc' },
-        {
-          url: '/_next/static/OzFOoesFnzM_k2Kfb54ER/_buildManifest.js',
-          revision: 'be0808a7134c3035b897270f9dfc299f',
-        },
-        {
-          url: '/_next/static/OzFOoesFnzM_k2Kfb54ER/_ssgManifest.js',
-          revision: 'b6652df95db52feb4daf4eca35380933',
-        },
         { url: '/_next/static/chunks/1322.da56bcd244f97d30.js', revision: 'da56bcd244f97d30' },
         { url: '/_next/static/chunks/152.3d8c5bbf53d3ba5b.js', revision: '3d8c5bbf53d3ba5b' },
         { url: '/_next/static/chunks/2768-2fc51a2ed41a1601.js', revision: '2fc51a2ed41a1601' },
@@ -81,8 +73,8 @@ define(['./workbox-f52fd911'], function (e) {
           revision: 'ccecae2f9f1b4734',
         },
         {
-          url: '/_next/static/chunks/app/admin/posts/page-0b3d17a3ad41f45d.js',
-          revision: '0b3d17a3ad41f45d',
+          url: '/_next/static/chunks/app/admin/posts/page-55cc76d67bfe2410.js',
+          revision: '55cc76d67bfe2410',
         },
         {
           url: '/_next/static/chunks/app/admin/secrets/page-1bb6d2517d532ed9.js',
@@ -714,6 +706,14 @@ define(['./workbox-f52fd911'], function (e) {
         },
         { url: '/_next/static/chunks/webpack-353865fd40c99915.js', revision: '353865fd40c99915' },
         { url: '/_next/static/css/c20897b7a28b184d.css', revision: 'c20897b7a28b184d' },
+        {
+          url: '/_next/static/m-P7zLBqWuHpY4vi7diQf/_buildManifest.js',
+          revision: 'be0808a7134c3035b897270f9dfc299f',
+        },
+        {
+          url: '/_next/static/m-P7zLBqWuHpY4vi7diQf/_ssgManifest.js',
+          revision: 'b6652df95db52feb4daf4eca35380933',
+        },
         { url: '/file.svg', revision: 'd09f95206c3fa0bb9bd9fefabfd0ea71' },
         { url: '/globe.svg', revision: '2aaafa6a49b6563925fe440891e32717' },
         { url: '/icons/icon-192x192.png', revision: '63f5de6a958bbf7547232b8635ede47f' },
