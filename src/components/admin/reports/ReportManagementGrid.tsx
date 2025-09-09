@@ -308,7 +308,7 @@ export default function ReportManagementGrid() {
         pageSizeOptions={[10, 25, 50, 100]}
         checkboxSelection
         disableRowSelectionOnClick
-        onRowSelectionModelChange={(newSelection) => setSelectedRows(newSelection)}
+        onRowSelectionModelChange={(newSelection) => setSelectedRows(newSelection as GridRowId[])}
         rowSelectionModel={selectedRows}
         slots={{
           toolbar: GridToolbar,

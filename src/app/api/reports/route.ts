@@ -120,12 +120,16 @@ export async function GET(request: NextRequest) {
     }
 
     // ソート（優先度高い順、作成日時新しい順）
-    const sortOptions = { priority: -1, createdAt: -1 };
+    const sortOptions = { priority: -1, createdAt: -1 } as const;
 
     // データ取得
     const skip = (page - 1) * limit;
     const [reports, totalCount] = await Promise.all([
-      Report.find(query).sort(sortOptions).skip(skip).limit(limit).lean(),
+      Report.find(query)
+        .sort(sortOptions as any)
+        .skip(skip)
+        .limit(limit)
+        .lean(),
       Report.countDocuments(query),
     ]);
 
