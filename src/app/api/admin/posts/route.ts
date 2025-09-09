@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     // 管理者権限チェック
     const session = await getServerSession(authOptions);
     const userRole = (session?.user as { role?: string })?.role;
-    if (!session?.user || !['admin', 'moderator'].includes(userRole)) {
+    if (!session?.user || !userRole || !['admin', 'moderator'].includes(userRole)) {
       return NextResponse.json(
         { success: false, message: '管理者権限が必要です' },
         { status: 403 }
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
     ]);
 
     // レスポンス成形（Postモデルのフィールドに基づく）
-    const adminPostView = posts.map((post) => {
+    const adminPostView = posts.map((post: any) => {
       // Postモデルに基づくフィールドマッピング
       // userId: 投稿者のユーザーID（文字列）
       // authorName: 投稿者名（表示用）
@@ -142,7 +142,7 @@ export async function PUT(request: NextRequest) {
     // 管理者権限チェック
     const session = await getServerSession(authOptions);
     const userRole = (session?.user as { role?: string })?.role;
-    if (!session?.user || !['admin', 'moderator'].includes(userRole)) {
+    if (!session?.user || !userRole || !['admin', 'moderator'].includes(userRole)) {
       return NextResponse.json(
         { success: false, message: '管理者権限が必要です' },
         { status: 403 }

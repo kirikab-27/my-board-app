@@ -31,14 +31,14 @@ define(['./workbox-f52fd911'], function (e) {
     e.clientsClaim(),
     e.precacheAndRoute(
       [
-        { url: '/_next/app-build-manifest.json', revision: 'cf4b58aebf24b5eb626068a619a812b9' },
+        { url: '/_next/app-build-manifest.json', revision: '674e330ce6acb44df3a4fabbffe105db' },
         { url: '/_next/dynamic-css-manifest.json', revision: '635e29f1572238182774b0257937f4dc' },
         {
-          url: '/_next/static/7qrv1ZpfPUQ5BrGEamjVF/_buildManifest.js',
+          url: '/_next/static/OzFOoesFnzM_k2Kfb54ER/_buildManifest.js',
           revision: 'be0808a7134c3035b897270f9dfc299f',
         },
         {
-          url: '/_next/static/7qrv1ZpfPUQ5BrGEamjVF/_ssgManifest.js',
+          url: '/_next/static/OzFOoesFnzM_k2Kfb54ER/_ssgManifest.js',
           revision: 'b6652df95db52feb4daf4eca35380933',
         },
         { url: '/_next/static/chunks/1322.da56bcd244f97d30.js', revision: 'da56bcd244f97d30' },
