@@ -14,22 +14,28 @@ export async function GET(request: NextRequest) {
   try {
     // 管理者権限チェック
     const session = await getServerSession(authOptions);
-    if (!session?.user || !['admin', 'moderator'].includes(session.user.role || '')) {
-      return NextResponse.json({ error: '管理者権限が必要です' }, { status: 403 });
+    const userRole = (session?.user as { role?: string })?.role;
+    if (!session?.user || !['admin', 'moderator'].includes(userRole)) {
+      return NextResponse.json(
+        { success: false, message: '管理者権限が必要です' },
+        { status: 403 }
+      );
     }
 
     // クエリパラメータ取得
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = Math.min(parseInt(searchParams.get('limit') || '25'), 100);
-    const search = searchParams.get('search') || '';
+    const search = searchParams.get('search') || searchParams.get('keyword') || '';
     const status = searchParams.get('status') || 'all';
+    const sortBy = searchParams.get('sortBy') || 'createdAt';
+    const sortOrder = searchParams.get('sortOrder') || 'desc';
 
     // データベース接続
     await dbConnect();
 
     // 検索条件構築
-    const query: any = {};
+    const query: Record<string, unknown> = {};
 
     if (search) {
       query.$or = [
@@ -38,56 +44,67 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    if (status === 'reported') {
-      query['moderationData.reportCount'] = { $gt: 0 };
-    } else if (status === 'hidden') {
-      query['moderationData.status'] = 'hidden';
-    } else if (status === 'public') {
+    if (status === 'reported' || status === 'flagged') {
+      query.reportCount = { $gt: 0 };
+    } else if (status === 'hidden' || status === 'rejected') {
+      query.isDeleted = true;
+    } else if (status === 'public' || status === 'approved') {
       query.isPublic = true;
-      query['moderationData.status'] = { $ne: 'hidden' };
+      query.isDeleted = { $ne: true };
+    } else if (status === 'pending') {
+      // ペンディングステータスは特に条件なし（すべて表示）
     }
+
+    // ソート条件
+    const sortOptions: Record<string, 1 | -1> = {};
+    sortOptions[sortBy] = sortOrder === 'asc' ? 1 : -1;
 
     // データ取得
     const skip = (page - 1) * limit;
     const [posts, totalCount] = await Promise.all([
-      Post.find(query)
-        .populate('userId', 'name username')
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .lean(),
+      Post.find(query).sort(sortOptions).skip(skip).limit(limit).lean(),
       Post.countDocuments(query),
     ]);
 
-    // レスポンス成形
-    const adminPostView = posts.map((post: any) => ({
-      _id: post._id.toString(),
-      title: post.title,
-      content: post.content,
-      authorId: post.userId?._id?.toString() || 'unknown',
-      authorName: post.userId?.name || 'Unknown User',
-      isPublic: post.isPublic,
-      createdAt: post.createdAt,
-      updatedAt: post.updatedAt,
-      engagement: {
+    // レスポンス成形（Postモデルのフィールドに基づく）
+    const adminPostView = posts.map((post) => {
+      // Postモデルに基づくフィールドマッピング
+      // userId: 投稿者のユーザーID（文字列）
+      // authorName: 投稿者名（表示用）
+      // authorRole: 投稿者の役割
+
+      return {
+        _id: post._id.toString(),
+        title: post.title || '',
+        content: post.content || '',
+        author: {
+          _id: post.userId || 'unknown',
+          name: post.authorName || 'Anonymous',
+          email: '',
+          username: post.authorName || 'anonymous',
+        },
+        authorName: post.authorName || 'Anonymous',
         likes: post.likes || 0,
-        comments: post.comments?.length || 0,
-        shares: 0, // 実装予定
-      },
-      moderation: {
-        reportCount: post.moderationData?.reportCount || 0,
-        isHidden: post.moderationData?.status === 'hidden',
-        hiddenReason: post.moderationData?.moderationReason,
-        moderatedBy: post.moderationData?.reviewedBy,
-        moderatedAt: post.moderationData?.reviewedAt,
-      },
-      media: post.media || [],
-    }));
+        isPublic: post.isPublic !== false,
+        isDeleted: post.isDeleted || false,
+        createdAt: post.createdAt,
+        updatedAt: post.updatedAt,
+        moderation: {
+          status: 'pending',
+          spamScore: 0,
+          flags: [],
+          reportCount: post.reportCount || 0,
+          reviewedAt: null,
+          reviewedBy: null,
+        },
+        tags: post.hashtags || [],
+      };
+    });
 
     // 監査ログ記録
     console.log('Admin API: 投稿一覧取得', {
-      adminId: session.user.id,
-      query: { page, limit, search, status },
+      adminId: (session.user as { id?: string })?.id || session.user?.email,
+      query: { page, limit, search, status, sortBy, sortOrder },
       resultCount: posts.length,
     });
 
@@ -96,9 +113,11 @@ export async function GET(request: NextRequest) {
       data: {
         posts: adminPostView,
         pagination: {
-          currentPage: page,
-          totalPages: Math.ceil(totalCount / limit),
+          page,
+          limit,
           totalCount,
+          totalPages: Math.ceil(totalCount / limit),
+          currentPage: page,
           hasNext: page * limit < totalCount,
           hasPrev: page > 1,
         },
@@ -109,8 +128,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
+        message: error instanceof Error ? error.message : '投稿一覧の取得に失敗しました',
         error: 'INTERNAL_SERVER_ERROR',
-        message: '投稿一覧の取得に失敗しました',
       },
       { status: 500 }
     );
@@ -122,8 +141,12 @@ export async function PUT(request: NextRequest) {
   try {
     // 管理者権限チェック
     const session = await getServerSession(authOptions);
-    if (!session?.user || !['admin', 'moderator'].includes(session.user.role || '')) {
-      return NextResponse.json({ error: '管理者権限が必要です' }, { status: 403 });
+    const userRole = (session?.user as { role?: string })?.role;
+    if (!session?.user || !['admin', 'moderator'].includes(userRole)) {
+      return NextResponse.json(
+        { success: false, message: '管理者権限が必要です' },
+        { status: 403 }
+      );
     }
 
     const { postId, action, reason, notifyAuthor } = await request.json();
@@ -137,30 +160,28 @@ export async function PUT(request: NextRequest) {
     await dbConnect();
 
     // 投稿取得
-    const post = await Post.findById(postId).populate('userId', 'name email');
+    const post = await Post.findById(postId);
     if (!post) {
       return NextResponse.json({ error: '投稿が見つかりません' }, { status: 404 });
     }
 
     // モデレーション実行
-    const updateData: any = {
-      'moderationData.reviewedBy': session.user.id,
-      'moderationData.reviewedAt': new Date(),
-      'moderationData.moderationReason': reason,
+    const updateData: Record<string, unknown> = {
+      updatedAt: new Date(),
     };
 
     switch (action) {
       case 'hide':
-        updateData['moderationData.status'] = 'hidden';
         updateData.isPublic = false;
         break;
       case 'restore':
-        updateData['moderationData.status'] = 'approved';
         updateData.isPublic = true;
+        updateData.isDeleted = false;
+        updateData.deletedAt = null;
         break;
       case 'delete':
         // 論理削除
-        updateData['moderationData.status'] = 'deleted';
+        updateData.isDeleted = true;
         updateData.isPublic = false;
         updateData.deletedAt = new Date();
         break;
@@ -173,11 +194,11 @@ export async function PUT(request: NextRequest) {
 
     // 監査ログ記録
     console.log('Admin API: 投稿モデレーション', {
-      adminId: session.user.id,
+      adminId: (session.user as { id?: string })?.id || session.user?.email,
       action,
       postId,
       reason,
-      authorId: post.userId?._id,
+      authorId: post.userId || 'unknown',
       result: 'success',
     });
 
