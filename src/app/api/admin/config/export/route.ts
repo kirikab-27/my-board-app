@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth/authOptions';
+import { authOptions } from '@/lib/auth/nextauth';
 import { configService } from '@/services/configService';
 import { connectDB } from '@/lib/mongodb';
 import { Environment } from '@/models/SystemConfig';
