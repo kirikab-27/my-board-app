@@ -228,7 +228,11 @@
       "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" api graphql -f query='\nmutation {\n  updateProjectV2ItemFieldValue(input: {\n    projectId: \"\"PVT_kwHOB5DmjM4BAytu\"\"\n    itemId: \"\"PVTI_lAHOB5DmjM4BAytuzgecQIg\"\"\n    fieldId: \"\"PVTSSF_lAHOB5DmjM4BAytuzgzfW84\"\"\n    value: {\n      singleSelectOptionId: \"\"98236657\"\"\n    }\n  }) {\n    projectV2Item {\n      id\n    }\n  }\n}')",
       "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue list --repo kirikab-27/my-board-app --state open --assignee \"@me\" --limit 10)",
       "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue list --repo kirikab-27/my-board-app --state open --label \"feature\" --sort created --direction asc --limit 10)",
-      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue view 60 --repo kirikab-27/my-board-app)"
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue view 60 --repo kirikab-27/my-board-app)",
+      "Bash(git fetch:*)",
+      "Bash(sed:*)",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" api graphql -f query='\nmutation {\n  updateProjectV2ItemFieldValue(input: {\n    projectId: \"\"PVT_kwHOB5DmjM4BAytu\"\"\n    itemId: \"\"PVTI_lAHOB5DmjM4BAytuzgecQJ8\"\"\n    fieldId: \"\"PVTSSF_lAHOB5DmjM4BAytuzgzfW84\"\"\n    value: {\n      singleSelectOptionId: \"\"98236657\"\"\n    }\n  }) {\n    projectV2Item {\n      id\n    }\n  }\n}')",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue view 61 --repo kirikab-27/my-board-app)"
     ],
     "deny": [],
     "ask": [],
