@@ -213,9 +213,7 @@ logs/
 
 ```bash
 # 開発サーバーの起動
-npm run dev                  # デフォルトポート3010（推奨）
-npm run dev -- -p 3030      # カスタムポート指定
-npm run dev -- --port 3012  # Issue #29対応ポート
+npm run dev                  # ポート3010固定（変更禁止）
 
 # プロダクションビルド
 npm run build
@@ -245,8 +243,8 @@ npm run type-check    # TypeScript厳格チェック
 # 🔧 標準開発ポート（変更禁止）
 http://localhost:3010  # 開発環境・デバッグ・テスト
 
-# 🚨 緊急時のみ使用
-npm run dev -- --port 3012  # ポート3010占有時のみ
+# 🚨 ポート3010以外は使用禁止
+# 占有時はユーザー側でプロセス管理後、3010で再起動
 ```
 
 #### 再発防止策
@@ -267,48 +265,62 @@ powershell -Command "Get-Process node -ErrorAction SilentlyContinue | Stop-Proce
 # ❌ Windowsネイティブコマンド（Claude Codeが強制終了）
 taskkill /F /IM node.exe
 cmd //c "taskkill /F /IM node.exe"
+
+# ❌ Git Bashでのプロセス強制終了（Claude Codeが影響を受ける可能性）
+kill -9 [PID]  # Node.jsプロセスの強制終了は避ける
 ```
 
-**代替の安全なコマンド**：
+**安全なコマンド（プロセス終了を伴わない）**：
 
 ```bash
-# ✅ Git Bash互換のプロセス確認
+# ✅ プロセス確認のみ（終了しない）
 ps aux | grep node
-
-# ✅ Git Bash互換のプロセス終了（個別PID指定）
-kill -9 [PID]
-
-# ✅ Git Bash互換のディレクトリ削除
-rm -rf .next
-
-# ✅ ポート使用確認
 netstat -ano | grep 3010
+
+# ✅ キャッシュ・ビルド成果物のクリーンアップ
+rm -rf .next
+rm -rf node_modules/.cache
+rm -rf .swc
+
+# ✅ 開発サーバーの正常停止（Ctrl+C）
+# npm run dev実行中のターミナルでCtrl+Cを押す
+
+# ⚠️ ビルドタイムアウト時の対処
+# 1. タイムアウトを待つ（推奨）
+# 2. キャッシュクリア後、ポート3010で再試行
+# 3. ユーザー側でプロセス管理（Claude Code外で実行）
 ```
 
 ### 🔧 Jest Workerエラー対処法（2025/09/07追加）
 
 **症状**: `Jest worker encountered 2 child process exceptions` エラー
 
-**Claude Codeでは実行不可・ユーザー手動実行必須**：
+**推奨対処法（Claude Code内で実行可能）**：
 
 ```bash
-# 1. Node.jsプロセス確認と終了（Git Bash）
-ps aux | grep node
-kill -9 [PID]  # 各PIDに対して実行
-
-# 2. キャッシュクリーンアップ
+# 1. キャッシュクリーンアップ（安全）
 rm -rf .next
 rm -rf node_modules/.cache
 rm -rf .swc
 
-# 3. 環境変数設定
+# 2. 環境変数設定
 export NODE_OPTIONS="--max-old-space-size=4096"
 
-# 4. 開発サーバー再起動
-npm run dev
+# 3. 開発サーバー再起動（ポート3010厳守）
+npm run dev  # デフォルトポート3010で起動
 ```
 
-**重要**: Windows系コマンド（taskkill、PowerShell Stop-Process）はClaude Codeを強制終了させるため、必ずユーザー側で手動実行すること。
+**ユーザー側での手動対処（Claude Code外）**：
+
+```bash
+# Node.jsプロセス確認と終了（ユーザーのターミナルで実行）
+ps aux | grep node
+kill -9 [PID]  # 各PIDに対して実行
+
+# またはWindowsタスクマネージャーから手動終了
+```
+
+**重要**: プロセス終了コマンドはClaude Codeの動作に影響するため、Claude Code内では実行しません。必要な場合はユーザー側で手動実行してください。
 
 ## 環境設定
 
