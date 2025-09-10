@@ -157,6 +157,7 @@ export function AdminLayoutEnhanced({
       '/admin/analytics': '分析・統計',
       '/admin/logs': 'ログ管理',
       '/admin/settings': 'システム設定',
+      '/admin/config': 'システム設定管理',
       '/admin/audit-logs': '監査ログ',
       '/admin/security/2fa': '2段階認証',
       '/admin/sessions': 'セッション管理',
@@ -225,6 +226,7 @@ export function AdminLayoutEnhanced({
         { text: '環境変数管理', icon: <Settings />, path: '/admin/secrets' },
         { text: '検証コード', icon: <Lock />, path: '/admin/verification' },
         { text: 'システム設定', icon: <Settings />, path: '/admin/settings' },
+        { text: 'システム設定管理', icon: <Settings />, path: '/admin/config' },
       ],
     },
   ];

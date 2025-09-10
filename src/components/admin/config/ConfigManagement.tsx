@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Paper,
-  Typography,
   Tabs,
   Tab,
   Button,
@@ -228,27 +227,21 @@ export default function ConfigManagement() {
 
   return (
     <Box>
-      <Paper sx={{ mb: 3, p: 2 }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center">
-          <Typography variant="h5" component="h1">
-            <SettingsIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-            システム設定管理
-          </Typography>
-          <Stack direction="row" spacing={2}>
-            <Button
-              variant="outlined"
-              startIcon={<RefreshIcon />}
-              onClick={fetchConfigs}
-              disabled={loading}
-            >
-              更新
-            </Button>
-            <Button variant="outlined" startIcon={<DownloadIcon />} onClick={handleExport}>
-              エクスポート
-            </Button>
-          </Stack>
+      <Box sx={{ mb: 3 }}>
+        <Stack direction="row" justifyContent="flex-end" spacing={2}>
+          <Button
+            variant="outlined"
+            startIcon={<RefreshIcon />}
+            onClick={fetchConfigs}
+            disabled={loading}
+          >
+            更新
+          </Button>
+          <Button variant="outlined" startIcon={<DownloadIcon />} onClick={handleExport}>
+            エクスポート
+          </Button>
         </Stack>
-      </Paper>
+      </Box>
 
       <Paper>
         <Tabs

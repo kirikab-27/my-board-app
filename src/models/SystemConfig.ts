@@ -29,6 +29,9 @@ export interface ISystemConfig extends Document {
   metadata?: object; // その他のメタデータ
   createdAt: Date;
   updatedAt: Date;
+  // Methods
+  getDecryptedValue(): ConfigValueType;
+  validateConfig?(): boolean;
 }
 
 // 設定変更履歴のインターフェース
@@ -197,7 +200,7 @@ SystemConfigSchema.methods.getDecryptedValue = function (): ConfigValueType {
 };
 
 // バリデーション
-SystemConfigSchema.methods.validate = function (): boolean {
+SystemConfigSchema.methods.validateConfig = function (): boolean {
   const value = this.isSecret ? this.getDecryptedValue() : this.value;
 
   // データ型チェック
