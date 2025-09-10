@@ -6,6 +6,7 @@ import {
   GridColDef,
   GridActionsCellItem,
   GridToolbar,
+  GridRowSelectionModel,
   GridRowId,
 } from '@mui/x-data-grid';
 import {
@@ -52,7 +53,10 @@ export default function ReportManagementGrid() {
     page: 0,
     pageSize: 25,
   });
-  const [selectedRows, setSelectedRows] = useState<GridRowId[]>([]);
+  const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>({
+    type: 'include',
+    ids: new Set<GridRowId>(),
+  });
   const [detailDialog, setDetailDialog] = useState<{ open: boolean; report: Report | null }>({
     open: false,
     report: null,
@@ -308,7 +312,7 @@ export default function ReportManagementGrid() {
         pageSizeOptions={[10, 25, 50, 100]}
         checkboxSelection
         disableRowSelectionOnClick
-        onRowSelectionModelChange={(newSelection) => setSelectedRows(newSelection as GridRowId[])}
+        onRowSelectionModelChange={(newSelection) => setSelectedRows(newSelection)}
         rowSelectionModel={selectedRows}
         slots={{
           toolbar: GridToolbar,
