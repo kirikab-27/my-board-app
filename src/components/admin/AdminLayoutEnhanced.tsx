@@ -89,14 +89,16 @@ export function AdminLayoutEnhanced({
     if (
       path.includes('/admin/audit-logs') ||
       path.includes('/admin/security') ||
-      path.includes('/admin/sessions')
+      path.includes('/admin/sessions') ||
+      path.includes('/admin/rbac')
     ) {
       return 'security';
     }
     if (
       path.includes('/admin/secrets') ||
       path.includes('/admin/verification') ||
-      path === '/admin/settings'
+      path === '/admin/settings' ||
+      path === '/admin/config'
     ) {
       return 'system';
     }
@@ -105,25 +107,23 @@ export function AdminLayoutEnhanced({
 
   const activeGroup = getActiveGroup(pathname || '');
 
-  // localStorageから保存された状態を取得、なければ現在のパスに基づいて設定
-  const getInitialMenuState = (menuName: string) => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(`admin-menu-${menuName}`);
-      if (saved !== null) {
-        return saved === 'true';
-      }
-    }
-    // 初回は現在のパスのグループを開く
-    if (menuName === 'basic') return activeGroup === 'basic';
-    if (menuName === 'system') return activeGroup === 'system';
-    if (menuName === 'security') return activeGroup === 'security';
-    return false;
-  };
+  // アコーディオンの開閉状態（初期値はサーバー・クライアント共通）
+  const [basicMenuOpen, setBasicMenuOpen] = useState(activeGroup === 'basic');
+  const [systemMenuOpen, setSystemMenuOpen] = useState(activeGroup === 'system');
+  const [securityMenuOpen, setSecurityMenuOpen] = useState(activeGroup === 'security');
 
-  // アコーディオンの開閉状態
-  const [basicMenuOpen, setBasicMenuOpen] = useState(() => getInitialMenuState('basic'));
-  const [systemMenuOpen, setSystemMenuOpen] = useState(() => getInitialMenuState('system'));
-  const [securityMenuOpen, setSecurityMenuOpen] = useState(() => getInitialMenuState('security'));
+  // クライアントサイドでlocalStorageから状態を復元
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedBasic = localStorage.getItem('admin-menu-basic');
+      const savedSystem = localStorage.getItem('admin-menu-system');
+      const savedSecurity = localStorage.getItem('admin-menu-security');
+
+      if (savedBasic !== null) setBasicMenuOpen(savedBasic === 'true');
+      if (savedSystem !== null) setSystemMenuOpen(savedSystem === 'true');
+      if (savedSecurity !== null) setSecurityMenuOpen(savedSecurity === 'true');
+    }
+  }, []);
 
   // メニューの開閉状態をlocalStorageに保存
   const saveMenuState = (menuName: string, isOpen: boolean) => {
@@ -164,6 +164,7 @@ export function AdminLayoutEnhanced({
       '/admin/secrets': '環境変数管理',
       '/admin/verification': '検証コード',
       '/admin/dashboard/enhanced': '拡張ダッシュボード',
+      '/admin/rbac': 'ロール・権限管理',
     };
 
     // カスタムブレッドクラムが指定されていればそれを使用
@@ -217,6 +218,7 @@ export function AdminLayoutEnhanced({
         { text: '監査ログ', icon: <Security />, path: '/admin/audit-logs' },
         { text: '2段階認証', icon: <Lock />, path: '/admin/security/2fa' },
         { text: 'セッション管理', icon: <Devices />, path: '/admin/sessions' },
+        { text: 'ロール・権限管理', icon: <Security />, path: '/admin/rbac' },
       ],
     },
     {
@@ -652,3 +654,6 @@ export function AdminLayoutEnhanced({
     </Box>
   );
 }
+
+// default exportも提供（互換性のため）
+export default AdminLayoutEnhanced;

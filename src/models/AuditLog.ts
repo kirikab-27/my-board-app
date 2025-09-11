@@ -22,20 +22,20 @@ export interface IAuditLog extends mongoose.Document {
   resolvedAt?: Date;
   resolvedBy?: string;
   notes?: string;
-  
+
   // 改ざん防止フィールド（Issue #55追加）
-  hash: string;               // 現在のレコードのHMAC-SHA256ハッシュ
-  previousHash?: string;      // 前のレコードのハッシュ（チェーン構造）
-  signature?: string;         // デジタル署名（重要ログ用）
-  
+  hash: string; // 現在のレコードのHMAC-SHA256ハッシュ
+  previousHash?: string; // 前のレコードのハッシュ（チェーン構造）
+  signature?: string; // デジタル署名（重要ログ用）
+
   // アーカイブ管理（Issue #55追加）
-  archived: boolean;          // アーカイブ済みフラグ
-  archivedAt?: Date;         // アーカイブ日時
-  retentionDate: Date;       // 保持期限（7年）
-  
+  archived: boolean; // アーカイブ済みフラグ
+  archivedAt?: Date; // アーカイブ日時
+  retentionDate: Date; // 保持期限（7年）
+
   createdAt: Date;
   updatedAt: Date;
-  
+
   // インスタンスメソッド
   generateHash(): string;
   verifyHash(): boolean;
@@ -121,12 +121,12 @@ const AuditLogSchema = new mongoose.Schema<IAuditLog>(
     details: {
       type: mongoose.Schema.Types.Mixed,
       required: true,
+      default: {},
     },
     timestamp: {
       type: Date,
       required: true,
       default: Date.now,
-      index: true,
     },
     resolved: {
       type: Boolean,
@@ -146,11 +146,11 @@ const AuditLogSchema = new mongoose.Schema<IAuditLog>(
       maxlength: 1000,
       default: null,
     },
-    
+
     // 改ざん防止フィールド（Issue #55追加）
     hash: {
       type: String,
-      required: true,
+      required: false, // Pre-save hook will set this
       unique: true,
       index: true,
     },
@@ -162,7 +162,7 @@ const AuditLogSchema = new mongoose.Schema<IAuditLog>(
       type: String,
       default: null,
     },
-    
+
     // アーカイブ管理（Issue #55追加）
     archived: {
       type: Boolean,
@@ -175,8 +175,7 @@ const AuditLogSchema = new mongoose.Schema<IAuditLog>(
     },
     retentionDate: {
       type: Date,
-      required: true,
-      index: true,
+      required: false, // Pre-save hook will set this
     },
   },
   {
@@ -255,7 +254,7 @@ AuditLogSchema.statics.getTopThreats = async function (days: number = 7) {
 };
 
 // HMAC-SHA256ハッシュ生成（インスタンスメソッド）
-AuditLogSchema.methods.generateHash = function(): string {
+AuditLogSchema.methods.generateHash = function (): string {
   const data = {
     timestamp: this.timestamp,
     type: this.type,
@@ -267,35 +266,29 @@ AuditLogSchema.methods.generateHash = function(): string {
     details: this.details,
     previousHash: this.previousHash,
   };
-  
+
   const secret = process.env.AUDIT_LOG_SECRET || 'default-audit-secret-key';
-  return crypto
-    .createHmac('sha256', secret)
-    .update(JSON.stringify(data))
-    .digest('hex');
+  return crypto.createHmac('sha256', secret).update(JSON.stringify(data)).digest('hex');
 };
 
 // ハッシュ検証（インスタンスメソッド）
-AuditLogSchema.methods.verifyHash = function(): boolean {
+AuditLogSchema.methods.verifyHash = function (): boolean {
   const calculatedHash = this.generateHash();
   return calculatedHash === this.hash;
 };
 
 // 署名生成（インスタンスメソッド）
-AuditLogSchema.methods.generateSignature = function(): string {
+AuditLogSchema.methods.generateSignature = function (): string {
   const privateKey = process.env.AUDIT_LOG_PRIVATE_KEY || 'default-private-key';
   const sign = crypto.createSign('SHA256');
   sign.update(this.hash);
   sign.end();
   // 簡易実装（本番環境では適切な鍵管理が必要）
-  return crypto
-    .createHmac('sha256', privateKey)
-    .update(this.hash)
-    .digest('hex');
+  return crypto.createHmac('sha256', privateKey).update(this.hash).digest('hex');
 };
 
 // チェーン検証（静的メソッド）
-AuditLogSchema.statics.verifyChain = async function(
+AuditLogSchema.statics.verifyChain = async function (
   startDate?: Date,
   endDate?: Date
 ): Promise<{ valid: boolean; brokenAt?: string }> {
@@ -305,11 +298,9 @@ AuditLogSchema.statics.verifyChain = async function(
     if (startDate) query.timestamp.$gte = startDate;
     if (endDate) query.timestamp.$lte = endDate;
   }
-  
-  const logs = await this.find(query)
-    .sort({ timestamp: 1 })
-    .select('hash previousHash timestamp');
-  
+
+  const logs = await this.find(query).sort({ timestamp: 1 }).select('hash previousHash timestamp');
+
   for (let i = 1; i < logs.length; i++) {
     if (logs[i].previousHash !== logs[i - 1].hash) {
       return {
@@ -318,41 +309,41 @@ AuditLogSchema.statics.verifyChain = async function(
       };
     }
   }
-  
+
   return { valid: true };
 };
 
 // 異常検知（静的メソッド）
-AuditLogSchema.statics.detectAnomalies = async function(
+AuditLogSchema.statics.detectAnomalies = async function (
   userId: string,
   timeWindow: number = 3600000 // 1時間
 ): Promise<IAuditLog[]> {
   const now = new Date();
   const windowStart = new Date(now.getTime() - timeWindow);
-  
+
   const recentLogs = await this.find({
     userId,
     timestamp: { $gte: windowStart },
   }).sort({ timestamp: -1 });
-  
+
   const anomalies: IAuditLog[] = [];
-  
+
   // 異常パターンのチェック
-  const failedAttempts = recentLogs.filter((l: IAuditLog) => l.severity === 'HIGH' || l.severity === 'CRITICAL').length;
+  const failedAttempts = recentLogs.filter(
+    (l: IAuditLog) => l.severity === 'HIGH' || l.severity === 'CRITICAL'
+  ).length;
   if (failedAttempts > 5) {
     anomalies.push(...recentLogs.slice(0, 5));
   }
-  
+
   return anomalies;
 };
 
 // アーカイブ処理（静的メソッド）
-AuditLogSchema.statics.archiveOldLogs = async function(
-  daysOld: number = 90
-): Promise<number> {
+AuditLogSchema.statics.archiveOldLogs = async function (daysOld: number = 90): Promise<number> {
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - daysOld);
-  
+
   const result = await this.updateMany(
     {
       timestamp: { $lt: cutoffDate },
@@ -365,31 +356,40 @@ AuditLogSchema.statics.archiveOldLogs = async function(
       },
     }
   );
-  
+
   return result.modifiedCount;
 };
 
 // 保存前フック（ハッシュ生成）
-AuditLogSchema.pre('save', async function(next) {
+AuditLogSchema.pre('save', async function (next) {
+  // detailsのデフォルト値を設定
+  if (!this.details) {
+    this.details = {};
+  }
+
   if (this.isNew) {
+    // timestampのデフォルト値
+    if (!this.timestamp) {
+      this.timestamp = new Date();
+    }
+
     // 前のログのハッシュを取得
-    const previousLog = await mongoose.model('AuditLog')
+    const previousLog = await mongoose
+      .model('AuditLog')
       .findOne()
       .sort({ timestamp: -1 })
       .select('hash');
-    
+
     if (previousLog) {
       this.previousHash = previousLog.hash;
     }
-    
+
     // 保持期限を設定（7年）
-    this.retentionDate = new Date(
-      this.timestamp.getTime() + (7 * 365 * 24 * 60 * 60 * 1000)
-    );
-    
+    this.retentionDate = new Date(this.timestamp.getTime() + 7 * 365 * 24 * 60 * 60 * 1000);
+
     // ハッシュを生成
     this.hash = this.generateHash();
-    
+
     // 重要なログには署名を生成
     if (this.severity === 'CRITICAL' || this.type === 'PERMISSION_DENIED') {
       this.signature = this.generateSignature();
