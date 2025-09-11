@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth/authOptions';
+import { authOptions } from '@/lib/auth/nextauth';
 import { connectDB } from '@/lib/mongodb';
 import AdminUser from '@/models/AdminUser';
 import Role from '@/models/Role';
