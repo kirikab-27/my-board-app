@@ -167,8 +167,8 @@ export async function POST(request: NextRequest) {
       requiresApproval: requiresApproval || false,
       isActive: true,
       isSystem: false,
-      createdBy: adminUser._id,
-      lastModifiedBy: adminUser._id,
+      createdBy: adminUser.id,
+      lastModifiedBy: adminUser.id,
     });
 
     await permission.save();

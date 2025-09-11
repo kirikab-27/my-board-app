@@ -75,18 +75,22 @@ export async function GET(request: NextRequest) {
 // POST: 新規ロール作成
 export async function POST(request: NextRequest) {
   try {
-    // super_adminのみが新規ロールを作成可能
-    const permissionCheck = await checkPermission(request, 'admins.create');
-    if (!permissionCheck.allowed) {
-      return permissionCheck.reason?.includes('Unauthorized')
-        ? unauthorizedResponse(permissionCheck.reason)
-        : forbiddenResponse(permissionCheck.reason);
+    // セッション確認
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user) {
+      return unauthorizedResponse('No session found');
     }
 
-    const adminUser = permissionCheck.user;
-    if (adminUser.adminRole !== 'super_admin') {
+    // ユーザーロール確認
+    const userRole = (session.user as any).role;
+
+    // super_adminのみがロールを作成可能
+    if (userRole !== 'super_admin') {
       return forbiddenResponse('Only super_admin can create roles');
     }
+
+    const adminUser = session.user;
 
     await connectDB();
 
@@ -109,8 +113,8 @@ export async function POST(request: NextRequest) {
       priority: priority || 50,
       isSystem: false,
       isActive: true,
-      createdBy: adminUser._id,
-      lastModifiedBy: adminUser._id,
+      createdBy: adminUser.id,
+      lastModifiedBy: adminUser.id,
     });
 
     await role.save();

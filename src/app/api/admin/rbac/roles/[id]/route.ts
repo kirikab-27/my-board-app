@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth/nextauth';
 import { connectDB } from '@/lib/mongodb';
 import Role from '@/models/Role';
 import AdminUser from '@/models/AdminUser';
@@ -68,15 +70,22 @@ export async function PUT(request: NextRequest, props: { params: Params }) {
   try {
     const params = await props.params;
 
-    // 権限チェック
-    const permissionCheck = await checkPermission(request, 'admins.update');
-    if (!permissionCheck.allowed) {
-      return permissionCheck.reason?.includes('Unauthorized')
-        ? unauthorizedResponse(permissionCheck.reason)
-        : forbiddenResponse(permissionCheck.reason);
+    // セッション確認
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user) {
+      return unauthorizedResponse('No session found');
     }
 
-    const adminUser = permissionCheck.user;
+    // ユーザーロール確認
+    const userRole = (session.user as any).role;
+
+    // admin, super_adminのみが更新可能
+    if (!['admin', 'super_admin'].includes(userRole)) {
+      return forbiddenResponse('Insufficient permissions');
+    }
+
+    const adminUser = session.user;
 
     await connectDB();
 
@@ -87,7 +96,7 @@ export async function PUT(request: NextRequest, props: { params: Params }) {
     }
 
     // システムロールは super_admin のみが編集可能
-    if (role.isSystem && adminUser.adminRole !== 'super_admin') {
+    if (role.isSystem && userRole !== 'super_admin') {
       return forbiddenResponse('Only super_admin can modify system roles');
     }
 
@@ -102,7 +111,7 @@ export async function PUT(request: NextRequest, props: { params: Params }) {
     if (priority !== undefined) role.priority = priority;
     if (isActive !== undefined) role.isActive = isActive;
 
-    role.lastModifiedBy = adminUser._id;
+    role.lastModifiedBy = adminUser.id;
 
     await role.save();
 
@@ -136,18 +145,18 @@ export async function DELETE(request: NextRequest, props: { params: Params }) {
   try {
     const params = await props.params;
 
-    // 権限チェック
-    const permissionCheck = await checkPermission(request, 'admins.delete');
-    if (!permissionCheck.allowed) {
-      return permissionCheck.reason?.includes('Unauthorized')
-        ? unauthorizedResponse(permissionCheck.reason)
-        : forbiddenResponse(permissionCheck.reason);
+    // セッション確認
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user) {
+      return unauthorizedResponse('No session found');
     }
 
-    const adminUser = permissionCheck.user;
+    const adminUser = session.user;
+    const userRole = (session.user as any).role;
 
-    // super_admin のみが削除可能
-    if (adminUser.adminRole !== 'super_admin') {
+    // super_adminのみが削除可能
+    if (userRole !== 'super_admin') {
       return forbiddenResponse('Only super_admin can delete roles');
     }
 
@@ -179,7 +188,7 @@ export async function DELETE(request: NextRequest, props: { params: Params }) {
 
     // 論理削除
     role.isActive = false;
-    role.lastModifiedBy = adminUser._id;
+    role.lastModifiedBy = adminUser.id;
     await role.save();
 
     return NextResponse.json({
