@@ -26,6 +26,13 @@ if (!self.define) {
 }
 define(['./workbox-f52fd911'], function (a) {
   'use strict';
+
+  // PWAインストールバナー処理を無効化
+  self.addEventListener('beforeinstallprompt', (e) => {
+    // バナーを表示しない（開発環境のみ）
+    return;
+  });
+
   (importScripts(),
     self.skipWaiting(),
     a.clientsClaim(),

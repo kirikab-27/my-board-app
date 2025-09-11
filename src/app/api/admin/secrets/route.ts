@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth/nextauth';
+import { authOptions } from '@/lib/auth/authOptions';
 import { SecretsVault } from '@/lib/security/encryption/vault';
-import { SecureEnvLoader } from '@/lib/security/envManager/loader';
 
 /**
  * 管理者向け秘密情報管理API
@@ -11,7 +10,6 @@ import { SecureEnvLoader } from '@/lib/security/envManager/loader';
 
 // 秘密情報管理インスタンス
 const vault = new SecretsVault();
-const envLoader = new SecureEnvLoader();
 
 /**
  * GET /api/admin/secrets
@@ -22,10 +20,7 @@ export async function GET(request: NextRequest) {
     // 認証チェック
     const session = await getServerSession(authOptions);
     if (!session?.user) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
     // 管理者権限チェック
@@ -72,15 +67,15 @@ export async function GET(request: NextRequest) {
         // 環境別の秘密情報リスト（値はマスク）
         const environment = searchParams.get('environment') || 'all';
         const secrets = await vault.getAllByEnvironment(environment);
-        
+
         // 値をマスク
         const masked = Object.fromEntries(
           Object.entries(secrets).map(([k, v]) => [
             k,
-            v.substring(0, 4) + '****' + v.substring(v.length - 4)
+            v.substring(0, 4) + '****' + v.substring(v.length - 4),
           ])
         );
-        
+
         return NextResponse.json({
           success: true,
           data: masked,
@@ -96,10 +91,7 @@ export async function GET(request: NextRequest) {
     }
   } catch (error) {
     console.error('❌ 秘密情報API エラー:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -112,10 +104,7 @@ export async function POST(request: NextRequest) {
     // 認証チェック
     const session = await getServerSession(authOptions);
     if (!session?.user) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
     // 管理者権限チェック
@@ -139,8 +128,9 @@ export async function POST(request: NextRequest) {
     }
 
     // IPアドレス取得
-    const ipAddress = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-      request.headers.get('x-real-ip') || 
+    const ipAddress =
+      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+      request.headers.get('x-real-ip') ||
       '127.0.0.1';
 
     await vault.initialize();
@@ -163,10 +153,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('❌ 秘密情報保存エラー:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to store secret' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: 'Failed to store secret' }, { status: 500 });
   }
 }
 
@@ -179,10 +166,7 @@ export async function PUT(request: NextRequest) {
     // 認証チェック
     const session = await getServerSession(authOptions);
     if (!session?.user) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
     // 管理者権限チェック
@@ -199,15 +183,13 @@ export async function PUT(request: NextRequest) {
 
     // バリデーション
     if (!key) {
-      return NextResponse.json(
-        { success: false, error: 'Key is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: 'Key is required' }, { status: 400 });
     }
 
     // IPアドレス取得
-    const ipAddress = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-      request.headers.get('x-real-ip') || 
+    const ipAddress =
+      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+      request.headers.get('x-real-ip') ||
       '127.0.0.1';
 
     await vault.initialize();
@@ -220,12 +202,12 @@ export async function PUT(request: NextRequest) {
           { status: 400 }
         );
       }
-      
+
       await vault.rotate(key, value, {
         userId: session.user.email || undefined,
         ipAddress,
       });
-      
+
       console.log(`🔄 秘密情報をローテーションしました: ${key} (by ${session.user.email})`);
     } else {
       // 通常の更新
@@ -235,13 +217,13 @@ export async function PUT(request: NextRequest) {
           { status: 400 }
         );
       }
-      
+
       await vault.update(key, value, {
         userId: session.user.email || undefined,
         ipAddress,
         encrypt: true,
       });
-      
+
       console.log(`✅ 秘密情報を更新しました: ${key} (by ${session.user.email})`);
     }
 
@@ -251,10 +233,7 @@ export async function PUT(request: NextRequest) {
     });
   } catch (error) {
     console.error('❌ 秘密情報更新エラー:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to update secret' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: 'Failed to update secret' }, { status: 500 });
   }
 }
 
@@ -267,10 +246,7 @@ export async function DELETE(request: NextRequest) {
     // 認証チェック
     const session = await getServerSession(authOptions);
     if (!session?.user) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
     // スーパー管理者権限チェック（削除は最高権限のみ）
@@ -294,8 +270,9 @@ export async function DELETE(request: NextRequest) {
     }
 
     // IPアドレス取得
-    const ipAddress = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-      request.headers.get('x-real-ip') || 
+    const ipAddress =
+      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+      request.headers.get('x-real-ip') ||
       '127.0.0.1';
 
     await vault.initialize();
@@ -314,9 +291,6 @@ export async function DELETE(request: NextRequest) {
     });
   } catch (error) {
     console.error('❌ 秘密情報削除エラー:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to delete secret' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: 'Failed to delete secret' }, { status: 500 });
   }
 }

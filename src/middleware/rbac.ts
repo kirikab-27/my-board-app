@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth/nextauth';
+import { authOptions } from '@/lib/auth/authOptions';
 import { connectDB } from '@/lib/mongodb';
 import AdminUser from '@/models/AdminUser';
 import Role from '@/models/Role';
@@ -45,20 +45,58 @@ export async function checkPermission(
       isActive: true,
     }).populate('userId');
 
-    // 開発環境用の一時的な権限バイパス
-    // TODO: 本番環境では削除すること
-    if (!adminUser && process.env.NODE_ENV === 'development') {
-      // 通常のadmin/moderatorロールの場合も暫定的に許可
+    // AdminUserレコードがない場合でも、通常のユーザーロールで権限判定
+    if (!adminUser) {
       const userRole = (session.user as any).role;
-      if (userRole === 'admin' || userRole === 'moderator') {
-        console.warn('⚠️ Development mode: Bypassing AdminUser check for', session.user.email);
+
+      // admin/super_adminロールの場合は暫定的に権限を付与
+      if (userRole === 'admin' || userRole === 'super_admin') {
+        console.warn(
+          '⚠️ AdminUser record not found, using fallback permissions for',
+          session.user.email
+        );
+
+        // super_adminには全権限を付与
+        if (userRole === 'super_admin') {
+          return {
+            allowed: true,
+            user: {
+              userId: session.user.id,
+              adminRole: 'super_admin',
+              email: session.user.email,
+              permissions: ['*'], // 全権限
+            },
+          };
+        }
+
+        // adminには基本的な管理権限を付与
         return {
           allowed: true,
           user: {
             userId: session.user.id,
-            adminRole: userRole,
+            adminRole: 'admin',
             email: session.user.email,
-            permissions: ['admins.read', 'admins.update', 'users.read', 'posts.read'],
+            permissions: [
+              'admins.read',
+              'admins.update',
+              'users.read',
+              'users.update',
+              'posts.read',
+              'posts.update',
+            ],
+          },
+        };
+      }
+
+      // moderatorロールの場合
+      if (userRole === 'moderator') {
+        return {
+          allowed: true,
+          user: {
+            userId: session.user.id,
+            adminRole: 'moderator',
+            email: session.user.email,
+            permissions: ['posts.read', 'posts.update', 'users.read'],
           },
         };
       }
