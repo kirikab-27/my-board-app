@@ -23,7 +23,6 @@ import {
   TextField,
   Alert,
   Skeleton,
-  Grid,
   FormControlLabel,
   Checkbox,
   Tabs,
@@ -359,7 +358,7 @@ export default function RoleManagement() {
           </TabPanel>
 
           <TabPanel value={tabValue} index={1}>
-            <Grid container spacing={2}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
               {Object.entries(
                 permissions.reduce((acc: any, perm) => {
                   if (!acc[perm.category]) acc[perm.category] = [];
@@ -367,7 +366,7 @@ export default function RoleManagement() {
                   return acc;
                 }, {})
               ).map(([category, perms]) => (
-                <Grid item xs={12} md={6} key={category}>
+                <Box key={category} sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 8px)' } }}>
                   <Card variant="outlined">
                     <CardContent>
                       <Typography variant="h6" gutterBottom>
@@ -400,9 +399,9 @@ export default function RoleManagement() {
                       </List>
                     </CardContent>
                   </Card>
-                </Grid>
+                </Box>
               ))}
-            </Grid>
+            </Box>
           </TabPanel>
         </CardContent>
       </Card>

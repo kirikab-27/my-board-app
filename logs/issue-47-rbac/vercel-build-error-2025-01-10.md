@@ -38,4 +38,23 @@ TypeScriptの型定義でスタティックメソッド`createDefaultPermissions
 
 ## ステータス
 
-🔄 修正中
+✅ 修正完了
+
+## 修正結果
+
+- コミット: 0546768
+- GitHubプッシュ: 完了
+- Vercel自動デプロイ: 実行中
+
+## 修正コード
+
+```typescript
+// IPermissionModelインターフェース追加
+export interface IPermissionModel extends mongoose.Model<IPermission> {
+  createDefaultPermissions(): Promise<void>;
+}
+
+// 型アサーション付きエクスポート
+export default (mongoose.models.Permission as IPermissionModel) ||
+  mongoose.model<IPermission, IPermissionModel>('Permission', PermissionSchema);
+```

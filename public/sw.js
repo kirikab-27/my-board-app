@@ -1,27 +1,27 @@
 if (!self.define) {
   let a,
-    e = {};
-  const s = (s, i) => (
-    (s = new URL(s + '.js', i).href),
-    e[s] ||
-      new Promise((e) => {
+    s = {};
+  const e = (e, i) => (
+    (e = new URL(e + '.js', i).href),
+    s[e] ||
+      new Promise((s) => {
         if ('document' in self) {
           const a = document.createElement('script');
-          ((a.src = s), (a.onload = e), document.head.appendChild(a));
-        } else ((a = s), importScripts(s), e());
+          ((a.src = e), (a.onload = s), document.head.appendChild(a));
+        } else ((a = e), importScripts(e), s());
       }).then(() => {
-        let a = e[s];
-        if (!a) throw new Error(`Module ${s} didn’t register its module`);
+        let a = s[e];
+        if (!a) throw new Error(`Module ${e} didn’t register its module`);
         return a;
       })
   );
   self.define = (i, c) => {
     const t = a || ('document' in self ? document.currentScript.src : '') || location.href;
-    if (e[t]) return;
+    if (s[t]) return;
     let n = {};
-    const f = (a) => s(a, t),
+    const f = (a) => e(a, t),
       r = { module: { uri: t }, exports: n, require: f };
-    e[t] = Promise.all(i.map((a) => r[a] || f(a))).then((a) => (c(...a), n));
+    s[t] = Promise.all(i.map((a) => r[a] || f(a))).then((a) => (c(...a), n));
   };
 }
 define(['./workbox-f52fd911'], function (a) {
@@ -31,20 +31,20 @@ define(['./workbox-f52fd911'], function (a) {
     a.clientsClaim(),
     a.precacheAndRoute(
       [
-        { url: '/_next/app-build-manifest.json', revision: '49aee8489d7efaed49d59919d0fb490d' },
+        { url: '/_next/app-build-manifest.json', revision: '93d2598b788a2413bad6a4599298b2dc' },
         { url: '/_next/dynamic-css-manifest.json', revision: '635e29f1572238182774b0257937f4dc' },
         {
-          url: '/_next/static/NR_pvhUwUij-v8MGZO5go/_buildManifest.js',
+          url: '/_next/static/ZzB05PrxJiQwRQrdIi6mx/_buildManifest.js',
           revision: '3901b0899f05a37fcae8227f3148462a',
         },
         {
-          url: '/_next/static/NR_pvhUwUij-v8MGZO5go/_ssgManifest.js',
+          url: '/_next/static/ZzB05PrxJiQwRQrdIi6mx/_ssgManifest.js',
           revision: 'b6652df95db52feb4daf4eca35380933',
         },
         { url: '/_next/static/chunks/1322.da56bcd244f97d30.js', revision: 'da56bcd244f97d30' },
         { url: '/_next/static/chunks/152.3d8c5bbf53d3ba5b.js', revision: '3d8c5bbf53d3ba5b' },
         { url: '/_next/static/chunks/1911.d2ddf4ce13f876d9.js', revision: 'd2ddf4ce13f876d9' },
-        { url: '/_next/static/chunks/2768-6709abab18655db0.js', revision: '6709abab18655db0' },
+        { url: '/_next/static/chunks/2768-9940e8c8f0ea7868.js', revision: '9940e8c8f0ea7868' },
         { url: '/_next/static/chunks/3000-3a6cefc681f7f94c.js', revision: '3a6cefc681f7f94c' },
         { url: '/_next/static/chunks/341-fa95a9c24e5bf013.js', revision: 'fa95a9c24e5bf013' },
         { url: '/_next/static/chunks/4268-d80ea185dd8e29c5.js', revision: 'd80ea185dd8e29c5' },
@@ -91,8 +91,8 @@ define(['./workbox-f52fd911'], function (a) {
           revision: '841b4be944796e8e',
         },
         {
-          url: '/_next/static/chunks/app/admin/rbac/page-b0baed50ed82ef62.js',
-          revision: 'b0baed50ed82ef62',
+          url: '/_next/static/chunks/app/admin/rbac/page-9fc1bb906de7ff69.js',
+          revision: '9fc1bb906de7ff69',
         },
         {
           url: '/_next/static/chunks/app/admin/reports/page-36119b5eeac4b8ee.js',
@@ -770,7 +770,7 @@ define(['./workbox-f52fd911'], function (a) {
           url: '/_next/static/chunks/vendors-eb2fbf4c-81de30bb2140fe32.js',
           revision: '81de30bb2140fe32',
         },
-        { url: '/_next/static/chunks/webpack-e35ed201622ff913.js', revision: 'e35ed201622ff913' },
+        { url: '/_next/static/chunks/webpack-4448632710ac4952.js', revision: '4448632710ac4952' },
         { url: '/_next/static/css/c20897b7a28b184d.css', revision: 'c20897b7a28b184d' },
         { url: '/file.svg', revision: 'd09f95206c3fa0bb9bd9fefabfd0ea71' },
         { url: '/globe.svg', revision: '2aaafa6a49b6563925fe440891e32717' },
@@ -793,10 +793,10 @@ define(['./workbox-f52fd911'], function (a) {
         cacheName: 'start-url',
         plugins: [
           {
-            cacheWillUpdate: async ({ request: a, response: e, event: s, state: i }) =>
-              e && 'opaqueredirect' === e.type
-                ? new Response(e.body, { status: 200, statusText: 'OK', headers: e.headers })
-                : e,
+            cacheWillUpdate: async ({ request: a, response: s, event: e, state: i }) =>
+              s && 'opaqueredirect' === s.type
+                ? new Response(s.body, { status: 200, statusText: 'OK', headers: s.headers })
+                : s,
           },
         ],
       }),
