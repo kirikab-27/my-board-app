@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth/nextauth';
 import { connectDB } from '@/lib/mongodb';
 import Permission from '@/models/Permission';
 import { checkPermission, forbiddenResponse, unauthorizedResponse } from '@/middleware/rbac';
@@ -6,19 +8,28 @@ import { checkPermission, forbiddenResponse, unauthorizedResponse } from '@/midd
 // GET: 権限一覧取得
 export async function GET(request: NextRequest) {
   try {
-    // 権限チェック
-    const permissionCheck = await checkPermission(request, 'admins.read');
+    // セッション確認
+    const session = await getServerSession(authOptions);
 
-    // 開発環境での追加チェック
-    if (!permissionCheck.allowed && process.env.NODE_ENV === 'development') {
-      console.warn(
-        '⚠️ Development mode: Overriding permission check for /api/admin/rbac/permissions'
-      );
-      // 開発環境では警告を出すが続行する
-    } else if (!permissionCheck.allowed) {
-      return permissionCheck.reason?.includes('Unauthorized')
-        ? unauthorizedResponse(permissionCheck.reason)
-        : forbiddenResponse(permissionCheck.reason);
+    if (!session?.user) {
+      return unauthorizedResponse('No session found');
+    }
+
+    // ユーザーロール確認
+    const userRole = (session.user as any).role;
+
+    // admin, super_admin, moderatorの場合は権限チェックをスキップ
+    if (['admin', 'super_admin', 'moderator'].includes(userRole)) {
+      console.log(`✅ Allowing ${userRole} role to access permissions API`);
+    } else {
+      // 権限チェック
+      const permissionCheck = await checkPermission(request, 'admins.read');
+
+      if (!permissionCheck.allowed) {
+        return permissionCheck.reason?.includes('Unauthorized')
+          ? unauthorizedResponse(permissionCheck.reason)
+          : forbiddenResponse(permissionCheck.reason);
+      }
     }
 
     await connectDB();
@@ -81,15 +92,22 @@ export async function GET(request: NextRequest) {
 // POST: 新規権限作成またはデフォルト権限の初期化
 export async function POST(request: NextRequest) {
   try {
-    // super_adminのみが新規権限を作成可能
-    const permissionCheck = await checkPermission(request, 'system.write');
-    if (!permissionCheck.allowed) {
-      return permissionCheck.reason?.includes('Unauthorized')
-        ? unauthorizedResponse(permissionCheck.reason)
-        : forbiddenResponse(permissionCheck.reason);
+    // セッション確認
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user) {
+      return unauthorizedResponse('No session found');
     }
 
-    const adminUser = permissionCheck.user;
+    // ユーザーロール確認
+    const userRole = (session.user as any).role;
+
+    // super_adminのみが権限を作成可能
+    if (userRole !== 'super_admin') {
+      return forbiddenResponse('Only super_admin can create permissions');
+    }
+
+    const adminUser = session.user;
 
     await connectDB();
 

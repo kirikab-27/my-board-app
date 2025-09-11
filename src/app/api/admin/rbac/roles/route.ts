@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth/nextauth';
 import { connectDB } from '@/lib/mongodb';
 import Role from '@/models/Role';
 import AdminUser from '@/models/AdminUser';
@@ -7,17 +9,28 @@ import { checkPermission, forbiddenResponse, unauthorizedResponse } from '@/midd
 // GET: ロール一覧取得
 export async function GET(request: NextRequest) {
   try {
-    // 権限チェック
-    const permissionCheck = await checkPermission(request, 'admins.read');
+    // セッション確認
+    const session = await getServerSession(authOptions);
 
-    // 開発環境での追加チェック
-    if (!permissionCheck.allowed && process.env.NODE_ENV === 'development') {
-      console.warn('⚠️ Development mode: Overriding permission check for /api/admin/rbac/roles');
-      // 開発環境では警告を出すが続行する
-    } else if (!permissionCheck.allowed) {
-      return permissionCheck.reason?.includes('Unauthorized')
-        ? unauthorizedResponse(permissionCheck.reason)
-        : forbiddenResponse(permissionCheck.reason);
+    if (!session?.user) {
+      return unauthorizedResponse('No session found');
+    }
+
+    // ユーザーロール確認
+    const userRole = (session.user as any).role;
+
+    // admin, super_admin, moderatorの場合は権限チェックをスキップ
+    if (['admin', 'super_admin', 'moderator'].includes(userRole)) {
+      console.log(`✅ Allowing ${userRole} role to access roles API`);
+    } else {
+      // 権限チェック
+      const permissionCheck = await checkPermission(request, 'admins.read');
+
+      if (!permissionCheck.allowed) {
+        return permissionCheck.reason?.includes('Unauthorized')
+          ? unauthorizedResponse(permissionCheck.reason)
+          : forbiddenResponse(permissionCheck.reason);
+      }
     }
 
     await connectDB();
