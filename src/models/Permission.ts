@@ -64,6 +64,14 @@ export interface IPermission extends Document {
 
   createdAt: Date;
   updatedAt: Date;
+
+  // インスタンスメソッド
+  checkConditions(context: any): boolean;
+}
+
+// スタティックメソッドのインターフェース
+export interface IPermissionModel extends mongoose.Model<IPermission> {
+  createDefaultPermissions(): Promise<void>;
 }
 
 const PermissionSchema = new Schema<IPermission>(
@@ -398,5 +406,5 @@ PermissionSchema.methods.checkConditions = function (context: any): boolean {
   return true;
 };
 
-export default mongoose.models.Permission ||
-  mongoose.model<IPermission>('Permission', PermissionSchema);
+export default (mongoose.models.Permission as IPermissionModel) ||
+  mongoose.model<IPermission, IPermissionModel>('Permission', PermissionSchema);
