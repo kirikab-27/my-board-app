@@ -1,0 +1,360 @@
+name: Canary Deployment
+# Issue #62: Canary Deployment with gradual rollout
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      initial_percentage:
+        description: 'Initial traffic percentage'
+        required: true
+        default: '10'
+        type: choice
+        options:
+          - '5'
+          - '10'
+          - '20'
+          - '25'
+      increment_interval:
+        description: 'Increment interval (minutes)'
+        required: true
+        default: '10'
+        type: choice
+        options:
+          - '5'
+          - '10'
+          - '15'
+          - '30'
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  prepare:
+    name: Prepare Canary Deployment
+    runs-on: ubuntu-latest
+    outputs:
+      deployment_id: ${{ steps.create_deployment.outputs.deployment_id }}
+      canary_id: ${{ steps.generate_id.outputs.canary_id }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate canary ID
+        id: generate_id
+        run: |
+          CANARY_ID="canary-$(date +%Y%m%d-%H%M%S)-${{ github.run_number }}"
+          echo "canary_id=$CANARY_ID" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub deployment
+        id: create_deployment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const deployment = await github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.sha,
+              environment: '${{ github.event.inputs.environment }}-canary',
+              auto_merge: false,
+              required_contexts: [],
+              description: 'Canary deployment to ${{ github.event.inputs.environment }}'
+            });
+            core.setOutput('deployment_id', deployment.data.id);
+
+  build_and_test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    needs: prepare
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test -- --passWithNoTests
+
+      - name: Build application
+        run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            .next/
+            public/
+            package.json
+            package-lock.json
+
+  deploy_canary:
+    name: Deploy Canary Version
+    runs-on: ubuntu-latest
+    needs: [prepare, build_and_test]
+    environment:
+      name: ${{ github.event.inputs.environment }}-canary
+      url: ${{ steps.deploy.outputs.url }}
+    outputs:
+      canary_url: ${{ steps.deploy.outputs.url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+
+      - name: Deploy canary to Vercel
+        id: deploy
+        run: |
+          npm i -g vercel
+          
+          # Deploy with canary alias
+          CANARY_URL=$(vercel --token=${{ secrets.VERCEL_TOKEN }} --yes \
+            --name=my-board-app-${{ needs.prepare.outputs.canary_id }})
+          
+          echo "url=$CANARY_URL" >> $GITHUB_OUTPUT
+          echo "Deployed canary to: $CANARY_URL"
+
+      - name: Configure canary environment
+        run: |
+          # Set canary-specific environment variables
+          curl -X POST https://api.vercel.com/v1/projects/my-board-app/env \
+            -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "key": "CANARY_VERSION",
+              "value": "${{ needs.prepare.outputs.canary_id }}",
+              "target": ["preview"]
+            }'
+
+  configure_traffic:
+    name: Configure Traffic Splitting
+    runs-on: ubuntu-latest
+    needs: [prepare, deploy_canary]
+    steps:
+      - name: Setup Vercel Edge Config
+        run: |
+          # Configure Edge Middleware for traffic splitting
+          cat > vercel.json << EOF
+          {
+            "functions": {
+              "middleware.ts": {
+                "env": {
+                  "CANARY_PERCENTAGE": "${{ github.event.inputs.initial_percentage }}",
+                  "CANARY_URL": "${{ needs.deploy_canary.outputs.canary_url }}",
+                  "CANARY_ID": "${{ needs.prepare.outputs.canary_id }}"
+                }
+              }
+            }
+          }
+          EOF
+          
+          # Deploy edge configuration
+          vercel --token=${{ secrets.VERCEL_TOKEN }} --yes --prod
+
+      - name: Create traffic split rule
+        run: |
+          echo "Configuring ${{ github.event.inputs.initial_percentage }}% traffic to canary"
+          
+          # This would integrate with your CDN or load balancer
+          # For Vercel, we use Edge Middleware
+          # For Cloudflare, we would use Workers or Load Balancing rules
+
+  monitor_canary:
+    name: Monitor Canary
+    runs-on: ubuntu-latest
+    needs: [prepare, deploy_canary, configure_traffic]
+    outputs:
+      should_continue: ${{ steps.analyze.outputs.continue }}
+      current_percentage: ${{ steps.current.outputs.percentage }}
+    steps:
+      - name: Wait for initial metrics
+        run: sleep 60
+
+      - name: Collect metrics
+        id: metrics
+        run: |
+          # Collect metrics from monitoring endpoint
+          METRICS=$(curl -s "${{ needs.deploy_canary.outputs.canary_url }}/api/metrics")
+          
+          ERROR_RATE=$(echo $METRICS | jq -r '.errorRate')
+          RESPONSE_TIME=$(echo $METRICS | jq -r '.avgResponseTime')
+          
+          echo "error_rate=$ERROR_RATE" >> $GITHUB_OUTPUT
+          echo "response_time=$RESPONSE_TIME" >> $GITHUB_OUTPUT
+
+      - name: Analyze metrics
+        id: analyze
+        run: |
+          ERROR_RATE="${{ steps.metrics.outputs.error_rate }}"
+          MAX_ERROR_RATE=5
+          
+          if (( $(echo "$ERROR_RATE > $MAX_ERROR_RATE" | bc -l) )); then
+            echo "Error rate too high: $ERROR_RATE%"
+            echo "continue=false" >> $GITHUB_OUTPUT
+          else
+            echo "Metrics within acceptable range"
+            echo "continue=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Get current traffic percentage
+        id: current
+        run: |
+          # Get current traffic percentage from edge config
+          CURRENT=$(curl -s https://api.vercel.com/v1/edge-config/my-board-app \
+            -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            | jq -r '.items.CANARY_PERCENTAGE')
+          
+          echo "percentage=$CURRENT" >> $GITHUB_OUTPUT
+
+  increment_traffic:
+    name: Increment Traffic
+    runs-on: ubuntu-latest
+    needs: [prepare, monitor_canary]
+    if: needs.monitor_canary.outputs.should_continue == 'true'
+    strategy:
+      max-parallel: 1
+      matrix:
+        increment: [1, 2, 3, 4, 5]  # Up to 5 increments
+    steps:
+      - name: Wait for increment interval
+        run: |
+          MINUTES="${{ github.event.inputs.increment_interval }}"
+          echo "Waiting $MINUTES minutes before increment..."
+          sleep $((MINUTES * 60))
+
+      - name: Check current percentage
+        id: check
+        run: |
+          CURRENT="${{ needs.monitor_canary.outputs.current_percentage }}"
+          
+          if [ "$CURRENT" -ge "100" ]; then
+            echo "Already at 100%, skipping increment"
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Increment traffic
+        if: steps.check.outputs.skip != 'true'
+        run: |
+          CURRENT="${{ needs.monitor_canary.outputs.current_percentage }}"
+          INCREMENT=20  # Default increment
+          NEW_PERCENTAGE=$((CURRENT + INCREMENT))
+          
+          if [ "$NEW_PERCENTAGE" -gt "100" ]; then
+            NEW_PERCENTAGE=100
+          fi
+          
+          echo "Incrementing traffic from $CURRENT% to $NEW_PERCENTAGE%"
+          
+          # Update edge config
+          curl -X PATCH https://api.vercel.com/v1/edge-config/my-board-app \
+            -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "items": {
+                "CANARY_PERCENTAGE": "'$NEW_PERCENTAGE'"
+              }
+            }'
+
+      - name: Monitor after increment
+        run: |
+          sleep 120  # Wait 2 minutes
+          
+          # Check metrics again
+          METRICS=$(curl -s "${{ needs.deploy_canary.outputs.canary_url }}/api/metrics")
+          ERROR_RATE=$(echo $METRICS | jq -r '.errorRate')
+          
+          if (( $(echo "$ERROR_RATE > 5" | bc -l) )); then
+            echo "Error rate increased after increment, stopping rollout"
+            exit 1
+          fi
+
+  complete_or_rollback:
+    name: Complete or Rollback
+    runs-on: ubuntu-latest
+    needs: [prepare, monitor_canary, increment_traffic]
+    if: always()
+    steps:
+      - name: Determine action
+        id: action
+        run: |
+          if [ "${{ needs.monitor_canary.outputs.should_continue }}" = "false" ]; then
+            echo "action=rollback" >> $GITHUB_OUTPUT
+          elif [ "${{ needs.monitor_canary.outputs.current_percentage }}" = "100" ]; then
+            echo "action=complete" >> $GITHUB_OUTPUT
+          else
+            echo "action=continue" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Complete canary deployment
+        if: steps.action.outputs.action == 'complete'
+        run: |
+          echo "Promoting canary to production"
+          
+          # Make canary the primary deployment
+          vercel alias set ${{ needs.deploy_canary.outputs.canary_url }} \
+            ${{ github.event.inputs.environment }}.kab137lab.com \
+            --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Rollback canary deployment
+        if: steps.action.outputs.action == 'rollback'
+        run: |
+          echo "Rolling back canary deployment"
+          
+          # Remove canary routing
+          curl -X PATCH https://api.vercel.com/v1/edge-config/my-board-app \
+            -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "items": {
+                "CANARY_PERCENTAGE": "0"
+              }
+            }'
+
+      - name: Update deployment status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const state = '${{ steps.action.outputs.action }}' === 'complete' ? 'success' : 
+                          '${{ steps.action.outputs.action }}' === 'rollback' ? 'failure' : 'pending';
+            
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: ${{ needs.prepare.outputs.deployment_id }},
+              state: state,
+              description: 'Canary deployment ' + '${{ steps.action.outputs.action }}'
+            });
+
+      - name: Notify status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const emoji = '${{ steps.action.outputs.action }}' === 'complete' ? '✅' : 
+                         '${{ steps.action.outputs.action }}' === 'rollback' ? '❌' : '⏳';
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 62,
+              body: `${emoji} Canary deployment ${{ steps.action.outputs.action }} for ${{ github.event.inputs.environment }}`
+            });
