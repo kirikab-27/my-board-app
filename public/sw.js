@@ -26,26 +26,19 @@ if (!self.define) {
 }
 define(['./workbox-f52fd911'], function (a) {
   'use strict';
-
-  // PWAインストールバナー処理を無効化
-  self.addEventListener('beforeinstallprompt', (e) => {
-    // バナーを表示しない（開発環境のみ）
-    return;
-  });
-
   (importScripts(),
     self.skipWaiting(),
     a.clientsClaim(),
     a.precacheAndRoute(
       [
-        { url: '/_next/app-build-manifest.json', revision: '93d2598b788a2413bad6a4599298b2dc' },
+        { url: '/_next/app-build-manifest.json', revision: '583526740dd7d60d872384f91d2ce808' },
         { url: '/_next/dynamic-css-manifest.json', revision: '635e29f1572238182774b0257937f4dc' },
         {
-          url: '/_next/static/ZzB05PrxJiQwRQrdIi6mx/_buildManifest.js',
+          url: '/_next/static/Yw7fET-Otr7n9bK4U7HjL/_buildManifest.js',
           revision: '3901b0899f05a37fcae8227f3148462a',
         },
         {
-          url: '/_next/static/ZzB05PrxJiQwRQrdIi6mx/_ssgManifest.js',
+          url: '/_next/static/Yw7fET-Otr7n9bK4U7HjL/_ssgManifest.js',
           revision: 'b6652df95db52feb4daf4eca35380933',
         },
         { url: '/_next/static/chunks/1322.da56bcd244f97d30.js', revision: 'da56bcd244f97d30' },
