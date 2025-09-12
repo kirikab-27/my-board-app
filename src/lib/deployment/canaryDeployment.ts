@@ -262,15 +262,39 @@ export class CanaryDeploymentManager {
     // Update metrics based on collected data
     this.state.metrics = {
       ...this.state.metrics,
-      totalRequests: data.totalRequests || this.state.metrics.totalRequests,
-      canaryRequests: data.canaryRequests || this.state.metrics.canaryRequests,
-      baselineRequests: data.baselineRequests || this.state.metrics.baselineRequests,
-      errorRate: data.errorRate || this.state.metrics.errorRate,
-      canaryErrorRate: data.canaryErrorRate || this.state.metrics.canaryErrorRate,
-      baselineErrorRate: data.baselineErrorRate || this.state.metrics.baselineErrorRate,
-      averageResponseTime: data.averageResponseTime || this.state.metrics.averageResponseTime,
-      canaryResponseTime: data.canaryResponseTime || this.state.metrics.canaryResponseTime,
-      baselineResponseTime: data.baselineResponseTime || this.state.metrics.baselineResponseTime,
+      totalRequests:
+        typeof data.totalRequests === 'number'
+          ? data.totalRequests
+          : this.state.metrics.totalRequests,
+      canaryRequests:
+        typeof data.canaryRequests === 'number'
+          ? data.canaryRequests
+          : this.state.metrics.canaryRequests,
+      baselineRequests:
+        typeof data.baselineRequests === 'number'
+          ? data.baselineRequests
+          : this.state.metrics.baselineRequests,
+      errorRate: typeof data.errorRate === 'number' ? data.errorRate : this.state.metrics.errorRate,
+      canaryErrorRate:
+        typeof data.canaryErrorRate === 'number'
+          ? data.canaryErrorRate
+          : this.state.metrics.canaryErrorRate,
+      baselineErrorRate:
+        typeof data.baselineErrorRate === 'number'
+          ? data.baselineErrorRate
+          : this.state.metrics.baselineErrorRate,
+      averageResponseTime:
+        typeof data.averageResponseTime === 'number'
+          ? data.averageResponseTime
+          : this.state.metrics.averageResponseTime,
+      canaryResponseTime:
+        typeof data.canaryResponseTime === 'number'
+          ? data.canaryResponseTime
+          : this.state.metrics.canaryResponseTime,
+      baselineResponseTime:
+        typeof data.baselineResponseTime === 'number'
+          ? data.baselineResponseTime
+          : this.state.metrics.baselineResponseTime,
     };
   }
 
