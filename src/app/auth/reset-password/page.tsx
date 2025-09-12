@@ -13,10 +13,15 @@ import {
   Typography,
   Container,
   CircularProgress,
+  IconButton,
+  InputAdornment,
 } from '@mui/material';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { usePasswordVisibility } from '@/hooks/usePasswordVisibility';
 
 // バリデーションスキーマ
 const resetPasswordSchema = z
@@ -46,6 +51,10 @@ export default function ResetPasswordPage() {
 
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // パスワード表示切り替え機能（Issue #41）
+  const passwordVisibility = usePasswordVisibility();
+  const confirmPasswordVisibility = usePasswordVisibility();
 
   const {
     register,
@@ -218,24 +227,58 @@ export default function ResetPasswordPage() {
 
               <TextField
                 {...register('password')}
-                type="password"
+                id="reset-password-field"
+                type={passwordVisibility.inputType}
                 label="新しいパスワード"
                 error={!!errors.password}
                 helperText={errors.password?.message}
                 fullWidth
                 required
                 disabled={isLoading || !!success}
+                InputProps={{
+                  endAdornment: passwordVisibility.showToggle ? (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label={passwordVisibility.ariaLabel}
+                        onClick={passwordVisibility.toggleVisibility}
+                        edge="end"
+                        disabled={isLoading || !!success}
+                      >
+                        {passwordVisibility.isVisible ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                      </IconButton>
+                    </InputAdornment>
+                  ) : null,
+                }}
               />
 
               <TextField
                 {...register('confirmPassword')}
-                type="password"
+                id="reset-confirm-password-field"
+                type={confirmPasswordVisibility.inputType}
                 label="パスワード（確認）"
                 error={!!errors.confirmPassword}
                 helperText={errors.confirmPassword?.message}
                 fullWidth
                 required
                 disabled={isLoading || !!success}
+                InputProps={{
+                  endAdornment: confirmPasswordVisibility.showToggle ? (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label={confirmPasswordVisibility.ariaLabel}
+                        onClick={confirmPasswordVisibility.toggleVisibility}
+                        edge="end"
+                        disabled={isLoading || !!success}
+                      >
+                        {confirmPasswordVisibility.isVisible ? (
+                          <VisibilityOffIcon />
+                        ) : (
+                          <VisibilityIcon />
+                        )}
+                      </IconButton>
+                    </InputAdornment>
+                  ) : null,
+                }}
               />
 
               <Button

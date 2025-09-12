@@ -237,7 +237,14 @@
       "Bash(timeout 30 npm run build)",
       "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue view 47 --repo kirikab-27/my-board-app)",
       "Bash(awk:*)",
-      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" api graphql -f query='\nmutation {\n  updateProjectV2ItemFieldValue(input: {\n    projectId: \"\"PVT_kwHOB5DmjM4BAytu\"\"\n    itemId: \"\"PVTI_lAHOB5DmjM4BAytuzgeZDAI\"\"\n    fieldId: \"\"PVTSSF_lAHOB5DmjM4BAytuzgzfW84\"\"\n    value: {\n      singleSelectOptionId: \"\"98236657\"\"\n    }\n  }) {\n    projectV2Item {\n      id\n    }\n  }\n}')"
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" api graphql -f query='\nmutation {\n  updateProjectV2ItemFieldValue(input: {\n    projectId: \"\"PVT_kwHOB5DmjM4BAytu\"\"\n    itemId: \"\"PVTI_lAHOB5DmjM4BAytuzgeZDAI\"\"\n    fieldId: \"\"PVTSSF_lAHOB5DmjM4BAytuzgzfW84\"\"\n    value: {\n      singleSelectOptionId: \"\"98236657\"\"\n    }\n  }) {\n    projectV2Item {\n      id\n    }\n  }\n}')",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue view 63 --json title,body,state,labels)",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue view 61 --json number,title,body,state,labels)",
+      "Bash(npx tsc:*)",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" project item-add 2 --owner kirikab-27 --url https://github.com/kirikab-27/my-board-app/issues/41)",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" api graphql -f query='\n{\n  user(login: \"\"kirikab-27\"\") {\n    projectV2(number: 2) {\n      items(last: 5) {\n        nodes {\n          id\n          content {\n            ... on Issue {\n              number\n              title\n            }\n          }\n        }\n      }\n    }\n  }\n}' --jq '.data.user.projectV2.items.nodes[] | select(.content.number == 41)')",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" api graphql -f query='\nmutation {\n  updateProjectV2ItemFieldValue(input: {\n    projectId: \"\"PVT_kwHOB5DmjM4BAytu\"\"\n    itemId: \"\"PVTI_lAHOB5DmjM4BAytuzgerS5w\"\"\n    fieldId: \"\"PVTSSF_lAHOB5DmjM4BAytuzgzfW84\"\"\n    value: {\n      singleSelectOptionId: \"\"f75ad846\"\"\n    }\n  }) {\n    projectV2Item {\n      id\n    }\n  }\n}')",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" issue comment 41 --body-file issue41_completion_report.md)"
     ],
     "deny": [],
     "ask": [],
