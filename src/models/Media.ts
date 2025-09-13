@@ -508,12 +508,19 @@ MediaSchema.methods.generateThumbnail = async function (): Promise<string> {
 
   if (this.type === 'image' || this.type === 'gif') {
     // 画像の場合: 150x150のサムネイルを生成
-    // c_thumb: サムネイル専用モード
-    // g_auto: 重要部分を自動検出
-    thumbnailUrl = baseUrl.replace('/upload/', '/upload/c_thumb,w_150,h_150,g_auto,q_auto/');
+    // c_fit: アスペクト比を維持してフィット
+    // g_center: 中央配置
+    // b_white: 白背景（透明画像対策）
+    thumbnailUrl = baseUrl.replace(
+      '/upload/',
+      '/upload/c_fit,w_150,h_150,g_center,q_auto,b_white/'
+    );
   } else if (this.type === 'video') {
     // 動画の場合: 最初のフレームからサムネイルを生成
-    thumbnailUrl = baseUrl.replace('/upload/', '/upload/c_thumb,w_150,h_150,g_auto,q_auto,f_jpg/');
+    thumbnailUrl = baseUrl.replace(
+      '/upload/',
+      '/upload/c_fit,w_150,h_150,g_center,q_auto,f_jpg,b_white/'
+    );
   }
 
   if (thumbnailUrl) {

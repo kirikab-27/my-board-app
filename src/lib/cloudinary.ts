@@ -29,10 +29,17 @@ export const uploadConfig: Record<string, BaseUploadConfig> = {
     max_file_size: 5 * 1024 * 1024, // 5MB
     transformation: [{ width: 1920, height: 1080, crop: 'limit', quality: 'auto:good' }],
     eager: [
-      { width: 150, height: 150, crop: 'thumb', gravity: 'auto', quality: 'auto' }, // サムネイル
+      {
+        width: 150,
+        height: 150,
+        crop: 'fit',
+        gravity: 'center',
+        quality: 'auto',
+        background: 'white',
+      }, // サムネイル
       { width: 800, height: 600, crop: 'limit', quality: 'auto' }, // 中サイズ
     ],
-    eager_async: true,
+    eager_async: false,
     overwrite: false,
     invalidate: true,
     resource_type: 'image' as const,
@@ -59,11 +66,11 @@ export const uploadConfig: Record<string, BaseUploadConfig> = {
       { width: 400, height: 400, crop: 'fill', gravity: 'face', quality: 'auto:good' },
     ],
     eager: [
-      { width: 50, height: 50, crop: 'thumb', gravity: 'face', quality: 'auto' }, // 小
-      { width: 100, height: 100, crop: 'thumb', gravity: 'face', quality: 'auto' }, // 中
-      { width: 200, height: 200, crop: 'thumb', gravity: 'face', quality: 'auto' }, // 大
+      { width: 50, height: 50, crop: 'fill', gravity: 'face', quality: 'auto' }, // 小
+      { width: 100, height: 100, crop: 'fill', gravity: 'face', quality: 'auto' }, // 中
+      { width: 200, height: 200, crop: 'fill', gravity: 'face', quality: 'auto' }, // 大
     ],
-    eager_async: true,
+    eager_async: false,
     overwrite: true,
     invalidate: true,
     resource_type: 'image' as const,

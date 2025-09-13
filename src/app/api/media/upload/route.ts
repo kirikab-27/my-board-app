@@ -54,10 +54,10 @@ export async function POST(request: NextRequest) {
       API_KEY_EXISTS: !!process.env.CLOUDINARY_API_KEY,
       API_SECRET_EXISTS: !!process.env.CLOUDINARY_API_SECRET,
       ALL_ENV_KEYS_COUNT: Object.keys(process.env).length,
-      CLOUDINARY_KEYS: Object.keys(process.env).filter(k => k.includes('CLOUDINARY')),
+      CLOUDINARY_KEYS: Object.keys(process.env).filter((k) => k.includes('CLOUDINARY')),
       NODE_ENV: process.env.NODE_ENV,
       VERCEL: process.env.VERCEL,
-      RUNTIME: 'nodejs'
+      RUNTIME: 'nodejs',
     });
 
     // 認証チェック
@@ -94,10 +94,10 @@ export async function POST(request: NextRequest) {
     const MAX_FILE_SIZE = 4.5 * 1024 * 1024; // 4.5MB
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
-        { 
+        {
           error: 'ファイルサイズが大きすぎます',
           details: `ファイルサイズ: ${(file.size / 1024 / 1024).toFixed(2)}MB（上限: 4.5MB）`,
-          maxSize: '4.5MB'
+          maxSize: '4.5MB',
         },
         { status: 413 }
       );
@@ -123,24 +123,24 @@ export async function POST(request: NextRequest) {
     ) {
       console.warn('⚠️ Cloudinary設定未完了、デモモードで継続:', {
         cloudName: process.env.CLOUDINARY_CLOUD_NAME ? '設定済み' : '未設定',
-        note: 'フォールバック機能として内部API動作継続'
+        note: 'フォールバック機能として内部API動作継続',
       });
-      
+
       // 503エラーを返さず、警告のみで継続（フォールバック機能）
       // return NextResponse.json({ error: '...' }, { status: 503 });
     }
 
     // Cloudinary設定確認とフォールバック処理
-    const hasValidCloudinaryConfig = 
-      process.env.CLOUDINARY_CLOUD_NAME && 
-      process.env.CLOUDINARY_API_KEY && 
+    const hasValidCloudinaryConfig =
+      process.env.CLOUDINARY_CLOUD_NAME &&
+      process.env.CLOUDINARY_API_KEY &&
       process.env.CLOUDINARY_API_SECRET &&
       process.env.CLOUDINARY_CLOUD_NAME !== 'your_cloud_name_here';
 
     if (!hasValidCloudinaryConfig) {
       // フォールバック: モック画像URL返却（デモモード）
       console.warn('🔧 Cloudinary未設定のためデモモードで動作');
-      
+
       const mockMedia = {
         id: publicId,
         type: file.type.startsWith('video/') ? 'video' : 'image',
@@ -160,10 +160,10 @@ export async function POST(request: NextRequest) {
         },
       };
 
-      return NextResponse.json({ 
-        success: true, 
+      return NextResponse.json({
+        success: true,
         media: mockMedia,
-        note: 'デモモード: Cloudinary設定完了後に実際の画像アップロードが有効になります'
+        note: 'デモモード: Cloudinary設定完了後に実際の画像アップロードが有効になります',
       });
     }
 
@@ -256,7 +256,11 @@ export async function POST(request: NextRequest) {
                     signature: result.signature,
                     url: result.url,
                     secureUrl: result.secure_url,
-                    thumbnailUrl: result.eager?.[0]?.secure_url,
+                    // Generate thumbnail URL with correct transformation parameters
+                    thumbnailUrl: result.secure_url.replace(
+                      '/upload/',
+                      '/upload/c_fit,w_150,h_150,g_center,q_auto,b_white/'
+                    ),
                     optimizedUrl: result.eager?.[1]?.secure_url,
                   },
                   uploadedBy: session.user.id,

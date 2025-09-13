@@ -28,7 +28,6 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import { AuthButton } from '@/components/auth/AuthButton';
 import ProfileAvatar from '@/components/profile/ProfileAvatar';
-import OptimizedImage from '@/components/ui/OptimizedImage';
 import { SafePostContent } from '@/components/SafeContent';
 import CommentList from '@/components/comments/CommentList';
 import Link from 'next/link';
@@ -64,7 +63,7 @@ export default function PostDetailPage() {
   const [liking, setLiking] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // スクロール用のref
   const mediaRef = useRef<HTMLDivElement>(null);
   const commentsRef = useRef<HTMLDivElement>(null);
@@ -110,21 +109,21 @@ export default function PostDetailPage() {
     if (!loading && post) {
       const scrollToComments = sessionStorage.getItem('scrollToComments');
       const scrollToMedia = sessionStorage.getItem('scrollToMedia');
-      
+
       if (scrollToComments === 'true' && commentsRef.current) {
         sessionStorage.removeItem('scrollToComments');
         setTimeout(() => {
-          commentsRef.current?.scrollIntoView({ 
+          commentsRef.current?.scrollIntoView({
             behavior: 'smooth',
-            block: 'start'
+            block: 'start',
           });
         }, 100);
       } else if (scrollToMedia === 'true' && mediaRef.current) {
         sessionStorage.removeItem('scrollToMedia');
         setTimeout(() => {
-          mediaRef.current?.scrollIntoView({ 
+          mediaRef.current?.scrollIntoView({
             behavior: 'smooth',
-            block: 'start'
+            block: 'start',
           });
         }, 100);
       }
@@ -382,17 +381,19 @@ export default function PostDetailPage() {
               <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
                 添付メディア
               </Typography>
-              <Box sx={{ 
-                display: 'grid', 
-                gap: 1,
-                gridTemplateColumns: {
-                  xs: 'repeat(3, 1fr)',
-                  sm: 'repeat(3, 1fr)',
-                  md: 'repeat(4, 1fr)',
-                  lg: 'repeat(5, 1fr)',
-                  xl: 'repeat(6, 1fr)'
-                }
-              }}>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gap: 1,
+                  gridTemplateColumns: {
+                    xs: 'repeat(3, 1fr)',
+                    sm: 'repeat(3, 1fr)',
+                    md: 'repeat(4, 1fr)',
+                    lg: 'repeat(5, 1fr)',
+                    xl: 'repeat(6, 1fr)',
+                  },
+                }}
+              >
                 {post.media.map((media: any, index: number) => (
                   <Box
                     key={index}
@@ -405,12 +406,12 @@ export default function PostDetailPage() {
                       cursor: 'pointer',
                       '&:hover': {
                         '& .media-overlay': {
-                          opacity: 1
+                          opacity: 1,
                         },
                         '& img, & video': {
-                          transform: 'scale(1.05)'
-                        }
-                      }
+                          transform: 'scale(1.05)',
+                        },
+                      },
                     }}
                     onClick={() => {
                       if (media.type === 'image') {
@@ -420,17 +421,20 @@ export default function PostDetailPage() {
                   >
                     {/* メディア表示 */}
                     {media.type === 'image' || media.type === 'gif' ? (
-                      <OptimizedImage
-                        src={media.thumbnailUrl || media.url}
+                      <Box
+                        component="img"
+                        src={media.url}
                         alt={media.alt || media.title || '画像'}
-                        fill
-                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                        quality={index === 0 ? 95 : 80} // Phase 5: First image higher quality
-                        objectFit="cover"
-                        objectPosition="center"
-                        loading={index === 0 ? 'eager' : 'lazy'} // Phase 5: First image eager loading
-                        priority={index === 0} // Phase 5: LCP improvement - priority for first image
-                        style={{ transition: 'transform 0.3s ease' }}
+                        sx={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          objectPosition: 'center',
+                          transition: 'transform 0.3s ease',
+                        }}
                       />
                     ) : (
                       <>
@@ -444,7 +448,7 @@ export default function PostDetailPage() {
                             width: '100%',
                             height: '100%',
                             objectFit: 'cover',
-                            transition: 'transform 0.3s ease'
+                            transition: 'transform 0.3s ease',
                           }}
                         />
                         <Box
@@ -456,14 +460,14 @@ export default function PostDetailPage() {
                             fontSize: 48,
                             color: 'white',
                             filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))',
-                            pointerEvents: 'none'
+                            pointerEvents: 'none',
                           }}
                         >
                           ▶
                         </Box>
                       </>
                     )}
-                    
+
                     {/* ホバーオーバーレイ */}
                     <Box
                       className="media-overlay"
@@ -473,25 +477,26 @@ export default function PostDetailPage() {
                         left: 0,
                         width: '100%',
                         height: '100%',
-                        background: 'linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.4) 100%)',
+                        background:
+                          'linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.4) 100%)',
                         opacity: 0,
                         transition: 'opacity 0.3s ease',
                         display: 'flex',
                         alignItems: 'flex-end',
                         padding: 1,
-                        pointerEvents: 'none'
+                        pointerEvents: 'none',
                       }}
                     >
                       {(media.title || media.alt) && (
-                        <Typography 
-                          variant="caption" 
-                          sx={{ 
+                        <Typography
+                          variant="caption"
+                          sx={{
                             color: 'white',
                             textShadow: '0 1px 2px rgba(0,0,0,0.5)',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
                             whiteSpace: 'nowrap',
-                            width: '100%'
+                            width: '100%',
                           }}
                         >
                           {media.title || media.alt}
