@@ -84,13 +84,13 @@ export default function BoardPageClient({ initialData }: BoardPageClientProps) {
   // ソート変更ハンドラーを削除
 
   // 無限スクロール用のloadMore
-  const handleLoadMore = useCallback(() => {
-    loadMore();
+  const handleLoadMore = useCallback(async () => {
+    await loadMore();
   }, [loadMore]);
 
   // リフレッシュ用の関数
-  const handleRefresh = useCallback(() => {
-    refresh();
+  const handleRefresh = useCallback(async () => {
+    await refresh();
   }, [refresh]);
 
   // 新着投稿表示用の関数
