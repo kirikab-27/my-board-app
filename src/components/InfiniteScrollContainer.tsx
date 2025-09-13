@@ -1,7 +1,16 @@
 'use client';
 
 import React, { useEffect, useRef, useCallback } from 'react';
-import { Box, CircularProgress, Typography, Alert, Button, Fade, Skeleton, useMediaQuery, useTheme, LinearProgress } from '@mui/material';
+import {
+  Box,
+  CircularProgress,
+  Typography,
+  Alert,
+  Button,
+  Fade,
+  Skeleton,
+  LinearProgress,
+} from '@mui/material';
 import { Refresh as RefreshIcon } from '@mui/icons-material';
 import VirtualInfiniteScrollContainer from './VirtualInfiniteScrollContainer';
 
@@ -38,34 +47,51 @@ function InfiniteScrollContainer({
   threshold = 200,
   showSkeleton = true,
   skeletonCount = 3,
-  useVirtualization = false
+  useVirtualization = false,
 }: InfiniteScrollContainerProps) {
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const loadingRef = useRef(false);
 
-  // Intersection Observer のコールバック
+  // propsをrefに保存して最新版を参照
+  const propsRef = useRef({ hasNextPage, onLoadMore, loading });
+  useEffect(() => {
+    propsRef.current = { hasNextPage, onLoadMore, loading };
+  }, [hasNextPage, onLoadMore, loading]);
+
+  // Intersection Observer のコールバック（依存配列なしで固定）
   const handleObserver = useCallback(
     (entries: IntersectionObserverEntry[]) => {
       const target = entries[0];
-      if (target.isIntersecting && hasNextPage && !loadingRef.current) {
+      const { hasNextPage, onLoadMore, loading } = propsRef.current;
+
+      if (target.isIntersecting && hasNextPage && !loadingRef.current && !loading) {
         loadingRef.current = true;
-        onLoadMore().finally(() => {
+        // Promiseの処理を確実に行う
+        const loadMorePromise = onLoadMore();
+        if (loadMorePromise && typeof loadMorePromise.finally === 'function') {
+          loadMorePromise.finally(() => {
+            loadingRef.current = false;
+          });
+        } else {
+          // Promiseでない場合も対応
           loadingRef.current = false;
-        });
+        }
       }
     },
-    [hasNextPage, onLoadMore]
+    [] // 依存配列を空にして再作成を防ぐ
   );
 
   // Intersection Observer の設定（仮想スクロール時は無効）
   useEffect(() => {
-    if (useVirtualization) return;
+    if (useVirtualization) {
+      return;
+    }
 
     const options = {
       root: null,
       rootMargin: `${threshold}px`,
-      threshold: 0
+      threshold: 0,
     };
 
     observerRef.current = new IntersectionObserver(handleObserver, options);
@@ -85,11 +111,11 @@ function InfiniteScrollContainer({
   const renderSkeleton = () => (
     <>
       {Array.from({ length: skeletonCount }).map((_, index) => (
-        <Box 
-          key={`skeleton-${index}`} 
-          sx={{ 
-            mb: 2, 
-            p: 2, 
+        <Box
+          key={`skeleton-${index}`}
+          sx={{
+            mb: 2,
+            p: 2,
             border: '1px solid #e0e0e0',
             borderRadius: 2,
             backgroundColor: '#fafafa',
@@ -97,8 +123,8 @@ function InfiniteScrollContainer({
             '@keyframes shimmer': {
               '0%': { opacity: 1 },
               '50%': { opacity: 0.4 },
-              '100%': { opacity: 1 }
-            }
+              '100%': { opacity: 1 },
+            },
           }}
         >
           {/* ユーザー情報 */}
@@ -109,13 +135,13 @@ function InfiniteScrollContainer({
               <Skeleton variant="text" width="50%" height={16} />
             </Box>
           </Box>
-          
+
           {/* 投稿タイトル */}
           <Skeleton variant="text" width="80%" height={24} sx={{ mb: 1 }} />
-          
+
           {/* 投稿内容 */}
           <Skeleton variant="rectangular" height={80} sx={{ borderRadius: 1, mb: 2 }} />
-          
+
           {/* アクションボタン */}
           <Box sx={{ display: 'flex', gap: 2 }}>
             <Skeleton variant="rectangular" width={60} height={32} sx={{ borderRadius: 1 }} />
@@ -135,15 +161,15 @@ function InfiniteScrollContainer({
           <Alert
             severity="info"
             action={
-              <Button 
-                color="inherit" 
-                size="small" 
+              <Button
+                color="inherit"
+                size="small"
                 onClick={onShowNewItems}
                 sx={{
                   minWidth: 'auto',
                   '&:hover': {
                     backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                  }
+                  },
                 }}
               >
                 表示 ({newItemsCount})
@@ -159,23 +185,23 @@ function InfiniteScrollContainer({
               background: 'linear-gradient(135deg, #2196F3 0%, #21CBF3 100%)',
               color: 'white',
               '&.MuiAlert-standardInfo': {
-                backgroundColor: 'transparent'
+                backgroundColor: 'transparent',
               },
               '& .MuiAlert-icon': {
-                color: 'white'
+                color: 'white',
               },
               animation: 'pulse 2s infinite',
               '@keyframes pulse': {
                 '0%': {
-                  boxShadow: '0 0 0 0 rgba(33, 150, 243, 0.7)'
+                  boxShadow: '0 0 0 0 rgba(33, 150, 243, 0.7)',
                 },
                 '50%': {
-                  boxShadow: '0 0 0 8px rgba(33, 150, 243, 0)'
+                  boxShadow: '0 0 0 8px rgba(33, 150, 243, 0)',
                 },
                 '100%': {
-                  boxShadow: '0 0 0 0 rgba(33, 150, 243, 0)'
-                }
-              }
+                  boxShadow: '0 0 0 0 rgba(33, 150, 243, 0)',
+                },
+              },
             }}
           >
             🆕 {newItemsCount}件の新着投稿があります
@@ -198,28 +224,28 @@ function InfiniteScrollContainer({
                   minWidth: 'auto',
                   '&:hover': {
                     backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                  }
+                  },
                 }}
               >
                 再試行
               </Button>
             )
           }
-          sx={{ 
+          sx={{
             mb: 2,
             borderRadius: 2,
             boxShadow: 1,
             '&.MuiAlert-standardError': {
               backgroundColor: '#ffebee',
               color: '#c62828',
-              border: '1px solid #ef5350'
+              border: '1px solid #ef5350',
             },
             '& .MuiAlert-icon': {
-              color: '#f44336'
+              color: '#f44336',
             },
             '& .MuiAlert-message': {
-              fontWeight: 500
-            }
+              fontWeight: 500,
+            },
           }}
         >
           ⚠️ {error}
@@ -255,9 +281,7 @@ function InfiniteScrollContainer({
         <>
           {/* 初回ローディング時のスケルトン */}
           {loading && React.Children.count(children) === 0 && showSkeleton && (
-            <Box sx={{ mt: 2 }}>
-              {renderSkeleton()}
-            </Box>
+            <Box sx={{ mt: 2 }}>{renderSkeleton()}</Box>
           )}
 
           {/* 追加読み込み時のローディング表示 - Phase 4強化版 */}
@@ -269,8 +293,8 @@ function InfiniteScrollContainer({
                   投稿を読み込み中...
                 </Typography>
               </Box>
-              <LinearProgress 
-                variant="indeterminate" 
+              <LinearProgress
+                variant="indeterminate"
                 sx={{
                   width: '60%',
                   mx: 'auto',
@@ -278,20 +302,20 @@ function InfiniteScrollContainer({
                   height: 4,
                   '& .MuiLinearProgress-bar': {
                     borderRadius: 2,
-                    background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)'
-                  }
+                    background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                  },
                 }}
               />
             </Box>
           )}
 
           {/* 無限スクロールのトリガー要素 */}
-          {hasNextPage && !loading && (
+          {hasNextPage && (
             <Box
               ref={loadMoreRef}
               sx={{
                 height: 1,
-                width: '100%'
+                width: '100%',
               }}
             />
           )}
@@ -299,28 +323,34 @@ function InfiniteScrollContainer({
           {/* すべて読み込み完了メッセージ - Phase 4強化版 */}
           {!hasNextPage && !loading && React.Children.count(children) > 0 && (
             <Fade in={true}>
-              <Box 
-                sx={{ 
-                  textAlign: 'center', 
+              <Box
+                sx={{
+                  textAlign: 'center',
                   py: 4,
                   borderTop: '1px solid #e0e0e0',
-                  mt: 2
+                  mt: 2,
                 }}
               >
-                <Box sx={{ 
-                  display: 'inline-flex', 
-                  alignItems: 'center', 
-                  px: 3, 
-                  py: 1,
-                  backgroundColor: '#f5f5f5',
-                  borderRadius: 20,
-                  border: '1px solid #e0e0e0'
-                }}>
+                <Box
+                  sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    px: 3,
+                    py: 1,
+                    backgroundColor: '#f5f5f5',
+                    borderRadius: 20,
+                    border: '1px solid #e0e0e0',
+                  }}
+                >
                   <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                     ✅ {endMessage}
                   </Typography>
                 </Box>
-                <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ mt: 1, display: 'block' }}
+                >
                   投稿作成ボタンから新しい投稿を作成できます
                 </Typography>
               </Box>

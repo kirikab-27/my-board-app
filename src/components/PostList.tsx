@@ -16,19 +16,19 @@ import {
   DialogActions,
   Button,
 } from '@mui/material';
-import { 
-  MoreVert, 
-  Edit, 
-  Delete, 
-  Favorite, 
+import {
+  MoreVert,
+  Edit,
+  Delete,
+  Favorite,
   FavoriteBorder,
   Forum,
   Photo,
   Videocam,
-  PermMedia
+  PermMedia,
 } from '@mui/icons-material';
 import { highlightText } from '@/utils/highlightText';
-import { SafePostContent } from '@/components/SafeContent';
+// import { SafePostContent } from '@/components/SafeContent';
 import { MentionRenderer } from '@/components/mention';
 
 interface Post {
@@ -70,10 +70,8 @@ interface PostListProps {
 export default function PostList({
   posts,
   onPostDeleted,
-  onPostUpdated,
+  // onPostUpdated,
   onLikeUpdate,
-  searchTerm,
-  sessionUserId,
   onRefresh,
   onEditPost,
   onPostClick,
@@ -90,47 +88,38 @@ export default function PostList({
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
   const [postLikeCounts, setPostLikeCounts] = useState<Map<string, number>>(new Map());
 
-  console.log('PostList レンダリング:', posts.length, '件の投稿');
-
-  // 投稿のいいね状態と最新いいね数を取得（無限ループ修正）
+  // 投稿のいいね状態と最新いいね数を取得
   React.useEffect(() => {
-    // 🚨 緊急修正: 無限レンダリングループ防止のため一時的に無効化
-    // TODO: いいね状態取得の最適化実装が必要
-    console.log('PostList useEffect実行（一時的に無効化中）:', posts.length, '件');
-    
+    // postsが変更された場合のみ実行
+    if (!posts || posts.length === 0) return;
+
     // 初期いいね数のみ設定（API呼び出しなし）
     const likeCountMap = new Map<string, number>();
-    posts.forEach(post => {
+    const likedSet = new Set<string>();
+
+    posts.forEach((post) => {
       likeCountMap.set(post._id, post.likes);
+      // いいね状態は投稿データから初期化（likedBy配列から判定）
+      if (session?.user?.id && post.likedBy?.includes(session.user.id)) {
+        likedSet.add(post._id);
+      }
     });
+
     setPostLikeCounts(likeCountMap);
-    
-    // いいね状態は投稿データから初期化（likedBy配列から判定）
-    if (session?.user?.id) {
-      const likedSet = new Set<string>();
-      posts.forEach(post => {
-        if (post.likedBy?.includes(session.user.id)) {
-          likedSet.add(post._id);
-        }
-      });
-      setLikedPosts(likedSet);
-    }
-  }, [posts.length, session?.user?.id]); // 依存関係を投稿数とユーザーIDのみに限定
+    setLikedPosts(likedSet);
+  }, [posts, session?.user?.id]); // 投稿が変わった時のみ実行
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>, post: Post) => {
-    console.log('メニューがクリックされました:', post._id);
     setAnchorEl(event.currentTarget);
     setSelectedPost(post);
   };
 
   const handleMenuClose = () => {
-    console.log('メニューを閉じます');
     setAnchorEl(null);
     setSelectedPost(null);
   };
 
   const handleEdit = () => {
-    console.log('編集がクリックされました:', selectedPost?._id);
     if (selectedPost) {
       onEditPost?.(selectedPost);
     }
@@ -138,7 +127,6 @@ export default function PostList({
   };
 
   const handleDeleteClick = () => {
-    console.log('削除がクリックされました:', selectedPost?._id);
     setPostToDelete(selectedPost);
     setDeleteDialogOpen(true);
     handleMenuClose();
@@ -257,31 +245,31 @@ export default function PostList({
   // メディアの種類と枚数を判定する関数
   const getMediaInfo = (media?: Array<{ url: string; type: string; publicId: string }>) => {
     if (!media || media.length === 0) return null;
-    
-    const images = media.filter(m => m.type === 'image');
-    const videos = media.filter(m => m.type === 'video');
+
+    const images = media.filter((m) => m.type === 'image');
+    const videos = media.filter((m) => m.type === 'video');
     const totalCount = media.length;
-    
+
     if (videos.length > 0 && images.length > 0) {
       // 混在の場合
       return {
         icon: <PermMedia fontSize="small" />,
         count: totalCount,
-        label: `メディア ${totalCount}件`
+        label: `メディア ${totalCount}件`,
       };
     } else if (videos.length > 0) {
       // 動画のみ
       return {
         icon: <Videocam fontSize="small" />,
         count: videos.length,
-        label: `動画 ${videos.length}件`
+        label: `動画 ${videos.length}件`,
       };
     } else {
       // 画像のみ
       return {
         icon: <Photo fontSize="small" />,
         count: images.length,
-        label: `画像 ${images.length}件`
+        label: `画像 ${images.length}件`,
       };
     }
   };
@@ -289,7 +277,7 @@ export default function PostList({
   // コメント・メディアアイコンのクリックハンドラー
   const handleStatsClick = (event: React.MouseEvent, post: Post, type: 'comments' | 'media') => {
     event.stopPropagation(); // 投稿詳細ページへの遷移を防ぐ
-    
+
     if (onPostClick) {
       // 詳細ページに遷移して該当セクションにスクロールする情報をsessionStorageに保存
       if (type === 'comments') {

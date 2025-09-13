@@ -1,28 +1,21 @@
 'use client';
 
-import React, { useState, useCallback, useEffect, useTransition, startTransition } from 'react';
-import {
-  Container,
-  Typography,
-  Box,
-  Alert,
-  AppBar,
-  Toolbar,
-  Button,
-  Fab,
-  Paper,
-  useTheme,
-} from '@mui/material';
+import React, { useState, useCallback } from 'react';
+import { Container, Typography, Box, Alert, AppBar, Toolbar, Fab, useTheme } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { SortOption } from '@/components/SortSelector';
+// SortOption削除
 import { AuthButton } from '@/components/auth/AuthButton';
 import { AuthGuard } from '@/components/auth/AuthGuardImproved';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { getNavigationHeaderStyles } from '@/styles/navigationHeaderStyles';
 // Phase 5: Total Blocking Time削減 - React.lazy遅延読み込み
-import { LazyPostList, LazySortSelector, LazyInfiniteScrollContainer } from '@/components/lazy/LazyBoardComponents';
+// デバッグ用に通常のコンポーネントを使用
+// import { LazyPostList, LazySortSelector, LazyInfiniteScrollContainer } from '@/components/lazy/LazyBoardComponents';
+import PostList from '@/components/PostList';
+// SortSelector削除
+import InfiniteScrollContainer from '@/components/InfiniteScrollContainer';
 import performanceConfig from '@/config/performance';
 
 interface BoardPageClientProps {
@@ -37,11 +30,9 @@ export default function BoardPageClient({ initialData }: BoardPageClientProps) {
   const router = useRouter();
   const theme = useTheme(); // Issue #38: ダークモード対応
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState<SortOption>('createdAt_desc');
-  
-  // Phase 5 Final: Total Blocking Time削減 - React 18 useTransition
-  const [isPending, startTransition] = useTransition();
-  
+  // 並び順機能を削除（無限スクロールとの相性問題のため）
+
+  // アレックス：「メモ化を削除、初期データは一度しか渡されない」
   // 無限スクロールフックを使用（初期データ付き）
   const {
     posts,
@@ -53,98 +44,85 @@ export default function BoardPageClient({ initialData }: BoardPageClientProps) {
     newPostsCount,
     showNewPosts,
     totalCount,
-    shouldUseVirtualization
+    shouldUseVirtualization,
   } = useInfiniteScroll({
     type: 'board',
     limit: 20,
     pollingInterval: performanceConfig.polling.interval, // Phase 7.1: 最適化されたポーリング間隔
-    sortBy, // ソート条件を渡す
-    initialData: initialData.posts, // Phase 5: 初期データを渡す
+    sortBy: 'createdAt_desc', // 固定値で設定（UIは非表示）
+    initialData: initialData.posts, // 直接渡す
     initialTotalCount: initialData.totalCount,
-    initialHasMore: initialData.hasMore
+    initialHasMore: initialData.hasMore,
   });
 
-  // 投稿削除時のコールバック - Phase 5 Final: useTransition for TBT reduction
-  const handlePostDeleted = useCallback((deletedPostId: string) => {
-    // 削除後にリフレッシュ（非ブロッキング実行）
-    startTransition(() => {
-      refresh();
-    });
-  }, [refresh, startTransition]);
+  // 投稿削除時のコールバック
+  const handlePostDeleted = useCallback(() => {
+    // 削除後にリフレッシュ
+    refresh();
+  }, [refresh]);
 
-  // 投稿更新時のコールバック - Phase 5 Final: useTransition for TBT reduction
-  const handlePostUpdated = useCallback((updatedPost: any) => {
-    // 更新後にリフレッシュ（非ブロッキング実行）
-    startTransition(() => {
-      refresh();
-    });
-  }, [refresh, startTransition]);
+  // 投稿更新時のコールバック
+  const handlePostUpdated = useCallback(() => {
+    // 更新後にリフレッシュ
+    refresh();
+  }, [refresh]);
 
-  // いいね更新時のコールバック - Phase 5 Final: useTransition for TBT reduction
-  const handleLikeUpdate = useCallback((postId: string, newLikes: number, newLikedBy: string[]) => {
-    // いいね更新は即座反映のためリフレッシュ不要（パフォーマンス最適化）
-    // 必要に応じて状態更新のみを非ブロッキング実行
-    startTransition(() => {
-      // ローカル状態更新のみ実行（将来の機能拡張用）
-    });
-  }, [startTransition]);
+  // いいね更新時のコールバック
+  const handleLikeUpdate = useCallback(() => {
+    // いいね更新時もリフレッシュ
+    refresh();
+  }, [refresh]);
 
   // 投稿クリック時のコールバック
-  const handlePostClick = useCallback((post: any) => {
-    router.push(`/board/${post._id}`);
-  }, [router]);
+  const handlePostClick = useCallback(
+    (post: any) => {
+      router.push(`/board/${post._id}`);
+    },
+    [router]
+  );
 
-  // ソート変更時のコールバック - Phase 5 Final: useTransition for TBT reduction
-  const handleSortChange = useCallback((newSortBy: SortOption) => {
-    startTransition(() => {
-      setSortBy(newSortBy);
-      // ソート変更後にリフレッシュして新しい順序で投稿を取得
-      refresh();
-    });
-  }, [refresh, startTransition]);
+  // ソート変更ハンドラーを削除
 
-  // 無限スクロール用の非ブロッキングloadMore - Phase 5 Final: useTransition for TBT reduction
+  // 無限スクロール用のloadMore
   const handleLoadMore = useCallback(() => {
-    startTransition(() => {
-      loadMore();
-    });
-  }, [loadMore, startTransition]);
+    loadMore();
+  }, [loadMore]);
 
-  // リフレッシュ用の非ブロッキング関数 - Phase 5 Final: useTransition for TBT reduction
+  // リフレッシュ用の関数
   const handleRefresh = useCallback(() => {
-    startTransition(() => {
-      refresh();
-    });
-  }, [refresh, startTransition]);
+    refresh();
+  }, [refresh]);
 
-  // 新着投稿表示用の非ブロッキング関数 - Phase 5 Final: useTransition for TBT reduction
+  // 新着投稿表示用の関数
   const handleShowNewPosts = useCallback(() => {
-    startTransition(() => {
-      showNewPosts();
-    });
-  }, [showNewPosts, startTransition]);
+    showNewPosts();
+  }, [showNewPosts]);
 
   // 検索フィルタリング
   const filteredPosts = searchTerm
-    ? posts.filter(post =>
-        post.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (post.title && post.title.toLowerCase().includes(searchTerm.toLowerCase()))
+    ? posts.filter(
+        (post) =>
+          post.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (post.title && post.title.toLowerCase().includes(searchTerm.toLowerCase()))
       )
     : posts;
 
   // 仮想スクロール用の投稿レンダリング関数
-  const renderPost = useCallback((index: number, post: any) => (
-    <Box key={post._id} sx={{ mb: 2 }}>
-      <LazyPostList
-        posts={[post]}
-        onPostDeleted={handlePostDeleted}
-        onPostUpdated={handlePostUpdated}
-        onLikeUpdate={handleLikeUpdate}
-        searchTerm={searchTerm}
-        sessionUserId={null}
-      />
-    </Box>
-  ), [handlePostDeleted, handlePostUpdated, handleLikeUpdate, searchTerm]);
+  const renderPost = useCallback(
+    (index: number, post: any) => (
+      <Box key={post._id} sx={{ mb: 2 }}>
+        <PostList
+          posts={[post]}
+          onPostDeleted={handlePostDeleted}
+          onPostUpdated={handlePostUpdated}
+          onLikeUpdate={handleLikeUpdate}
+          searchTerm={searchTerm}
+          sessionUserId={null}
+        />
+      </Box>
+    ),
+    [handlePostDeleted, handlePostUpdated, handleLikeUpdate, searchTerm]
+  );
 
   return (
     <AuthGuard>
@@ -154,9 +132,9 @@ export default function BoardPageClient({ initialData }: BoardPageClientProps) {
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               掲示板
             </Typography>
-            <AuthButton 
-              onSearch={(term) => startTransition(() => setSearchTerm(term))} 
-              onClearSearch={() => startTransition(() => setSearchTerm(''))}
+            <AuthButton
+              onSearch={(term) => setSearchTerm(term)}
+              onClearSearch={() => setSearchTerm('')}
               searchResultCount={filteredPosts.length}
             />
           </Toolbar>
@@ -178,32 +156,32 @@ export default function BoardPageClient({ initialData }: BoardPageClientProps) {
             </Typography>
           </Box>
 
-          {/* ソート機能 */}
-          <Paper sx={{ p: 2, mb: 3, borderRadius: 2, boxShadow: 1 }}>
-            <Box sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
+          {/* ソート機能 - デバッグ用に一時的に非表示 */}
+          {/* <Paper sx={{ p: 2, mb: 3, borderRadius: 2, boxShadow: 1 }}>
+            <Box sx={{
+              display: 'flex',
+              alignItems: 'center',
               justifyContent: 'space-between',
               flexWrap: 'wrap',
-              gap: 2 
+              gap: 2
             }}>
               <Typography variant="body2" color="text.secondary" fontWeight={500}>
                 並び順
               </Typography>
-              <LazySortSelector
+              <SortSelector
                 value={sortBy}
                 onChange={handleSortChange}
                 disabled={loading || isPending}
                 size="small"
               />
             </Box>
-          </Paper>
+          </Paper> */}
 
           {/* 無限スクロールコンテナ - Phase 5 Final: useTransition統合 */}
-          <LazyInfiniteScrollContainer
+          <InfiniteScrollContainer
             posts={filteredPosts}
             renderPost={renderPost}
-            loading={loading || isPending}
+            loading={loading}
             error={error}
             hasNextPage={hasNextPage}
             onLoadMore={handleLoadMore}
@@ -217,7 +195,7 @@ export default function BoardPageClient({ initialData }: BoardPageClientProps) {
             useVirtualization={shouldUseVirtualization}
           >
             {filteredPosts.length > 0 ? (
-              <LazyPostList
+              <PostList
                 posts={filteredPosts}
                 onPostDeleted={handlePostDeleted}
                 onPostUpdated={handlePostUpdated}
@@ -235,7 +213,7 @@ export default function BoardPageClient({ initialData }: BoardPageClientProps) {
                 </Alert>
               )
             )}
-          </LazyInfiniteScrollContainer>
+          </InfiniteScrollContainer>
 
           {/* 投稿作成ボタン（固定） */}
           <Fab
