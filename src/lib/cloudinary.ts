@@ -5,7 +5,7 @@ cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
-  secure: true
+  secure: true,
 });
 
 // アップロード設定オプション
@@ -27,51 +27,47 @@ export const uploadConfig: Record<string, BaseUploadConfig> = {
     folder: 'board-app/images',
     allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg'],
     max_file_size: 5 * 1024 * 1024, // 5MB
-    transformation: [
-      { width: 1920, height: 1080, crop: 'limit', quality: 'auto:good' }
-    ],
+    transformation: [{ width: 1920, height: 1080, crop: 'limit', quality: 'auto:good' }],
     eager: [
-      { width: 150, height: 150, crop: 'thumb', quality: 'auto' }, // サムネイル
-      { width: 800, height: 600, crop: 'limit', quality: 'auto' }  // 中サイズ
+      { width: 150, height: 150, crop: 'thumb', gravity: 'auto', quality: 'auto' }, // サムネイル
+      { width: 800, height: 600, crop: 'limit', quality: 'auto' }, // 中サイズ
     ],
     eager_async: true,
     overwrite: false,
     invalidate: true,
-    resource_type: 'image' as const
+    resource_type: 'image' as const,
   },
-  
+
   // 動画のデフォルト設定
   video: {
     folder: 'board-app/videos',
     allowed_formats: ['mp4', 'webm', 'mov', 'avi'],
     max_file_size: 50 * 1024 * 1024, // 50MB
     resource_type: 'video' as const,
-    eager: [
-      { width: 300, height: 300, crop: 'pad', audio_codec: 'none' }
-    ],
+    eager: [{ width: 300, height: 300, crop: 'pad', audio_codec: 'none' }],
     eager_async: true,
     overwrite: false,
-    invalidate: true
+    invalidate: true,
   },
-  
+
   // プロフィール画像の設定
   avatar: {
     folder: 'board-app/avatars',
     allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
     max_file_size: 5 * 1024 * 1024, // 5MB
     transformation: [
-      { width: 400, height: 400, crop: 'fill', gravity: 'face', quality: 'auto:good' }
+      { width: 400, height: 400, crop: 'fill', gravity: 'face', quality: 'auto:good' },
     ],
     eager: [
-      { width: 50, height: 50, crop: 'fill', gravity: 'face', quality: 'auto' },   // 小
-      { width: 100, height: 100, crop: 'fill', gravity: 'face', quality: 'auto' }, // 中
-      { width: 200, height: 200, crop: 'fill', gravity: 'face', quality: 'auto' }  // 大
+      { width: 50, height: 50, crop: 'thumb', gravity: 'face', quality: 'auto' }, // 小
+      { width: 100, height: 100, crop: 'thumb', gravity: 'face', quality: 'auto' }, // 中
+      { width: 200, height: 200, crop: 'thumb', gravity: 'face', quality: 'auto' }, // 大
     ],
     eager_async: true,
     overwrite: true,
     invalidate: true,
-    resource_type: 'image' as const
-  }
+    resource_type: 'image' as const,
+  },
 };
 
 // ファイル検証
@@ -80,48 +76,48 @@ export const validateFile = (
   type: 'image' | 'video' | 'avatar'
 ): { valid: boolean; error?: string } => {
   const config = uploadConfig[type];
-  
+
   // ファイルサイズチェック
   if (file.size > config.max_file_size) {
     return {
       valid: false,
-      error: `ファイルサイズは${config.max_file_size / (1024 * 1024)}MB以下にしてください`
+      error: `ファイルサイズは${config.max_file_size / (1024 * 1024)}MB以下にしてください`,
     };
   }
-  
+
   // ファイル形式チェック
   const fileExtension = file.type.split('/')[1]?.toLowerCase();
   if (!fileExtension || !config.allowed_formats.includes(fileExtension)) {
     return {
       valid: false,
-      error: `許可されているファイル形式: ${config.allowed_formats.join(', ')}`
+      error: `許可されているファイル形式: ${config.allowed_formats.join(', ')}`,
     };
   }
-  
+
   return { valid: true };
 };
 
 // Cloudinaryアップロード用シグネチャ生成
-export const generateSignature = (params: Record<string, any>): string => {
+export const generateSignature = async (params: Record<string, any>): Promise<string> => {
   const timestamp = Math.round(new Date().getTime() / 1000);
   const paramsToSign = {
     timestamp,
-    ...params
+    ...params,
   };
-  
+
   // パラメータをアルファベット順にソート
   const sortedParams = Object.keys(paramsToSign)
     .sort()
-    .map(key => `${key}=${paramsToSign[key as keyof typeof paramsToSign]}`)
+    .map((key) => `${key}=${paramsToSign[key as keyof typeof paramsToSign]}`)
     .join('&');
-  
-  // SHA1ハッシュを生成（実際の実装では crypto を使用）
-  const crypto = require('crypto');
+
+  // SHA1ハッシュを生成
+  const crypto = await import('crypto');
   const signature = crypto
     .createHash('sha1')
     .update(sortedParams + process.env.CLOUDINARY_API_SECRET)
     .digest('hex');
-  
+
   return signature;
 };
 
@@ -137,18 +133,18 @@ export const buildTransformationUrl = (
   }
 ): string => {
   const transformations = [];
-  
+
   if (options.width) transformations.push(`w_${options.width}`);
   if (options.height) transformations.push(`h_${options.height}`);
   if (options.crop) transformations.push(`c_${options.crop}`);
   if (options.quality) transformations.push(`q_${options.quality}`);
   if (options.format) transformations.push(`f_${options.format}`);
-  
+
   const transformationString = transformations.join(',');
-  
+
   return cloudinary.url(publicId, {
     transformation: transformationString,
-    secure: true
+    secure: true,
   });
 };
 
@@ -160,7 +156,7 @@ export const deleteFromCloudinary = async (
   try {
     const result = await cloudinary.uploader.destroy(publicId, {
       resource_type: resourceType,
-      invalidate: true
+      invalidate: true,
     });
     return result.result === 'ok';
   } catch (error) {
