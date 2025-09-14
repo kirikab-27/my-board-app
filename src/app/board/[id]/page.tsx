@@ -30,6 +30,7 @@ import { AuthButton } from '@/components/auth/AuthButton';
 import ProfileAvatar from '@/components/profile/ProfileAvatar';
 import { SafePostContent } from '@/components/SafeContent';
 import CommentList from '@/components/comments/CommentList';
+import FollowButton from '@/components/follow/FollowButton';
 import Link from 'next/link';
 
 interface Post {
@@ -338,19 +339,31 @@ export default function PostDetailPage() {
               </Box>
             </Box>
 
-            {/* いいねボタン */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <IconButton
-                onClick={handleLike}
-                disabled={liking}
-                color={isLiked ? 'error' : 'default'}
-                size="large"
-              >
-                {isLiked ? <FavoriteIcon /> : <FavoriteBorderIcon />}
-              </IconButton>
-              <Typography variant="body1" color="text.secondary">
-                {post.likes}
-              </Typography>
+            {/* いいねボタンとフォローボタン */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <IconButton
+                  onClick={handleLike}
+                  disabled={liking}
+                  color={isLiked ? 'error' : 'default'}
+                  size="large"
+                >
+                  {isLiked ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+                </IconButton>
+                <Typography variant="body1" color="text.secondary">
+                  {post.likes}
+                </Typography>
+              </Box>
+
+              {/* フォローボタン（自分の投稿でない場合のみ表示） */}
+              {session?.user?.id && post.userId && session.user.id !== post.userId && (
+                <FollowButton
+                  targetUserId={post.userId}
+                  targetUserName={post.authorName || '匿名ユーザー'}
+                  size="medium"
+                  variant="outlined"
+                />
+              )}
             </Box>
           </Box>
 
